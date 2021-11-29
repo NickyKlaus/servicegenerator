@@ -1,9 +1,11 @@
 package com.home.servicegenerator.plugin.generator;
 
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.Generator;
-import com.home.servicegenerator.plugin.visitor.DefaultClassVisitor;
+import com.home.servicegenerator.api.context.Context;
+import com.home.servicegenerator.plugin.visitor.DefaultVisitor;
 
 /**
  * Generates special representation of all Abstract Syntax Tree nodes of implementation class using the base class as
@@ -12,13 +14,13 @@ import com.home.servicegenerator.plugin.visitor.DefaultClassVisitor;
  * This generator delegates processing AST-nodes of the base class to the internal visitor.
  *
  * @see Generator
- * @see DefaultClassVisitor
+ * @see DefaultVisitor
  * @see ASTProcessingSchema
  */
-public final class DefaultClassGenerator implements Generator<Visitable> {
-    private final DefaultClassVisitor visitor;
+public final class DefaultGenerator implements Generator {
+    private final DefaultVisitor visitor;
 
-    private DefaultClassGenerator(final Builder builder) {
+    private DefaultGenerator(final Builder builder) {
         super();
         this.visitor = builder.visitor;
     }
@@ -26,12 +28,17 @@ public final class DefaultClassGenerator implements Generator<Visitable> {
     /**
      * Generates target class using internal visitor.
      * @param baseUnit - a base class AST-node (usually root-node)
-     * @param arg - an argument for every applied visitor's action
+     * @param context - generation context with meta information
      * @return AST-node of the target class (usually root-node)
      */
     @Override
-    public Visitable generate(final Visitable baseUnit, final Object arg) {
-        return baseUnit.accept(visitor, arg);
+    public Visitable generate(final Visitable baseUnit, final Context context) {
+        if (baseUnit instanceof Node) {
+            for (var n : ((Node)baseUnit).getChildNodes()) {
+                generate(n, context);
+            }
+        }
+        return baseUnit.accept(visitor, context);
     }
 
     public static Builder builder() {
@@ -39,10 +46,10 @@ public final class DefaultClassGenerator implements Generator<Visitable> {
     }
 
     public static final class Builder {
-        private final DefaultClassVisitor visitor;
+        private final DefaultVisitor visitor;
 
         private Builder() {
-            this.visitor = new DefaultClassVisitor();
+            this.visitor = new DefaultVisitor();
         }
 
         /**
@@ -59,8 +66,8 @@ public final class DefaultClassGenerator implements Generator<Visitable> {
             return this;
         }
 
-        public synchronized DefaultClassGenerator build() {
-            return new DefaultClassGenerator(this);
+        public synchronized DefaultGenerator build() {
+            return new DefaultGenerator(this);
         }
     }
 }

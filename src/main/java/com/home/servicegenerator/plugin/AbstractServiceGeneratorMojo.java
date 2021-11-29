@@ -1,12 +1,10 @@
 package com.home.servicegenerator.plugin;
 
-import org.apache.commons.lang3.StringUtils;
+import com.home.servicegenerator.plugin.context.ProcessingProperty;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
 
@@ -17,17 +15,32 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
     @Parameter(name = "transformations")
     private Transformation[] transformations;
 
-    /**
-     * Location of the output directory.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/target/generated-sources/swagger/src/main/java")
-    private File projectOutputDirectory;
+    @Parameter(name = "dbType")
+    private ProcessingProperty.StorageType dbType;
+
+    @Parameter(name = "controllerPackage", required = true)
+    private String controllerPackage;
+
+    @Parameter(name = "modelPackage", required = true)
+    private String modelPackage;
+
+    @Parameter(name = "configurationPackage", required = true)
+    private String configurationPackage;
 
     /**
      * The base directory of the project.
      */
-    @Parameter(defaultValue = "${basedir}", required = true)
-    private File baseDirectory;
+    @Parameter(name = "projectBaseDir", defaultValue = "${project.basedir}")
+    private String projectBaseDir;
+
+    @Parameter(name = "basePackage")
+    private String basePackage;
+
+    /**
+     * Location of the output directory.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/target/generated-sources/swagger")
+    private File projectOutputDirectory;
 
     /**
      * Location of the project sources directory.
@@ -39,33 +52,31 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
         return projectOutputDirectory;
     }
 
-    public File getBaseDirectory() {
-        return baseDirectory;
-    }
-
     public Transformation[] getTransformations() {
         return transformations;
+    }
+
+    public String getControllerPackage() {
+        return controllerPackage;
+    }
+
+    public String getModelPackage() {
+        return modelPackage;
+    }
+
+    public String getConfigurationPackage() {
+        return configurationPackage;
+    }
+
+    public String getBasePackage() {
+        return basePackage;
     }
 
     public File getSourcesDirectory() {
         return sourcesDirectory;
     }
 
-    public String getAbsoluteSourceDir() {
-        return StringUtils.join(getBaseDirectory().getAbsolutePath(), File.separator, getSourcesDirectory().getAbsolutePath());
-    }
-
-    public Path createFileLocation(
-            final String sourceDir, final String fullyQualifiedClassName, final String postfix, final String extension
-    ) {
-        String url = StringUtils.join(
-                sourceDir,
-                File.separator,
-                StringUtils.replaceChars(fullyQualifiedClassName, ".", File.separator),
-                postfix,
-                ".",
-                extension
-        );
-        return Paths.get(url);
+    public ProcessingProperty.StorageType getDbType() {
+        return dbType;
     }
 }
