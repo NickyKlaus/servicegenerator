@@ -81,7 +81,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                     return false;
                 });
 
-    public static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
+    private static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
             final MethodDeclaration pipeline,
             final List<MethodDeclaration> checkedMethods,
             final Name pipelineId,
