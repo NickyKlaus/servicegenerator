@@ -22,7 +22,7 @@ public class CreateAbstractServiceSchemaTest {
                     .setIdentifier(TestModel.class.getSimpleName());
     private static final String SERVICE_PACKAGE_NAME = "com.home.service";
     private static final String SERVICE_NAME = "TestService";
-    private static final ProcessingProperty.StorageType DB_TYPE = ProcessingProperty.StorageType.mongo;
+    private static final ProcessingProperty.DbType DB_TYPE = ProcessingProperty.DbType.mongo;
     private static CompilationUnit serviceClassUnit;
 
     @BeforeAll

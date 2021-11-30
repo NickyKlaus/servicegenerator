@@ -13,14 +13,11 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.TypeParameter;
-import com.github.javaparser.ast.visitor.ModifierVisitor;
-import com.github.javaparser.ast.visitor.Visitable;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.context.ProcessingProperty;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
@@ -32,8 +29,8 @@ import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.R
 import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_METHOD_DECLARATION;
 import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_NAME;
 import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.StorageType.cassandra;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.StorageType.mongo;
+import static com.home.servicegenerator.plugin.context.ProcessingProperty.DbType.cassandra;
+import static com.home.servicegenerator.plugin.context.ProcessingProperty.DbType.mongo;
 import static java.lang.String.format;
 
 public enum InnerProcessingSchema implements ASTProcessingSchema {
@@ -43,7 +40,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
                 final Name model = context.getPipelineId();
-                final ProcessingProperty.StorageType dbType = (ProcessingProperty.StorageType) context
+                final ProcessingProperty.DbType dbType = (ProcessingProperty.DbType) context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
@@ -118,7 +115,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
                                                 ABSTRACT_SERVICE_NAME.name())))
                         .getValue()
                         .toString();
-                final ProcessingProperty.StorageType storageType = (ProcessingProperty.StorageType)context
+                final ProcessingProperty.DbType storageType = (ProcessingProperty.DbType)context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
@@ -199,7 +196,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
                                                 REPOSITORY_NAME.name())))
                         .getValue()
                         .toString();
-                final ProcessingProperty.StorageType storageType = (ProcessingProperty.StorageType)context
+                final ProcessingProperty.DbType storageType = (ProcessingProperty.DbType)context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
@@ -310,20 +307,6 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
                 var method = n.addMethod(abstractServiceMethod.getNameAsString(), Modifier.Keyword.PUBLIC)
                         .setParameters(abstractServiceMethod.getParameters())
                         .setBody(methodBody);
-
-                /*if (abstractServiceMethod.getType().isClassOrInterfaceType() &&
-                        abstractServiceMethod.getType().asClassOrInterfaceType().getTypeArguments().isPresent()) {
-                    abstractServiceMethod.getType().accept(new ModifierVisitor<>() {
-                        @Override
-                        public Visitable visit(ClassOrInterfaceType n, Object arg) {
-                            super.visit(n, arg);
-                            if ("T".equals(n.getNameAsString())) {
-                                n.setName(model.toString());
-                            }
-                            return n;
-                        }
-                    }, null);
-                }*/
                 method.setType(abstractServiceMethod.getType());
                 return n;
             };
@@ -468,10 +451,10 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
 
     EditConfiguration {
         @Override
-        public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> postProcessClassOrInterfaceDeclaration() {
+        public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
                 // Register repository into Spring application class
-                final ProcessingProperty.StorageType storageType = (ProcessingProperty.StorageType)context
+                final ProcessingProperty.DbType storageType = (ProcessingProperty.DbType)context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(

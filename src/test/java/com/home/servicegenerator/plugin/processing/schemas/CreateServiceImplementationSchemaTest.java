@@ -33,7 +33,7 @@ public class CreateServiceImplementationSchemaTest {
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";
     private static final String REPOSITORY_NAME = "TestRepository";
     private static final String REPOSITORY_FIELD_NAME = REPOSITORY_NAME.toLowerCase();
-    private static final ProcessingProperty.StorageType DB_TYPE = ProcessingProperty.StorageType.mongo;
+    private static final ProcessingProperty.DbType DB_TYPE = ProcessingProperty.DbType.mongo;
     private static CompilationUnit serviceImplementationClassUnit;
     private static AssignExpr repositoryAssignment;
 

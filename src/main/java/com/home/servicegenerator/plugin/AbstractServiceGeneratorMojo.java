@@ -16,7 +16,7 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
     private Transformation[] transformations;
 
     @Parameter(name = "dbType")
-    private ProcessingProperty.StorageType dbType;
+    private ProcessingProperty.DbType dbType;
 
     @Parameter(name = "controllerPackage", required = true)
     private String controllerPackage;
@@ -76,7 +76,7 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
         return sourcesDirectory;
     }
 
-    public ProcessingProperty.StorageType getDbType() {
+    public ProcessingProperty.DbType getDbType() {
         return dbType;
     }
 }

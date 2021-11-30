@@ -75,11 +75,4 @@ public final class ProcessingContext implements Context {
         }
         return empty();
     }
-
-    public Optional<Property> getPropertyByName(ProcessingProperty.Name name) {
-        if (properties.containsKey(name)) {
-            return of(ProcessingProperty.of(name, properties.get(name)));
-        }
-        return empty();
-    }
 }

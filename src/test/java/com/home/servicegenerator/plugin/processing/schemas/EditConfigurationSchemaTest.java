@@ -47,12 +47,12 @@ public class EditConfigurationSchemaTest {
             "        new SpringApplication(TestApplication.class).run(args);",
             "    }",
             "}");
-    private static final Map<ProcessingProperty.StorageType, AnnotationExpr> annotationMap =
-            new EnumMap<>(ProcessingProperty.StorageType.class);
+
+    private static final Map<ProcessingProperty.DbType, AnnotationExpr> annotationMap = new EnumMap<>(ProcessingProperty.DbType.class);
 
     static {
         annotationMap.put(
-                ProcessingProperty.StorageType.mongo,
+                ProcessingProperty.DbType.mongo,
                 new NormalAnnotationExpr(
                         new Name(SPRING_DATA_ENABLE_MONGO),
                         NodeList.nodeList(
@@ -64,7 +64,7 @@ public class EditConfigurationSchemaTest {
                                                         .map(StringLiteralExpr::new)
                                                         .collect(NodeList.toNodeList()))))));
         annotationMap.put(
-                ProcessingProperty.StorageType.cassandra,
+                ProcessingProperty.DbType.cassandra,
                 new NormalAnnotationExpr(
                         new Name(SPRING_DATA_ENABLE_CASSANDRA),
                         NodeList.nodeList(
@@ -95,7 +95,7 @@ public class EditConfigurationSchemaTest {
         }
     }
 
-    private ClassOrInterfaceDeclaration generate(ProcessingProperty.StorageType storageType) {
+    private ClassOrInterfaceDeclaration generate(ProcessingProperty.DbType storageType) {
         final Context context =
                 new ProcessingContext(
                         modelClassName,
@@ -111,13 +111,13 @@ public class EditConfigurationSchemaTest {
                         .processingSchema(InnerProcessingSchema.EditConfiguration)
                         .build();
         return (ClassOrInterfaceDeclaration) generator
-                .generate(configurationDeclarationBeforeEditing, context);
+                .generate(configurationDeclarationBeforeEditing.clone(), context);
     }
 
     @ParameterizedTest(name = "Test for Spring Data annotation for {0} into configuration")
     @DisplayName("😎")
-    @EnumSource(value = ProcessingProperty.StorageType.class)
-    void testAddSpringDataAnnotationsForDbIntoConfiguration(ProcessingProperty.StorageType storageType) {
+    @EnumSource(value = ProcessingProperty.DbType.class)
+    void testAddSpringDataAnnotationsForDbIntoConfiguration(ProcessingProperty.DbType storageType) {
         var configurationDeclarationAfterEditing = generate(storageType);
         Assertions.assertEquals(
                 1,
@@ -139,7 +139,7 @@ public class EditConfigurationSchemaTest {
     @ParameterizedTest(name = "Test for Spring Data annotation if no required db type had been set")
     @DisplayName("😎")
     @NullSource
-    void configuringRepositoriesProcedureShouldBeFailedIfNoRequiredDbTypeHadBeenSet(ProcessingProperty.StorageType storageType) {
+    void configuringRepositoriesProcedureShouldBeFailedIfNoRequiredDbTypeHadBeenSet(ProcessingProperty.DbType storageType) {
         Assertions.assertThrows(
                 NullPointerException.class,
                 () -> generate(storageType),

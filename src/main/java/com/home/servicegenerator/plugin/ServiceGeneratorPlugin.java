@@ -9,9 +9,11 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.utils.SourceRoot;
 import com.home.servicegenerator.plugin.context.ProcessingContext;
 import com.home.servicegenerator.plugin.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.MatchMethodStrategy;
 import com.home.servicegenerator.plugin.processing.MatchWithRestEndpointMethod;
 import com.home.servicegenerator.plugin.processing.ProcessingStage;
 import com.home.servicegenerator.plugin.utils.FileUtils;
+import com.home.servicegenerator.plugin.utils.MethodNormalizer;
 import com.home.servicegenerator.plugin.utils.ResolverUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.MojoFailureException;
@@ -30,7 +32,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.StorageType.getMethodMatchedWithPipeline;
+import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL;
 import static com.home.servicegenerator.plugin.utils.ResolverUtils.createJavaSymbolSolver;
 
 /**
@@ -79,29 +81,20 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                     return false;
                 });
 
-/*    private CompilationUnit parseSourceFile(final File source) throws MojoFailureException {
-        if (source == null || !Files.exists(source.toPath(), LinkOption.NOFOLLOW_LINKS)) {
-            return new CompilationUnit();
-        }
-        try {
-            ParseResult<CompilationUnit> baseUnitParsingResult = new JavaParser().parse(source);
-            if (baseUnitParsingResult.isSuccessful() && baseUnitParsingResult.getResult().isPresent()) {
-                getLog().info("Parse result successful: " + baseUnitParsingResult.isSuccessful());
-                return baseUnitParsingResult.getResult().get();
-            }
-        } catch (FileNotFoundException e) {
-            throw new MojoFailureException("Cannot find source file " + source.getAbsolutePath(), e);
-        }
-        return new CompilationUnit();
-    }*/
-
-    //Generate whole java class source representation
-    /*private CompilationUnit generate(CompilationUnit baseUnit, ASTProcessingSchema processingSchema, Context context) {
-        return (CompilationUnit) DefaultGenerator.builder()
-                .processingSchema(processingSchema)
-                .build()
-                .generate(baseUnit, context);
-    }*/
+    public static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
+            final MethodDeclaration pipeline,
+            final List<MethodDeclaration> checkedMethods,
+            final Name pipelineId,
+            final MatchMethodStrategy checkingMethodStrategy
+    ) {
+        return checkedMethods
+                .stream()
+                .filter(checkedMethod -> checkingMethodStrategy
+                        .matchMethods(pipelineId.getIdentifier())
+                        .test(pipeline, checkedMethod))
+                .map(m -> MethodNormalizer.denormalize(m, pipelineId.getIdentifier(), REPLACING_MODEL_TYPE_SYMBOL))
+                .findFirst();
+    }
 
     private void save(final CompilationUnit compilationUnit) throws MojoFailureException {
         if (
@@ -123,60 +116,6 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                 .save();
     }
 
-    /*private void executeOuterTransformations() throws MojoFailureException {
-        final List<Transformation> classTransformations = Arrays.asList(getTransformations());
-        if (!classTransformations.isEmpty()) {
-            //TODO: add state-machine for inner transformations
-            for (final Transformation transformation : classTransformations) {
-
-                final File sourceClassFile =
-                        StringUtils.isBlank(transformation.getBaseClassName()) ?
-                                null :
-                                createFilePath(
-                                        transformation.getBaseClassPackage(),
-                                        transformation.getBaseClassName(),
-                                        "",
-                                        JAVA_EXT).toFile();
-                final Path targetClassPath =
-                        createFilePath(
-                                getProjectOutputDirectory().getAbsolutePath(),
-                                transformation.getBaseClassName(),
-                                transformation.getPostfix(),
-                                JAVA_EXT
-                        );
-
-                try {
-                    Object _processingSchemaInstance = URLClassLoader.newInstance(
-                            new URL[]{transformation.getProcessingSchemaLocation().toURI().toURL()}, getClass().getClassLoader())
-                            .loadClass(transformation.getProcessingSchemaClass())
-                            .getDeclaredConstructor()
-                            .newInstance();
-                    ASTProcessingSchema schema;
-                    if (_processingSchemaInstance instanceof ASTProcessingSchema) {
-                        schema = (ASTProcessingSchema) _processingSchemaInstance;
-                    } else {
-                        throw new MojoFailureException("Invalid processing schema found: " + _processingSchemaInstance);
-                    }
-                    getLog().info("AST schema: " + schema);
-
-                    //Context context = new ProcessingContext("", new MethodDeclaration(), new HashSet<>());
-
-                    getLog().info("Generation interrupted because target class <" + targetClassPath + "> already exists.");
-                    *//*save(
-                            generate(parseSourceFile(sourceClassFile), schema, context),
-                            targetClassPath
-                    );*//*
-                } catch (IOException | ClassNotFoundException | ClassCastException | NoSuchMethodException | InstantiationException |
-                        IllegalAccessException | InvocationTargetException e) {
-                    getLog().error("Cannot create generated class into " + targetClassPath, e);
-                    throw new MojoFailureException("Cannot create generated class into " + targetClassPath, e);
-                }
-            }
-        } else {
-            throw new MojoFailureException("Cannot find transformations for processing classes!");
-        }
-    }*/
-
     private void executeInnerTransformations() throws MojoFailureException {
         try {
             var _parserConfiguration =
@@ -184,8 +123,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                             .setStoreTokens(true)
                             .setSymbolResolver(
                                     createJavaSymbolSolver(
-                                            /*Path.of("/Users/klaus/.m2/repository/org/springframework/spring-web/5.3.9/spring-web-5.3.9.jar"),
-                                            */FileUtils.createDirPath(
+                                            FileUtils.createDirPath(
                                                     getProjectOutputDirectory().toString(),
                                                     getSourcesDirectory().toString(),
                                                     getBasePackage(),
@@ -502,28 +440,27 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
             }
 
             // 7. Edit configuration phase
-            var contextProperties = new HashMap<ProcessingProperty.Name, Object>();
-            contextProperties.put(
-                    ProcessingProperty.Name.DB_TYPE,
-                    storageType);
-            contextProperties.put(
-                    ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME,
-                    getBasePackage() + ".repository");
             var editedConfigurationUnit = ProcessingStage.EDIT_CONFIGURATION
                     .setCompilationUnit(configurationUnit)
                     .setContext(
                             new ProcessingContext(
                                     null,
                                     null,
-                                    contextProperties))
+                                    Map.ofEntries(
+                                            Map.entry(ProcessingProperty.Name.DB_TYPE,
+                                                    storageType),
+                                            Map.entry(ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME,
+                                                    getBasePackage() + ".repository"))))
                     .process();
             save(editedConfigurationUnit);
         } catch (IOException ioe) {
             getLog().error("Cannot parse generated components: " + ioe);
             throw new MojoFailureException("Cannot parse generated components", ioe);
         } catch (ClassCastException ce) {
-            getLog().error("Incompatible types: <" + SPRING_REST_CONTROLLER_ANNOTATION_NAME_FULL + "> and <Class<? extends Annotation>>");
-            throw new MojoFailureException("Incompatible types: <" + SPRING_REST_CONTROLLER_ANNOTATION_NAME_FULL + "> and <Class<? extends Annotation>>", ce);
+            getLog().error("Incompatible types: <" + SPRING_REST_CONTROLLER_ANNOTATION_NAME_FULL +
+                    "> and <Class<? extends Annotation>>");
+            throw new MojoFailureException("Incompatible types: <" + SPRING_REST_CONTROLLER_ANNOTATION_NAME_FULL +
+                    "> and <Class<? extends Annotation>>", ce);
         }
     }
 
@@ -531,30 +468,4 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     public void execute() throws MojoFailureException {
         executeInnerTransformations();
     }
-
-    /*private static List<MethodDeclaration> getAncestorsRestEndpoints(
-            final CompilationUnit compilationUnit,
-            final Predicate<MethodDeclaration> isRestEndpointMethodPredicate,
-            final JavaParserFacade javaParserFacade
-    ) {
-        return compilationUnit
-                .getTypes()
-                .stream()
-                .filter(TypeDeclaration::isClassOrInterfaceDeclaration)
-                .filter(t -> !t.getName().getIdentifier().startsWith("java."))
-                .map(BodyDeclaration::asClassOrInterfaceDeclaration)
-                //.filter(ResolvedType::isReferenceType)
-                .flatMap(t -> t.resolve().asReferenceType().getAncestors().stream())
-                .filter(r ->
-                        r.getAllMethodsVisibleToInheritors()
-                                .stream()
-                                .anyMatch(resolvedMethodDeclaration -> resolvedMethodDeclaration.toAst().isPresent() &&
-                                        isRestEndpointMethodPredicate.test(resolvedMethodDeclaration.toAst().get())))
-                .flatMap(p -> p.getAllMethodsVisibleToInheritors().stream())
-                .map(ResolvedMethodDeclaration::toAst)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toUnmodifiableList());
-    }*/
-
 }

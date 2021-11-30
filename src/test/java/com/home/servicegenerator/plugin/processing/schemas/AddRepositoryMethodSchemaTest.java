@@ -21,7 +21,7 @@ public class AddRepositoryMethodSchemaTest {
                     .setIdentifier(TestModel.class.getSimpleName());
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";
     private static final String REPOSITORY_NAME = "TestRepository";
-    private static final ProcessingProperty.StorageType DB_NAME = ProcessingProperty.StorageType.mongo;
+    private static final ProcessingProperty.DbType DB_NAME = ProcessingProperty.DbType.mongo;
     private static final String REPOSITORY_ID_CLASS = Long.class.getCanonicalName();
 
     private static CompilationUnit repositoryUnitAfterCreating;

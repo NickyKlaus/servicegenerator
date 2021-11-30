@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class CreateRepositorySchemaTest {
     private static final String SPRING_REPOSITORY = "org.springframework.stereotype.Repository";
-    private static final ProcessingProperty.StorageType DB_NAME = ProcessingProperty.StorageType.mongo;
+    private static final ProcessingProperty.DbType DB_NAME = ProcessingProperty.DbType.mongo;
     private static final String SPRING_DATA_CRUD_REPOSITORY = DB_NAME.getCrudRepositoryInterfaceName();
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";
     private static final String REPOSITORY_NAME = "TestRepository";

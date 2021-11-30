@@ -107,19 +107,19 @@ import com.home.servicegenerator.api.context.Context;
 
 /**
  * Visitor goes around Abstract Syntax Tree nodes of the base class, processes them (applies a processing action)
- * recursively and copies resulted node into the AST of generating class.
+ * recursively and modifies base nodes with generated ones.
  *
- * Note: according to AST Processing Schema API visitor clones each processing base class node by default
+ * Note: according to AST Processing Schema API visitor modifies each processing base class node by default
  *       (in case no explicit visitor's action provided).
  *
  * @see ASTProcessingSchema
  */
 public class DefaultVisitor implements GenericVisitor<Visitable, Context> {
-    private final CloneVisitor visitor;
+    private final ModifierVisitor<Context> visitor;
     private ASTProcessingSchema processingSchema;
 
     public DefaultVisitor() {
-        this.visitor = new CloneVisitor();
+        this.visitor = new ModifierVisitor<>();
         this.processingSchema = new DefaultASTProcessingSchema();
     }
 

@@ -6,14 +6,13 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.*;
 import com.home.servicegenerator.api.context.Property;
-import com.home.servicegenerator.plugin.processing.MatchMethodStrategy;
-import com.home.servicegenerator.plugin.utils.MethodNormalizer;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL;
 
 public final class ProcessingProperty implements Property {
     private final ProcessingProperty.Name name;
@@ -82,9 +81,10 @@ public final class ProcessingProperty implements Property {
         REPOSITORY_METHOD_DECLARATION,
     }
 
-    public enum StorageType {
+    public enum DbType {
         mongo {
-            private static final String SPRING_DATA_ENABLE_MONGO = "org.springframework.data.mongodb.repository.config.EnableMongoRepositories";
+            private static final String SPRING_DATA_ENABLE_MONGO =
+                    "org.springframework.data.mongodb.repository.config.EnableMongoRepositories";
 
             @Override
             public String getCrudRepositoryInterfaceName() {
@@ -105,22 +105,20 @@ public final class ProcessingProperty implements Property {
                                                         .collect(NodeList.toNodeList())))));
             }
 
-
-
             @Override
             public List<MethodDeclaration> getRepositoryImplementationMethodDeclarations() {
                 String[] declarations = {
-                        "public $ModelType save($ModelType entity) {}",
-                        "public List<$ModelType> saveAll(Iterable<$ModelType> entities) {}",
-                        "public Optional<$ModelType> findById(Long id) {}",
+                        String.format("public %s save(%s entity) {}", REPLACING_MODEL_TYPE_SYMBOL, REPLACING_MODEL_TYPE_SYMBOL),
+                        String.format("public List<%s> saveAll(Iterable<%s> entities) {}", REPLACING_MODEL_TYPE_SYMBOL, REPLACING_MODEL_TYPE_SYMBOL),
+                        String.format("public Optional<%s> findById(Long id) {}", REPLACING_MODEL_TYPE_SYMBOL),
                         "public boolean existsById(Long id) {}",
-                        "public List<$ModelType> findAll() {}",
-                        "public Iterable<$ModelType> findAllById(Iterable<Long> ids) {}",
+                        String.format("public List<%s> findAll() {}", REPLACING_MODEL_TYPE_SYMBOL),
+                        String.format("public Iterable<%s> findAllById(Iterable<Long> ids) {}", REPLACING_MODEL_TYPE_SYMBOL),
                         "public long count() {}",
                         "public void deleteById(Long id) {}",
-                        "public void delete($ModelType entity) {}",
+                        String.format("public void delete(%s entity) {}", REPLACING_MODEL_TYPE_SYMBOL),
                         "public void deleteAllById(Iterable<Long> ids) {}",
-                        "public void deleteAll(Iterable<$ModelType> entities) {}",
+                        String.format("public void deleteAll(Iterable<%s> entities) {}", REPLACING_MODEL_TYPE_SYMBOL),
                         "public void deleteAll() {}",
                         //"public org.springframework.data.domain.Page<T> findAll(org.springframework.data.domain.Pageable pageable) {}",
                         //"public java.util.List<T> findAll(org.springframework.data.domain.Sort sort) {}",
@@ -140,11 +138,12 @@ public final class ProcessingProperty implements Property {
             }
         },
         cassandra {
-            private static final String SPRING_DATA_ENABLE_CASSANDRA = "org.springframework.data.cassandra.repository.config.EnableCassandraRepositories";
+            private static final String SPRING_DATA_ENABLE_CASSANDRA =
+                    "org.springframework.data.cassandra.repository.config.EnableCassandraRepositories";
 
             @Override
             public String getCrudRepositoryInterfaceName() {
-                return null;
+                return "null";
             }
 
             @Override
@@ -168,7 +167,7 @@ public final class ProcessingProperty implements Property {
                         "public <S extends T> List<S> saveAll(Iterable<S> entities) {}",
                         "public Optional<T> findById(ID id) {}",
                         "public boolean existsById(ID id) {}",*/
-                        "public List<$ModelType> findAll() {}",
+                        String.format("public List<%s> findAll() {}", REPLACING_MODEL_TYPE_SYMBOL),
                         /*"public Iterable<T> findAllById(Iterable<ID> ids) {}",
                         "public long count() {}",
                         "public void deleteById(ID id) {}",
@@ -198,13 +197,20 @@ public final class ProcessingProperty implements Property {
             public AnnotationExpr prepareDbRepositoryConfigAnnotation(List<String> repositoriesBasePackageNames) {
                 return null;
             }
-        },*/
-        ;
-        public static final String REPLACING_MODEL_TYPE_SYMBOL = "$ModelType";
+        },*/;
+
+        public static AnnotationExpr prepareSpringDataDbConfigAnnotation(
+                String enableAnnotationName, NodeList<MemberValuePair> annotationMembers
+        ) {
+            return new NormalAnnotationExpr(new com.github.javaparser.ast.expr.Name(enableAnnotationName), annotationMembers);
+        }
 
         public abstract String getCrudRepositoryInterfaceName();
+
         public abstract AnnotationExpr prepareDbRepositoryConfigAnnotation(List<String> repositoriesBasePackageNames);
+
         public abstract List<MethodDeclaration> getRepositoryImplementationMethodDeclarations();
+
         public List<ImportDeclaration> getUsedImportDeclarations() {
             String[] declarations = {
                     "import java.util.List;",
@@ -215,26 +221,5 @@ public final class ProcessingProperty implements Property {
                     .map(StaticJavaParser::parseImport)
                     .collect(Collectors.toUnmodifiableList());
         }
-
-        public static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
-                final MethodDeclaration pipeline,
-                final List<MethodDeclaration> checkedMethods,
-                final com.github.javaparser.ast.expr.Name pipelineId,
-                final MatchMethodStrategy checkingMethodStrategy
-        ) {
-            return checkedMethods
-                    .stream()
-                    .filter(checkedMethod -> checkingMethodStrategy
-                            .matchMethods(pipelineId.getIdentifier())
-                            .test(pipeline, checkedMethod))
-                    .map(m -> MethodNormalizer.denormalize(m, pipelineId.getIdentifier(), REPLACING_MODEL_TYPE_SYMBOL))
-                    .findFirst();
-        }
-    }
-
-    private static AnnotationExpr prepareSpringDataDbConfigAnnotation(
-            String enableAnnotationName, NodeList<MemberValuePair> annotationMembers
-    ) {
-        return new NormalAnnotationExpr(new com.github.javaparser.ast.expr.Name(enableAnnotationName), annotationMembers);
     }
 }
