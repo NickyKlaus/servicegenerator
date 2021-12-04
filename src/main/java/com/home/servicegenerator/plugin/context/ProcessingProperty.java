@@ -2,9 +2,7 @@ package com.home.servicegenerator.plugin.context;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.*;
 import com.home.servicegenerator.api.context.Property;
 
 import java.util.Arrays;
@@ -85,6 +83,8 @@ public final class ProcessingProperty implements Property {
         mongo {
             private static final String SPRING_DATA_ENABLE_MONGO =
                     "org.springframework.data.mongodb.repository.config.EnableMongoRepositories";
+            private static final String SPRING_BOOT_STARTER_DATA_MONGODB =
+                    "org.springframework.boot:spring-boot-starter-data-mongodb:2.5.3";
 
             @Override
             public String getCrudRepositoryInterfaceName() {
@@ -92,17 +92,8 @@ public final class ProcessingProperty implements Property {
             }
 
             @Override
-            public AnnotationExpr prepareDbRepositoryConfigAnnotation(List<String> repositoriesBasePackageNames) {
-                return prepareSpringDataDbConfigAnnotation(
-                        SPRING_DATA_ENABLE_MONGO,
-                        NodeList.nodeList(
-                                new MemberValuePair(
-                                        "basePackages",
-                                        new ArrayInitializerExpr(
-                                                repositoriesBasePackageNames
-                                                        .stream()
-                                                        .map(StringLiteralExpr::new)
-                                                        .collect(NodeList.toNodeList())))));
+            public String dbRepositoryConfigAnnotationClass() {
+                return SPRING_DATA_ENABLE_MONGO;
             }
 
             @Override
@@ -136,10 +127,17 @@ public final class ProcessingProperty implements Property {
                         .map(StaticJavaParser::parseMethodDeclaration)
                         .collect(Collectors.toUnmodifiableList());
             }
+
+            @Override
+            public String dependencyDescriptor() {
+                return SPRING_BOOT_STARTER_DATA_MONGODB;
+            }
         },
         cassandra {
             private static final String SPRING_DATA_ENABLE_CASSANDRA =
                     "org.springframework.data.cassandra.repository.config.EnableCassandraRepositories";
+            private static final String SPRING_BOOT_STARTER_DATA_CASSANDRA =
+                    "org.springframework.boot:spring-boot-starter-data-cassandra:2.5.3";
 
             @Override
             public String getCrudRepositoryInterfaceName() {
@@ -147,17 +145,8 @@ public final class ProcessingProperty implements Property {
             }
 
             @Override
-            public AnnotationExpr prepareDbRepositoryConfigAnnotation(List<String> repositoriesBasePackageNames) {
-                return prepareSpringDataDbConfigAnnotation(
-                        SPRING_DATA_ENABLE_CASSANDRA,
-                        NodeList.nodeList(
-                                new MemberValuePair(
-                                        "basePackages",
-                                        new ArrayInitializerExpr(
-                                                repositoriesBasePackageNames
-                                                        .stream()
-                                                        .map(StringLiteralExpr::new)
-                                                        .collect(NodeList.toNodeList())))));
+            public String dbRepositoryConfigAnnotationClass() {
+                return SPRING_DATA_ENABLE_CASSANDRA;
             }
 
             @Override
@@ -191,25 +180,29 @@ public final class ProcessingProperty implements Property {
                         .map(StaticJavaParser::parseMethodDeclaration)
                         .collect(Collectors.toUnmodifiableList());
             }
+
+            @Override
+            public String dependencyDescriptor() {
+                return SPRING_BOOT_STARTER_DATA_CASSANDRA;
+            }
         },
         /*elasticsearch {
             @Override
-            public AnnotationExpr prepareDbRepositoryConfigAnnotation(List<String> repositoriesBasePackageNames) {
+            public String dbRepositoryConfigAnnotation() {
                 return null;
             }
-        },*/;
 
-        public static AnnotationExpr prepareSpringDataDbConfigAnnotation(
-                String enableAnnotationName, NodeList<MemberValuePair> annotationMembers
-        ) {
-            return new NormalAnnotationExpr(new com.github.javaparser.ast.expr.Name(enableAnnotationName), annotationMembers);
-        }
+            var SPRING_BOOT_STARTER_DATA_ELASTICSEARCH = "org.springframework.boot:spring-boot-starter-data-elasticsearch:2.5.3";
+
+        },*/;
 
         public abstract String getCrudRepositoryInterfaceName();
 
-        public abstract AnnotationExpr prepareDbRepositoryConfigAnnotation(List<String> repositoriesBasePackageNames);
+        public abstract String dbRepositoryConfigAnnotationClass();
 
         public abstract List<MethodDeclaration> getRepositoryImplementationMethodDeclarations();
+
+        public abstract String dependencyDescriptor();
 
         public List<ImportDeclaration> getUsedImportDeclarations() {
             String[] declarations = {

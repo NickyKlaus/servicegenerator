@@ -3,8 +3,10 @@ package com.home.servicegenerator.plugin;
 import com.home.servicegenerator.plugin.context.ProcessingProperty;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.util.List;
 
 public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
 
@@ -13,25 +15,25 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
      * Plugin uses processing schema mapped to base class to transform it and generate resulted version of this class.
      */
     @Parameter(name = "transformations")
-    private Transformation[] transformations;
+    private List<Transformation> transformations = List.of();
 
     @Parameter(name = "dbType")
     private ProcessingProperty.DbType dbType;
 
-    @Parameter(name = "controllerPackage", required = true)
+    @Parameter(name = "controllerPackage")
     private String controllerPackage;
 
-    @Parameter(name = "modelPackage", required = true)
+    @Parameter(name = "modelPackage")
     private String modelPackage;
 
-    @Parameter(name = "configurationPackage", required = true)
+    @Parameter(name = "configurationPackage")
     private String configurationPackage;
 
     /**
      * The base directory of the project.
      */
-    @Parameter(name = "projectBaseDir", defaultValue = "${project.basedir}")
-    private String projectBaseDir;
+    @Parameter(defaultValue = "${basedir}", readonly = true)
+    private String projectBaseDirectory;
 
     @Parameter(name = "basePackage")
     private String basePackage;
@@ -48,11 +50,14 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
     @Parameter(defaultValue = "${sourceDir}")
     private File sourcesDirectory;
 
+    @Parameter(name = "project", defaultValue = "${project}")
+    private MavenProject project;
+
     public File getProjectOutputDirectory() {
         return projectOutputDirectory;
     }
 
-    public Transformation[] getTransformations() {
+    public List<Transformation> getTransformations() {
         return transformations;
     }
 
@@ -74,6 +79,14 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
 
     public File getSourcesDirectory() {
         return sourcesDirectory;
+    }
+
+    public String getProjectBaseDirectory() {
+        return projectBaseDirectory;
+    }
+
+    public MavenProject getProject() {
+        return project;
     }
 
     public ProcessingProperty.DbType getDbType() {

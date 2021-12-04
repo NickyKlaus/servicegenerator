@@ -2,9 +2,9 @@ package com.home.servicegenerator.plugin.processing.schemas;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
@@ -16,6 +16,7 @@ import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.context.ProcessingContext;
 import com.home.servicegenerator.plugin.context.ProcessingProperty;
 import com.home.servicegenerator.plugin.generator.DefaultGenerator;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -32,29 +33,31 @@ public class EditConfigurationSchemaTest {
             new Name()
                     .setQualifier(new Name("com.home.servicegenerator.plugin.schemas"))
                     .setIdentifier(TestModel.class.getSimpleName());
-    private static final String SPRING_DATA_ENABLE_MONGO =
-            "org.springframework.data.mongodb.repository.config.EnableMongoRepositories";
-    private static final String SPRING_DATA_ENABLE_CASSANDRA =
-            "org.springframework.data.cassandra.repository.config.EnableCassandraRepositories";
+    private static final String SPRING_DATA_MONGO =
+            "EnableMongoRepositories";
+    private static final String SPRING_DATA_CASSANDRA =
+            "EnableCassandraRepositories";
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";
     private static final List<String> repositoriesBasePackageNames = List.of(REPOSITORY_PACKAGE_NAME);
     private static ClassOrInterfaceDeclaration configurationDeclarationBeforeEditing;
+    private static CompilationUnit configurationUnitBeforeEditing;
     private static final String CONFIGURATION_DECLARATION = String.join("\n",
-            "@SpringBootApplication",
-            "@ComponentScan(basePackages = { \"com.home.repository\", \"com.home.service\"})",
+            "package com.home.test;",
+            "@org.springframework.boot.autoconfigure.SpringBootApplication",
             "public class TestApplication {",
             "    public static void main(String[] args) throws Exception {",
             "        new SpringApplication(TestApplication.class).run(args);",
             "    }",
             "}");
 
-    private static final Map<ProcessingProperty.DbType, AnnotationExpr> annotationMap = new EnumMap<>(ProcessingProperty.DbType.class);
+    private static final Map<ProcessingProperty.DbType, AnnotationExpr> annotationMap =
+            new EnumMap<>(ProcessingProperty.DbType.class);
 
     static {
         annotationMap.put(
                 ProcessingProperty.DbType.mongo,
                 new NormalAnnotationExpr(
-                        new Name(SPRING_DATA_ENABLE_MONGO),
+                        new Name(SPRING_DATA_MONGO),
                         NodeList.nodeList(
                                 new MemberValuePair(
                                         "basePackages",
@@ -66,7 +69,7 @@ public class EditConfigurationSchemaTest {
         annotationMap.put(
                 ProcessingProperty.DbType.cassandra,
                 new NormalAnnotationExpr(
-                        new Name(SPRING_DATA_ENABLE_CASSANDRA),
+                        new Name(SPRING_DATA_CASSANDRA),
                         NodeList.nodeList(
                                 new MemberValuePair(
                                         "basePackages",
@@ -83,19 +86,22 @@ public class EditConfigurationSchemaTest {
     @BeforeAll
     static void initGenerator() throws Exception {
         final JavaParser configurationParser = new JavaParser();
-        final ParseResult<TypeDeclaration<?>> parsingConfigurationDeclarationResult =
-                configurationParser.parseTypeDeclaration(CONFIGURATION_DECLARATION);
-        if (parsingConfigurationDeclarationResult.isSuccessful() &&
-                parsingConfigurationDeclarationResult.getResult().isPresent()) {
-            configurationDeclarationBeforeEditing =
-                    parsingConfigurationDeclarationResult.getResult().get().asClassOrInterfaceDeclaration();
+        final ParseResult<CompilationUnit> parsingConfigurationUnitResult =
+                configurationParser.parse(CONFIGURATION_DECLARATION);
+        if (parsingConfigurationUnitResult.isSuccessful() &&
+                parsingConfigurationUnitResult.getResult().isPresent()) {
+            configurationUnitBeforeEditing = parsingConfigurationUnitResult.getResult().get();
+            if (configurationUnitBeforeEditing.getTypes().size() > 0) {
+                configurationDeclarationBeforeEditing =
+                        configurationUnitBeforeEditing.getType(0).asClassOrInterfaceDeclaration();
+            }
         } else {
             throw new Exception("Cannot parse code: " + CONFIGURATION_DECLARATION + "\n" +
-                    parsingConfigurationDeclarationResult.getProblems());
+                    parsingConfigurationUnitResult.getProblems());
         }
     }
 
-    private ClassOrInterfaceDeclaration generate(ProcessingProperty.DbType storageType) {
+    private CompilationUnit generate(ProcessingProperty.DbType storageType) {
         final Context context =
                 new ProcessingContext(
                         modelClassName,
@@ -110,28 +116,48 @@ public class EditConfigurationSchemaTest {
                         .builder()
                         .processingSchema(InnerProcessingSchema.EditConfiguration)
                         .build();
-        return (ClassOrInterfaceDeclaration) generator
-                .generate(configurationDeclarationBeforeEditing.clone(), context);
+        return (CompilationUnit) generator
+                .generate(configurationUnitBeforeEditing.clone(), context);
     }
 
     @ParameterizedTest(name = "Test for Spring Data annotation for {0} into configuration")
     @DisplayName("😎")
     @EnumSource(value = ProcessingProperty.DbType.class)
     void testAddSpringDataAnnotationsForDbIntoConfiguration(ProcessingProperty.DbType storageType) {
-        var configurationDeclarationAfterEditing = generate(storageType);
+        var configurationUnitAfterEditing = generate(storageType);
+        Assertions.assertEquals(
+                1,
+                configurationUnitAfterEditing.getImports().size() -
+                        configurationUnitBeforeEditing.getImports().size(),
+                "Number of added annotation imports is not 1");
+        var _name = StringUtils.split(storageType.dbRepositoryConfigAnnotationClass(), ".");
+        Assertions.assertEquals(
+                _name[_name.length-1],
+                configurationUnitAfterEditing.getImport(0).getName().getIdentifier(),
+                "There is not import " + storageType.dbRepositoryConfigAnnotationClass());
+        Assertions.assertTrue(
+                configurationUnitAfterEditing.getTypes().size() == 1 &&
+                        configurationUnitAfterEditing.getType(0).isClassOrInterfaceDeclaration(),
+                "Not one class declaration in the unit");
+        Assertions.assertTrue(
+                configurationUnitAfterEditing.getClassByName("TestApplication").isPresent(),
+                "There is not primary class in the unit");
+
+        var configurationDeclarationAfterEditing =
+                configurationUnitAfterEditing.getClassByName("TestApplication").get();
         Assertions.assertEquals(
                 1,
                 configurationDeclarationAfterEditing.getAnnotations().size() -
                         configurationDeclarationBeforeEditing.getAnnotations().size(),
                 "Number of added annotations is not 1");
 
-        final String annotationName = annotationMap.get(storageType).getNameAsString();
+        var annotationName = annotationMap.get(storageType).getNameAsString();
         Assertions.assertTrue(
-                generate(storageType).getAnnotationByName(annotationName).isPresent(),
+                configurationDeclarationAfterEditing.getAnnotationByName(annotationName).isPresent(),
                 "There is not expected annotation " + annotationName + " in edited configuration");
         Assertions.assertEquals(
                 annotationMap.get(storageType).asAnnotationExpr(),
-                generate(storageType).getAnnotationByName(annotationName).get(),
+                configurationDeclarationAfterEditing.getAnnotationByName(annotationName).get(),
                 "There is not expected annotation " + annotationMap.get(storageType).asAnnotationExpr() +
                         " in edited configuration");
     }

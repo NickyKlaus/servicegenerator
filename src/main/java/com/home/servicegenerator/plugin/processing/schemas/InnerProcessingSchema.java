@@ -3,10 +3,7 @@ package com.home.servicegenerator.plugin.processing.schemas;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
@@ -16,6 +13,7 @@ import com.github.javaparser.ast.type.TypeParameter;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.context.ProcessingProperty;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -29,8 +27,6 @@ import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.R
 import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_METHOD_DECLARATION;
 import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_NAME;
 import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.DbType.cassandra;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.DbType.mongo;
 import static java.lang.String.format;
 
 public enum InnerProcessingSchema implements ASTProcessingSchema {
@@ -451,8 +447,26 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
 
     EditConfiguration {
         @Override
+        public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
+            return (CompilationUnit n, Context context) -> {
+                final ProcessingProperty.DbType storageType = (ProcessingProperty.DbType)context
+                        .getPropertyByName(DB_TYPE.name())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                DB_TYPE.name())))
+                        .getValue();
+                n.addImport(storageType.dbRepositoryConfigAnnotationClass());
+                return n;
+            };
+        }
+
+        @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
+                final String SPRING_BOOT_APPLICATION_FULL = "org.springframework.boot.autoconfigure.SpringBootApplication";
+                final String SPRING_BOOT_APPLICATION_SHORT = "SpringBootApplication";
+
                 // Register repository into Spring application class
                 final ProcessingProperty.DbType storageType = (ProcessingProperty.DbType)context
                         .getPropertyByName(DB_TYPE.name())
@@ -470,28 +484,37 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
                         .getValue()
                         .toString();
 
-                if (n.getAnnotationByName("SpringBootApplication").isPresent()) {
-                    switch (storageType) {
-                        case mongo:
-                            n.addAnnotation(
-                                    mongo.prepareDbRepositoryConfigAnnotation(List.of(repositoryPackageName)));
-                            break;
-                        case cassandra:
-                            n.addAnnotation(
-                                    cassandra.prepareDbRepositoryConfigAnnotation(List.of(repositoryPackageName)));
-                            break;
-                        /*case elasticsearch:
-                            break;*/
-                        //change nothing by default
-                        default:
-                            break;
-                    }
+                if (n.getAnnotationByName(SPRING_BOOT_APPLICATION_FULL).isPresent() ||
+                        n.getAnnotationByName(SPRING_BOOT_APPLICATION_SHORT).isPresent()) {
+                    n.addAnnotation(prepareDbRepositoryConfigAnnotation(List.of(repositoryPackageName), storageType));
                 }
                 return n;
             };
         }
     },
     ;
+
+    public static AnnotationExpr prepareDbRepositoryConfigAnnotation(
+            List<String> repositoriesBasePackageNames, ProcessingProperty.DbType dbType
+    ) {
+        var _name = StringUtils.split(dbType.dbRepositoryConfigAnnotationClass(), ".");
+        return prepareSpringDataDbConfigAnnotation(
+                _name[_name.length-1],
+                NodeList.nodeList(
+                        new MemberValuePair(
+                                "basePackages",
+                                new ArrayInitializerExpr(
+                                        repositoriesBasePackageNames
+                                                .stream()
+                                                .map(StringLiteralExpr::new)
+                                                .collect(NodeList.toNodeList())))));
+    }
+
+    public static AnnotationExpr prepareSpringDataDbConfigAnnotation(
+            String enableAnnotationName, NodeList<MemberValuePair> annotationMembers
+    ) {
+        return new NormalAnnotationExpr(new com.github.javaparser.ast.expr.Name(enableAnnotationName), annotationMembers);
+    }
 
     private static final String SPRING_REPOSITORY = "org.springframework.stereotype.Repository";
     private static final String SPRING_SERVICE = "org.springframework.stereotype.Service";

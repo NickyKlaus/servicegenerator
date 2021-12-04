@@ -8,11 +8,17 @@ import java.util.Set;
 
 public class Transformation {
 
-    @Parameter(name = "baseClassPackage", required = true)
-    private String baseClassPackage;
+    @Parameter(name = "sourceClassPackage", defaultValue = "${basePackage}")
+    private String sourceClassPackage;
 
-    @Parameter(name = "baseClassName", required = true)
-    private String baseClassName;
+    @Parameter(name = "sourceClassName")
+    private String sourceClassName;
+
+    @Parameter(name = "targetClassPackage", defaultValue = "${basePackage}")
+    private String targetClassPackage;
+
+    @Parameter(name = "targetClassName")
+    private String targetClassName;
 
     @Parameter(name = "processingSchemaLocation")
     private File processingSchemaLocation;
@@ -20,18 +26,23 @@ public class Transformation {
     @Parameter(name = "processingSchemaClass")
     private String processingSchemaClass;
 
-    @Parameter(name = "postfix")
-    private String postfix;
-
     @Parameter(name = "transformationProperties")
     private Set<TransformationProperty> transformationProperties;
 
-    public String getBaseClassPackage() {
-        return baseClassPackage;
+    public String getSourceClassPackage() {
+        return sourceClassPackage;
     }
 
-    public String getBaseClassName() {
-        return baseClassName;
+    public String getSourceClassName() {
+        return sourceClassName;
+    }
+
+    public String getTargetClassPackage() {
+        return targetClassPackage;
+    }
+
+    public String getTargetClassName() {
+        return targetClassName;
     }
 
     public File getProcessingSchemaLocation() {
@@ -42,14 +53,14 @@ public class Transformation {
         return processingSchemaClass;
     }
 
-    public String getPostfix() {
-        return postfix;
+    public Set<TransformationProperty> getTransformationProperties() {
+        return transformationProperties;
     }
 
     public static Transformation of(String baseClassLocation, String baseClassName) {
         Transformation transformation = new Transformation();
-        transformation.baseClassPackage = baseClassLocation;
-        transformation.baseClassName = baseClassName;
+        transformation.sourceClassPackage = baseClassLocation;
+        transformation.sourceClassName = baseClassName;
         return transformation;
     }
 

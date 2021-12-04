@@ -1,8 +1,11 @@
 package com.home.servicegenerator.plugin;
 
 public class TransformationProperty {
-    private final String name;
-    private final String value;
+    private String name;
+    private String value;
+
+    public TransformationProperty() {
+    }
 
     public TransformationProperty(String name, String value) {
         this.name = name;

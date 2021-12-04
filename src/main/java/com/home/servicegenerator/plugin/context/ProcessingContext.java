@@ -7,8 +7,10 @@ import com.home.servicegenerator.api.context.Property;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -20,17 +22,17 @@ public final class ProcessingContext implements Context {
     private final Map<ProcessingProperty.Name, Object> properties;
 
     public ProcessingContext(Name pipelineId, MethodDeclaration pipeline, Map<ProcessingProperty.Name, Object> properties) {
-        this.pipelineId = pipelineId;
-        this.pipeline = pipeline;
-        this.properties =
+        Objects.requireNonNull(properties, "Properties must not be null!");
+        Context.requireNonNullValues(
                 properties
                         .entrySet()
                         .stream()
-                        .map(e -> Map.entry(e.getKey(), e.getValue()))
-                        .collect(
-                                toUnmodifiableMap(
-                                        Map.Entry<ProcessingProperty.Name, Object>::getKey,
-                                        Map.Entry<ProcessingProperty.Name, Object>::getValue));
+                        .map(e -> ProcessingProperty.of(e.getKey(), e.getValue()))
+                        .collect(Collectors.toUnmodifiableList()),
+                "Property values must not be null!");
+        this.pipelineId = pipelineId;
+        this.pipeline = pipeline;
+        this.properties = Map.copyOf(properties);
     }
 
     public ProcessingContext(Name pipelineId, MethodDeclaration pipeline, Set<ProcessingProperty> properties) {
@@ -49,18 +51,6 @@ public final class ProcessingContext implements Context {
     @Override
     public MethodDeclaration getPipeline() {
         return pipeline;
-    }
-
-    @Override
-    public Map<String, Object> getProperties() {
-        return properties
-                .entrySet()
-                .stream()
-                .map(e -> Map.entry(e.getKey().name(), e.getValue()))
-                .collect(
-                        toUnmodifiableMap(
-                                Map.Entry<String, Object>::getKey,
-                                Map.Entry<String, Object>::getValue));
     }
 
     @Override
