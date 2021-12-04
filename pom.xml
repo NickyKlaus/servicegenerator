@@ -12,24 +12,28 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <guava.version>31.0.1-jre</guava.version>
         <service-generator-api.version>0.0.1</service-generator-api.version>
+        <guava.version>31.0.1-jre</guava.version>
         <apache-commons-io.version>2.11.0</apache-commons-io.version>
         <apache-commons-lang3.version>3.12.0</apache-commons-lang3.version>
-        <maven-core.version>3.6.1</maven-core.version>
         <maven-plugin-api.version>3.8.2</maven-plugin-api.version>
         <maven-plugin-annotations.version>3.6.1</maven-plugin-annotations.version>
         <maven-dependency-tree.version>3.1.0</maven-dependency-tree.version>
         <maven-plugin-plugin.version>3.6.0</maven-plugin-plugin.version>
-        <maven-artifact.version>3.8.2</maven-artifact.version>
         <javaparser.version>3.23.0</javaparser.version>
         <asm.version>9.1</asm.version>
         <junit-jupiter.version>5.7.2</junit-jupiter.version>
+        <junit-bom.version>5.8.1</junit-bom.version>
         <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.home</groupId>
+            <artifactId>service-generator-api</artifactId>
+            <version>${service-generator-api.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -78,30 +82,9 @@
             <version>${javaparser.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.home</groupId>
-            <artifactId>service-generator-api</artifactId>
-            <version>${service-generator-api.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- Only needed to run tests in a version of IntelliJ IDEA that bundles older versions -->
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -111,7 +94,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.8.1</version>
+                <version>${junit-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
