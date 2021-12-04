@@ -65,14 +65,14 @@ public class Dependency {
 
         var dependencyElement = document.createElement("dependency");
         var groupIdElement = document.createElement("groupId");
-        groupIdElement.setNodeValue(dependency.getGroupId());
+        groupIdElement.appendChild(document.createTextNode(dependency.getGroupId()));
         var artifactIdElement = document.createElement("artifactId");
-        artifactIdElement.setNodeValue(dependency.getArtifactId());
+        artifactIdElement.appendChild(document.createTextNode(dependency.getArtifactId()));
         dependencyElement.appendChild(groupIdElement);
         dependencyElement.appendChild(artifactIdElement);
         if (StringUtils.isNoneEmpty(dependency.getVersion())) {
             var versionElement = document.createElement("version");
-            versionElement.setNodeValue(dependency.getVersion());
+            versionElement.appendChild(document.createTextNode(dependency.getVersion()));
             dependencyElement.appendChild(versionElement);
         }
         return dependencyElement;

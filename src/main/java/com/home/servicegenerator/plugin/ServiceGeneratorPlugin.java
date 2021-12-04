@@ -22,8 +22,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,6 +35,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -50,6 +54,8 @@ import static com.github.javaparser.StaticJavaParser.parse;
 import static com.home.servicegenerator.plugin.utils.FileUtils.createFilePath;
 import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL;
 import static com.home.servicegenerator.plugin.utils.ResolverUtils.createJavaSymbolSolver;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Goal which generates microservice based on declared logic.
@@ -544,59 +550,60 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     }
 
     private void prepareProjectDescriptor() throws MojoFailureException {
-        var SPRING_BOOT_STARTER_WEB = "org.springframework.boot:spring-boot-starter-web:2.5.3";
-        var projectDescriptor = getProject().getFile();
-        var projectDescriptorEdited = new File(getProject().getFile().getAbsolutePath() + ".bak");
+        var DEP_SPRING_BOOT_STARTER_WEB = "org.springframework.boot:spring-boot-starter-web:2.5.3";
+        var DEP_GUAVA = "com.google.guava:guava:31.0.1-jre";
 
-        MavenProject project = getProject();
+        var dependenciesToAdd = new HashSet<Dependency>();
+        dependenciesToAdd.add(Dependency.of(DEP_SPRING_BOOT_STARTER_WEB));
+        dependenciesToAdd.add(Dependency.of(DEP_GUAVA));
+        dependenciesToAdd.add(Dependency.of(getDbType().dependencyDescriptor()));
+
+        var projectDescriptor =
+                new File(getProjectOutputDirectory().getAbsolutePath() + File.separator + "pom.xml");
+        var projectDescriptorBackup =
+                new File(getProjectOutputDirectory().getAbsolutePath() + File.separator + "pom.xml.bak");
+
         Document document;
 
         try {
+            Files.copy(projectDescriptor.toPath(), projectDescriptorBackup.toPath(), COPY_ATTRIBUTES, REPLACE_EXISTING);
             document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(projectDescriptor);
-        } catch (IOException | SAXException | ParserConfigurationException e) {
+
+            var xpath = XPathFactory.newInstance().newXPath();
+            var dependenciesNode = (Node)xpath
+                    .compile("/project/dependencies")
+                    .evaluate(document, XPathConstants.NODE);
+
+            for (Dependency dep : dependenciesToAdd) {
+                var dependencyFilterExpression =
+                        String.format(
+                                "/project/dependencies/dependency[./groupId[contains(.,\"%s\")] and ./artifactId[contains(.,\"%s\")]]",
+                                dep.getGroupId(),
+                                dep.getArtifactId());
+                if (((NodeList)xpath
+                        .compile(dependencyFilterExpression)
+                        .evaluate(document, XPathConstants.NODESET))
+                        .getLength() == 0) {
+                    dependenciesNode.appendChild(Dependency.createDependencyNode(dep, document));
+                }
+            }
+        } catch (IOException | SAXException | ParserConfigurationException | XPathExpressionException e) {
             getLog().error("Cannot edit project descriptor: " + projectDescriptor, e);
             throw new MojoFailureException("Cannot edit project descriptor: " + projectDescriptor, e);
         }
 
-        if (projectDescriptorEdited.exists() || !projectDescriptor.renameTo(projectDescriptorEdited)) {
-            getLog().error("Cannot rename project descriptor to: " + projectDescriptorEdited);
-            throw new MojoFailureException("Cannot rename project descriptor to: " + projectDescriptorEdited);
-        }
-
-        if (document.getElementsByTagName("dependencies") != null &&
-                document.getElementsByTagName("dependencies").getLength() > 0) {
-            var dependenciesNode = document.getElementsByTagName("dependencies").item(0);
-            var dependenciesToAdd = new HashSet<Dependency>();
-            dependenciesToAdd.add(Dependency.of(SPRING_BOOT_STARTER_WEB));
-            dependenciesToAdd.removeAll(
-                    project.getDependencies()
-                            .stream()
-                            .map(d -> Dependency.of(
-                                    d.getGroupId(),
-                                    d.getArtifactId(),
-                                    d.getVersion()))
-                            .collect(Collectors.toSet()));
-
-            dependenciesToAdd
-                    .stream()
-                    .map(d -> Dependency.createDependencyNode(d, document))
-                    .forEach(dependenciesNode::appendChild);
-
-            try (var outputStream = new FileOutputStream(projectDescriptor)) {
-                TransformerFactory transformerFactory = TransformerFactory.newInstance();
-                transformerFactory.setAttribute("indent-number", 4);
-                Transformer transformer = transformerFactory.newTransformer();
-                transformer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().toString());
-                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                DOMSource source = new DOMSource(document);
-                StreamResult result = new StreamResult(outputStream);
-                transformer.transform(source, result);
-            } catch (ClassCastException | IOException | TransformerException e) {
-                getLog().error("Cannot edit project descriptor: " + getProject().getFile(), e);
-                throw new MojoFailureException("Cannot edit project descriptor: " + getProject().getFile(), e);
-            }
-        } else {
-            throw new MojoFailureException("Invalid project descriptor: " + document);
+        try (var outputStream = new FileOutputStream(projectDescriptor)) {
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", 4);
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().toString());
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(outputStream);
+            transformer.transform(source, result);
+        } catch (ClassCastException | IOException | TransformerException e) {
+            getLog().error("Cannot edit project descriptor: " + getProject().getFile(), e);
+            throw new MojoFailureException("Cannot edit project descriptor: " + getProject().getFile(), e);
         }
     }
 
