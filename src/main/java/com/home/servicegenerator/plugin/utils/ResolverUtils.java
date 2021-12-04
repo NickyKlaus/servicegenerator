@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-public class ResolverUtils {
+public final class ResolverUtils {
     public static JavaSymbolSolver createJavaSymbolSolver(Path... paths) throws IOException {
         var solver = new CombinedTypeSolver(new ReflectionTypeSolver());
         for (var path : paths) {
@@ -40,8 +40,6 @@ public class ResolverUtils {
             final List<Name> availableModelsNames
     ) {
         Optional<Name> pipelineId = Optional.empty();
-
-        //TODO: resolve it using VoidVisitor
         for (Name seekingType : availableModelsNames) {
             pipelineId = resolve(pipeline.getType(), seekingType);
             if (pipelineId.isPresent()) {
@@ -76,4 +74,6 @@ public class ResolverUtils {
         }
         return _typeName;
     }
+
+    private ResolverUtils() { }
 }

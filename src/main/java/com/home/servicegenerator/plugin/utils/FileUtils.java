@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 
 import static org.apache.commons.io.FilenameUtils.normalizeNoEndSeparator;
 
-public class FileUtils {
+public final class FileUtils {
     public static Path createFilePath(
             final String projectBaseDir, final String sourceDir, final String basePackage, final String componentPackage, final String componentName
     ) {
@@ -26,4 +26,6 @@ public class FileUtils {
                         normalizeNoEndSeparator(StringUtils.replaceChars(basePackage, ".", File.separator)),
                         normalizeNoEndSeparator(StringUtils.replaceChars(componentPackage, ".", File.separator))));
     }
+
+    private FileUtils() { }
 }
