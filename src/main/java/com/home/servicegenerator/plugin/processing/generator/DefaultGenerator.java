@@ -1,11 +1,11 @@
-package com.home.servicegenerator.plugin.generator;
+package com.home.servicegenerator.plugin.processing.generator;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
-import com.home.servicegenerator.plugin.visitor.DefaultVisitor;
+import com.home.servicegenerator.plugin.processing.visitor.DefaultVisitor;
 
 /**
  * Generates special representation of all Abstract Syntax Tree nodes of implementation class using the base class as

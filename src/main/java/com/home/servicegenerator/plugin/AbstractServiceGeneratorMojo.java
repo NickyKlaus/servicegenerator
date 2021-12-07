@@ -1,6 +1,6 @@
 package com.home.servicegenerator.plugin;
 
-import com.home.servicegenerator.plugin.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;

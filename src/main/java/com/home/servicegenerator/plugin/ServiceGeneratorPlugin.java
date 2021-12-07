@@ -7,13 +7,14 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.utils.SourceRoot;
 import com.home.servicegenerator.api.ASTProcessingSchema;
-import com.home.servicegenerator.plugin.context.OuterSchemaContext;
-import com.home.servicegenerator.plugin.context.ProcessingContext;
-import com.home.servicegenerator.plugin.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.OuterSchemaContext;
+import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
+import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
 import com.home.servicegenerator.plugin.processing.descriptor.Dependency;
 import com.home.servicegenerator.plugin.processing.MatchMethodStrategy;
 import com.home.servicegenerator.plugin.processing.MatchWithRestEndpointMethod;
 import com.home.servicegenerator.plugin.processing.ProcessingStage;
+import com.home.servicegenerator.plugin.processing.registry.ProjectUnitsRegistry;
 import com.home.servicegenerator.plugin.utils.FileUtils;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
 import com.home.servicegenerator.plugin.utils.ResolverUtils;
@@ -191,6 +192,11 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                             .filter(hasAncestorWithRestEndpoint)
                             .collect(Collectors.toUnmodifiableList());
 
+            controllerUnits
+                    .stream()
+                    .filter(unit -> unit.getPrimaryTypeName().isPresent())
+                    .forEach(ProjectUnitsRegistry::register);
+
             // Models' compilation units
             var modelsUnits =
                     innerSourceRoot
@@ -203,6 +209,11 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                             .getNameAsString().equals(getBasePackage() + "." + getModelPackage()))
                             .filter(unit -> unit.getPrimaryType().isPresent())
                             .collect(Collectors.toUnmodifiableList());
+
+            modelsUnits
+                    .stream()
+                    .filter(unit -> unit.getPrimaryTypeName().isPresent())
+                    .forEach(ProjectUnitsRegistry::register);
 
             // Should be only one Spring application component
             var configurationUnit =
@@ -219,6 +230,8 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                             unit.getPrimaryType().get().isAnnotationPresent(SPRING_APPLICATION_ANNOTATION_NAME_SHORT)))
                             .findFirst()
                             .orElseThrow(() -> new MojoFailureException("Cannot find spring application class"));
+
+            ProjectUnitsRegistry.register(configurationUnit);
 
             // Model classes that have been found in the sources
             final List<Name> availableModelsNames = modelsUnits
@@ -598,9 +611,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().toString());
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            DOMSource source = new DOMSource(document);
-            StreamResult result = new StreamResult(outputStream);
-            transformer.transform(source, result);
+            transformer.transform(new DOMSource(document), new StreamResult(outputStream));
         } catch (ClassCastException | IOException | TransformerException e) {
             getLog().error("Cannot edit project descriptor: " + getProject().getFile(), e);
             throw new MojoFailureException("Cannot edit project descriptor: " + getProject().getFile(), e);
