@@ -46,6 +46,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -118,10 +119,12 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     }
 
     private void save(final CompilationUnit compilationUnit) throws MojoFailureException {
-        if (
-                compilationUnit.getPackageDeclaration().isPresent() &&
-                        compilationUnit.getPrimaryType().isPresent()
-        ) {
+        if (compilationUnit.getStorage().isEmpty() || Objects.isNull(compilationUnit.getStorage().get().getPath()) ||
+                !Files.exists(compilationUnit.getStorage().get().getPath())) {
+            getLog().error("Cannot save generated class " + compilationUnit + ". There is no target path.");
+            throw new MojoFailureException("Cannot save generated class " + compilationUnit + ". There is no target path.");
+        }
+        if (compilationUnit.getPackageDeclaration().isPresent() && compilationUnit.getPrimaryType().isPresent()) {
             compilationUnit
                     .getStorage()
                     .orElseThrow(() -> new MojoFailureException("Cannot write generated class " + compilationUnit))
@@ -130,11 +133,22 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     }
 
     private void save(CompilationUnit targetCompilationUnit, Path targetLocation) throws MojoFailureException {
-        targetCompilationUnit
-                .setStorage(targetLocation, Charset.defaultCharset())
-                .getStorage()
-                .orElseThrow(() -> new MojoFailureException("Cannot write generated class into " + targetLocation))
-                .save();
+        var targetCharset =
+                targetCompilationUnit.getStorage().isPresent() ?
+                        targetCompilationUnit.getStorage().get().getEncoding() :
+                        Charset.defaultCharset();
+        try {
+            var targetPath = Files.writeString(
+                    targetLocation,
+                    targetCompilationUnit.toString(),
+                    targetCharset,
+                    StandardOpenOption.CREATE);
+            targetCompilationUnit.setStorage(targetLocation, targetCharset);
+            getLog().info("Save generated class into " + targetPath);
+        } catch (IOException e) {
+            getLog().error("Cannot write generated class into " + targetLocation.getFileName(), e);
+            throw new MojoFailureException("Cannot write generated class into " + targetLocation.getFileName(), e);
+        }
     }
 
     private void executeInnerTransformations() throws MojoFailureException {
@@ -482,26 +496,57 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     }
 
     private void executeOuterTransformations() throws MojoFailureException {
-        final List<Transformation> classTransformations = getTransformations();
+        var classTransformations = getTransformations();
         if (!classTransformations.isEmpty()) {
-            for (final Transformation transformation : classTransformations) {
-                var baseClassPath =
-                        StringUtils.isBlank(transformation.getSourceClassName()) ?
-                                Optional.<Path>empty() :
-                                Optional.of(
-                                        createFilePath(
-                                                getProjectBaseDirectory(),
-                                                getSourcesDirectory().toString(),
-                                                "",
-                                                transformation.getSourceClassPackage(),
-                                                transformation.getSourceClassName()));
-                var targetClassPath =
-                        createFilePath(
-                                getProjectOutputDirectory().toString(),
-                                getSourcesDirectory().toString(),
-                                "",
-                                transformation.getTargetClassPackage(),
-                                transformation.getTargetClassName());
+            for (var transformation : classTransformations) {
+                var sourceClassPath = Optional.<Path>empty();
+                var targetClassPath = Optional.<Path>empty();
+
+                if (StringUtils.isNoneEmpty(transformation.getSourceClassPackage()) &&
+                        StringUtils.isNoneEmpty(transformation.getSourceClassName())) {
+                    sourceClassPath =
+                            Optional.of(
+                                    createFilePath(
+                                            StringUtils.isEmpty(transformation.getSourceDirectory()) ?
+                                                    getProjectBaseDirectory() :
+                                                    transformation.getSourceDirectory(),
+                                            StringUtils.isEmpty(transformation.getSourceDirectory()) ?
+                                                    getSourcesDirectory().toString() :
+                                                    "",
+                                            "",
+                                            transformation.getSourceClassPackage(),
+                                            transformation.getSourceClassName()));
+                }
+
+                if (sourceClassPath.isPresent()) {
+                    if (transformation.getSourceClassPackage().equals(transformation.getTargetClassPackage()) &&
+                            transformation.getSourceClassName().equals(transformation.getTargetClassName())) {
+                        targetClassPath = sourceClassPath;
+                    } else {
+                        targetClassPath = Optional.of(
+                                createFilePath(
+                                        getProjectOutputDirectory().toString(),
+                                        getSourcesDirectory().toString(),
+                                        "",
+                                        transformation.getTargetClassPackage(),
+                                        transformation.getTargetClassName()));
+                    }
+                } else if (StringUtils.isNoneEmpty(transformation.getTargetClassPackage()) &&
+                        StringUtils.isNoneEmpty(transformation.getTargetClassName())) {
+                    targetClassPath = Optional.of(
+                            createFilePath(
+                                    StringUtils.isEmpty(transformation.getTargetDirectory()) ?
+                                            getProjectOutputDirectory().toString() :
+                                            transformation.getTargetDirectory(),
+                                    StringUtils.isEmpty(transformation.getTargetDirectory()) ?
+                                            getSourcesDirectory().toString() :
+                                            "",
+                                    "",
+                                    transformation.getTargetClassPackage(),
+                                    transformation.getTargetClassName()));
+                } else {
+                    throw new MojoFailureException("Cannot find target path for generated classes");
+                }
 
                 try {
                     var processingSchemaInstance = URLClassLoader.newInstance(
@@ -512,7 +557,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
 
                     if (processingSchemaInstance instanceof ASTProcessingSchema) {
                         var baseUnit =
-                                baseClassPath.isPresent() ? parse(baseClassPath.get()).clone() : new CompilationUnit();
+                                sourceClassPath.isPresent() ? parse(sourceClassPath.get()).clone() : new CompilationUnit();
                         var processedUnit = ProcessingStage.PROCESS_OUTER_SCHEMA
                                 .setCompilationUnit(baseUnit)
                                 .setSchema((ASTProcessingSchema)processingSchemaInstance)
@@ -525,7 +570,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                         TransformationProperty::getValue,
                                                         (s, a) -> s))))
                                 .process();
-                        save(processedUnit, targetClassPath);
+                        save(processedUnit, targetClassPath.get());
                         getLog().info(
                                 String.format("Processed schema: %s",
                                         String.join(
@@ -533,7 +578,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                 transformation.getProcessingSchemaLocation().toString(),
                                                 transformation.getProcessingSchemaClass())) +
                                         "\nBase class: " +
-                                        baseClassPath +
+                                        sourceClassPath +
                                         "\nTarget class: " +
                                         targetClassPath
                         );
@@ -542,8 +587,8 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                     }
                 } catch (IOException | ClassNotFoundException | ClassCastException | NoSuchMethodException | InstantiationException |
                         IllegalAccessException | InvocationTargetException e) {
-                    getLog().error("Cannot create generated class into " + targetClassPath, e);
-                    throw new MojoFailureException("Cannot create generated class into " + targetClassPath, e);
+                    getLog().error("Cannot create generated class into " + targetClassPath.get(), e);
+                    throw new MojoFailureException("Cannot create generated class into " + targetClassPath.get(), e);
                 }
             }
         }
@@ -553,7 +598,12 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
         var DEP_SPRING_BOOT_STARTER_WEB = "org.springframework.boot:spring-boot-starter-web:2.5.3";
         var DEP_GUAVA = "com.google.guava:guava:31.0.1-jre";
 
-        var dependenciesToAdd = new HashSet<Dependency>();
+        var dependenciesToAdd =
+                getTransformations()
+                        .stream()
+                        .flatMap(t -> t.getDependencies().stream())
+                        .map(d -> new Dependency(d.getGroupId(), d.getArtifactId(), d.getVersion()))
+                        .collect(Collectors.toSet());
         dependenciesToAdd.add(Dependency.of(DEP_SPRING_BOOT_STARTER_WEB));
         dependenciesToAdd.add(Dependency.of(DEP_GUAVA));
         dependenciesToAdd.add(Dependency.of(getDbType().dependencyDescriptor()));
@@ -610,7 +660,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     @Override
     public void execute() throws MojoFailureException {
         executeInnerTransformations();
-        prepareProjectDescriptor();
         executeOuterTransformations();
+        prepareProjectDescriptor();
     }
 }

@@ -11,7 +11,7 @@ public class Dependency {
     private final String artifactId;
     private String version;
 
-    private Dependency(String groupId, String artifactId, String version) {
+    public Dependency(String groupId, String artifactId, String version) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;

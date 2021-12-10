@@ -41,7 +41,7 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
     /**
      * Location of the output directory.
      */
-    @Parameter(defaultValue = "${project.build.directory}/target/generated-sources/swagger")
+    @Parameter(name = "projectOutputDirectory", defaultValue = "${project.build.directory}/target/generated-sources/swagger")
     private File projectOutputDirectory;
 
     /**
