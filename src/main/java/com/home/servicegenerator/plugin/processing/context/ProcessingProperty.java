@@ -1,4 +1,4 @@
-package com.home.servicegenerator.plugin.context;
+package com.home.servicegenerator.plugin.processing.context;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ImportDeclaration;

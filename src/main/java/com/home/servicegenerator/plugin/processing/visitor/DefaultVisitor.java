@@ -1,4 +1,4 @@
-package com.home.servicegenerator.plugin.visitor;
+package com.home.servicegenerator.plugin.processing.visitor;
 
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.CompilationUnit;

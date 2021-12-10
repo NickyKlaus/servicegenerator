@@ -12,21 +12,21 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
-import com.home.servicegenerator.plugin.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.ABSTRACT_SERVICE_METHOD_DECLARATION;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.ABSTRACT_SERVICE_NAME;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.ABSTRACT_SERVICE_PACKAGE_NAME;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.DB_TYPE;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_ID_CLASS_NAME;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_METHOD_DECLARATION;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_NAME;
-import static com.home.servicegenerator.plugin.context.ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME;
+import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.ABSTRACT_SERVICE_METHOD_DECLARATION;
+import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.ABSTRACT_SERVICE_NAME;
+import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.ABSTRACT_SERVICE_PACKAGE_NAME;
+import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.DB_TYPE;
+import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.REPOSITORY_ID_CLASS_NAME;
+import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.REPOSITORY_METHOD_DECLARATION;
+import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.REPOSITORY_NAME;
+import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME;
 import static java.lang.String.format;
 
 public enum InnerProcessingSchema implements ASTProcessingSchema {

@@ -3,7 +3,7 @@ package com.home.servicegenerator.plugin.processing;
 import com.github.javaparser.ast.CompilationUnit;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
-import com.home.servicegenerator.plugin.generator.DefaultGenerator;
+import com.home.servicegenerator.plugin.processing.generator.DefaultGenerator;
 
 import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.AddControllerMethodImplementation;
 import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.AddRepositoryMethod;
