@@ -6,7 +6,7 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
 
-public class MethodNormalizer extends ModifierVisitor<String> {
+public final class MethodNormalizer extends ModifierVisitor<String> {
     private final String pipelineIdReplacingSymbol;
 
     public MethodNormalizer(String pipelineIdReplacingSymbol) {

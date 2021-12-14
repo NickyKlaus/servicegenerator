@@ -14,7 +14,6 @@ import com.home.servicegenerator.plugin.processing.descriptor.Dependency;
 import com.home.servicegenerator.plugin.processing.MatchMethodStrategy;
 import com.home.servicegenerator.plugin.processing.MatchWithRestEndpointMethod;
 import com.home.servicegenerator.plugin.processing.ProcessingStage;
-import com.home.servicegenerator.plugin.processing.registry.ProjectUnitsRegistry;
 import com.home.servicegenerator.plugin.utils.FileUtils;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
 import com.home.servicegenerator.plugin.utils.ResolverUtils;
@@ -206,11 +205,6 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                             .filter(hasAncestorWithRestEndpoint)
                             .collect(Collectors.toUnmodifiableList());
 
-            controllerUnits
-                    .stream()
-                    .filter(unit -> unit.getPrimaryTypeName().isPresent())
-                    .forEach(ProjectUnitsRegistry::register);
-
             // Models' compilation units
             var modelsUnits =
                     innerSourceRoot
@@ -223,11 +217,6 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                             .getNameAsString().equals(getBasePackage() + "." + getModelPackage()))
                             .filter(unit -> unit.getPrimaryType().isPresent())
                             .collect(Collectors.toUnmodifiableList());
-
-            modelsUnits
-                    .stream()
-                    .filter(unit -> unit.getPrimaryTypeName().isPresent())
-                    .forEach(ProjectUnitsRegistry::register);
 
             // Should be only one Spring application component
             var configurationUnit =
@@ -244,8 +233,6 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                             unit.getPrimaryType().get().isAnnotationPresent(SPRING_APPLICATION_ANNOTATION_NAME_SHORT)))
                             .findFirst()
                             .orElseThrow(() -> new MojoFailureException("Cannot find spring application class"));
-
-            ProjectUnitsRegistry.register(configurationUnit);
 
             // Model classes that have been found in the sources
             final List<Name> availableModelsNames = modelsUnits
@@ -593,8 +580,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                         "\nBase class: " +
                                         sourceClassPath +
                                         "\nTarget class: " +
-                                        targetClassPath
-                        );
+                                        targetClassPath);
                     } else {
                         throw new MojoFailureException("Invalid processing schema found: " + processingSchemaInstance);
                     }
@@ -608,8 +594,8 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     }
 
     private void prepareProjectDescriptor() throws MojoFailureException {
-        var DEP_SPRING_BOOT_STARTER_WEB = "org.springframework.boot:spring-boot-starter-web:2.5.3";
-        var DEP_GUAVA = "com.google.guava:guava:31.0.1-jre";
+        var DEP_SPRING_BOOT_STARTER_WEB = "org.springframework.boot:spring-boot-starter-web";
+        var DEP_GUAVA = "com.google.guava:guava";
 
         var dependenciesToAdd =
                 getTransformations()

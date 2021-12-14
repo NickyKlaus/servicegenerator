@@ -4,7 +4,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
 
-public class ClassOrInterfaceTypeNormalizer extends ModifierVisitor<String> {
+public final class ClassOrInterfaceTypeNormalizer extends ModifierVisitor<String> {
     private final String pipelineIdReplacingSymbol;
 
     public ClassOrInterfaceTypeNormalizer(String pipelineIdReplacingSymbol) {

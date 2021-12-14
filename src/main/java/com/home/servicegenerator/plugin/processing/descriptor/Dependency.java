@@ -43,7 +43,7 @@ public class Dependency {
 
     public static Dependency of(String description) {
         Objects.requireNonNull(description, "Dependency descriptor must not be null");
-        if (!description.contains(":") || StringUtils.countMatches(description, ":") < 2 ||
+        if (!description.contains(":") || StringUtils.split(description, ":").length < 2 ||
                 StringUtils.isEmpty(StringUtils.split(description, ":")[0]) ||
                 StringUtils.isEmpty(StringUtils.split(description, ":")[1])) {
             throw new IllegalArgumentException("Dependency descriptor must contain at least non empty groupId and artifactId separated by a colon");
