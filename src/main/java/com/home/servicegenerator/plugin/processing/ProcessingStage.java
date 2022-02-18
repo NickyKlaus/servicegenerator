@@ -3,17 +3,19 @@ package com.home.servicegenerator.plugin.processing;
 import com.github.javaparser.ast.CompilationUnit;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
-import com.home.servicegenerator.plugin.processing.generator.DefaultGenerator;
+import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
+import com.home.servicegenerator.plugin.processing.injection.ConstantBasedDataInjectionStrategy;
+import com.home.servicegenerator.plugin.processing.injection.DataInjectionStrategy;
 
-import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.AddControllerMethodImplementation;
-import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.AddRepositoryMethod;
-import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.AddServiceAbstractMethod;
-import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.AddServiceMethodImplementation;
-import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.CreateAbstractService;
-import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.CreateRepository;
-import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.CreateServiceImplementation;
-import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.EditConfiguration;
-import static com.home.servicegenerator.plugin.processing.schemas.InnerProcessingSchema.InjectServiceIntoController;
+import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.AddControllerMethodImplementation;
+import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.AddRepositoryMethod;
+import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.AddServiceAbstractMethod;
+import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.AddServiceMethodImplementation;
+import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.CreateAbstractService;
+import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.CreateRepository;
+import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.CreateServiceImplementation;
+import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.EditConfiguration;
+import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.InjectServiceIntoController;
 
 public enum ProcessingStage implements Processable {
 
@@ -79,10 +81,10 @@ public enum ProcessingStage implements Processable {
 
     //Trivial. No changes expected.
     ADD_REPOSITORY_METHOD {
-        @Override
+        /*@Override
         public CompilationUnit process() {
             return getCompilationUnit();
-        }
+        }*/
 
         @Override
         public ProcessingStage setSchema(ASTProcessingSchema schema) {
@@ -139,6 +141,7 @@ public enum ProcessingStage implements Processable {
     private ASTProcessingSchema schema;
     private Context context;
     private CompilationUnit compilationUnit;
+    private Class<? extends DataInjectionStrategy> dataInjectionStrategy = ConstantBasedDataInjectionStrategy.class;
 
     public ProcessingStage setSchema(ASTProcessingSchema schema) {
         this.schema = schema;
@@ -155,6 +158,10 @@ public enum ProcessingStage implements Processable {
         return this;
     }
 
+    public void setDataInjectionStrategy(Class<? extends DataInjectionStrategy> dataInjectionStrategy) {
+        this.dataInjectionStrategy = dataInjectionStrategy;
+    }
+
     public ASTProcessingSchema getSchema() {
         return schema;
     }
@@ -165,6 +172,10 @@ public enum ProcessingStage implements Processable {
 
     public CompilationUnit getCompilationUnit() {
         return compilationUnit;
+    }
+
+    public Class<? extends DataInjectionStrategy> getDataInjectionStrategy() {
+        return dataInjectionStrategy;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.home.servicegenerator.plugin.processing;
+package com.home.servicegenerator.plugin.processing.processor;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 
 import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL;
 
-public class MatchWithRestEndpointMethod implements MatchMethodStrategy {
+public class MatchWithRestEndpointMethodStrategy implements MatchingMethodStrategy {
     private Optional<MethodDeclaration> _getMatched(
             MethodDeclaration pipeline, MethodDeclaration checkedMethod, String pipelineId
     ) {

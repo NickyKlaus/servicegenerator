@@ -10,9 +10,8 @@ import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.plugin.processing.context.OuterSchemaContext;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
 import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
-import com.home.servicegenerator.plugin.processing.descriptor.Dependency;
-import com.home.servicegenerator.plugin.processing.MatchMethodStrategy;
-import com.home.servicegenerator.plugin.processing.MatchWithRestEndpointMethod;
+import com.home.servicegenerator.plugin.processing.processor.MatchingMethodStrategy;
+import com.home.servicegenerator.plugin.processing.processor.MatchWithRestEndpointMethodStrategy;
 import com.home.servicegenerator.plugin.processing.ProcessingStage;
 import com.home.servicegenerator.plugin.processing.registry.ProjectUnitsRegistry;
 import com.home.servicegenerator.plugin.utils.FileUtils;
@@ -49,6 +48,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -74,6 +74,8 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     private static final String SPRING_APPLICATION_ANNOTATION_NAME_FULL =
             "org.springframework.boot.autoconfigure.SpringBootApplication";
     private static final String SPRING_APPLICATION_ANNOTATION_NAME_SHORT = "SpringBootApplication";
+    private static final String POM_XML = "pom.xml";
+    private static final String POM_XML_BACKUP = "pom.xml.bak";
 
     private static final Predicate<ClassOrInterfaceDeclaration> isRestController =
             c -> c.isAnnotationPresent(SPRING_REST_CONTROLLER_ANNOTATION_NAME_FULL) ||
@@ -83,7 +85,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
             method -> method.isAnnotationPresent(SPRING_REQUEST_MAPPING_ANNOTATION_NAME_FULL) ||
                     method.isAnnotationPresent(SPRING_REQUEST_MAPPING_ANNOTATION_NAME_SHORT);
 
-    private static final Predicate<CompilationUnit> hasAncestorWithRestEndpoint = (cu) ->
+    private static final Predicate<CompilationUnit> hasAncestorWithRestEndpoint = cu ->
         cu.findAll(ClassOrInterfaceDeclaration.class, isRestController)
                 .stream()
                 .flatMap(c -> c.getImplementedTypes().stream())
@@ -104,15 +106,17 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                     return false;
                 });
 
+    private final static Function<Path, CompilationUnit> emptyUnit = path -> new CompilationUnit().setStorage(path);
+
     private static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
             final MethodDeclaration pipeline,
             final List<MethodDeclaration> checkedMethods,
             final Name pipelineId,
-            final MatchMethodStrategy checkingMethodStrategy
+            final MatchingMethodStrategy matchMethodStrategy
     ) {
         return checkedMethods
                 .stream()
-                .filter(checkedMethod -> checkingMethodStrategy
+                .filter(checkedMethod -> matchMethodStrategy
                         .matchMethods(pipelineId.getIdentifier())
                         .test(pipeline, checkedMethod))
                 .map(m -> MethodNormalizer.denormalize(m, pipelineId.getIdentifier(), REPLACING_MODEL_TYPE_SYMBOL))
@@ -133,6 +137,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
         }
     }
 
+    //TODO: unify saving procedure for inner/outer schemas (rewrite/create)
     private void save(CompilationUnit targetCompilationUnit, Path targetLocation) throws MojoFailureException {
         var targetCharset =
                 targetCompilationUnit.getStorage().isPresent() ?
@@ -144,7 +149,11 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                     targetCompilationUnit.toString(),
                     targetCharset,
                     StandardOpenOption.CREATE);
-            targetCompilationUnit.setStorage(targetLocation, targetCharset);
+            targetCompilationUnit
+                    .setStorage(targetLocation, targetCharset)
+                    .getStorage()
+                    .orElseThrow(() -> new MojoFailureException("Cannot write generated class into " + targetLocation.getFileName()))
+                    .save();
             getLog().info("Save generated class into " + targetPath);
         } catch (IOException e) {
             getLog().error("Cannot write generated class into " + targetLocation.getFileName(), e);
@@ -248,15 +257,18 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
             ProjectUnitsRegistry.register(configurationUnit);
 
             // Model classes that have been found in the sources
-            final List<Name> availableModelsNames = modelsUnits
-                    .stream()
-                    .map(CompilationUnit::getPrimaryType)
-                    .filter(Optional::isPresent)
-                    .map(t -> new Name()
-                            .setQualifier(new Name(getBasePackage() + "." + getModelPackage()))
-                            .setIdentifier(t.get().getName().getIdentifier()))
-                    .collect(Collectors.toUnmodifiableList());
+            //TODO: move to units registry
+            final List<Name> availableModelsNames =
+                    modelsUnits
+                            .stream()
+                            .map(CompilationUnit::getPrimaryType)
+                            .filter(Optional::isPresent)
+                            .map(t -> new Name()
+                                    .setQualifier(new Name(getBasePackage() + "." + getModelPackage()))
+                                    .setIdentifier(t.get().getName().getIdentifier()))
+                            .collect(Collectors.toUnmodifiableList());
 
+            //TODO: move to units registry
             // Global index of inner generated repositories
             var _indexPipelineIdToRepositoryUnit = new HashMap<String, CompilationUnit>();
             // Global index of inner generated abstract services
@@ -294,13 +306,21 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                     var pipelineIdResolveResult =
                             ResolverUtils.lookupPipelineId(pipeline, availableModelsNames);
                     if (pipelineIdResolveResult.isPresent()) {
-                        // Fully qualified name of the available model class that pipeline deals with
+                        // A fully qualified name of an available model class that the pipeline deals with
                         var pipelineId = pipelineIdResolveResult.get();
 
                         // 1. Create repository phase
+                        //TODO: init, lookup, save -> by internal component
                         if (!_indexPipelineIdToRepositoryUnit.containsKey(pipelineId.toString())) {
                             var repositoryUnit = ProcessingStage.CREATE_REPOSITORY
-                                    .setCompilationUnit(new CompilationUnit())
+                                    .setCompilationUnit(
+                                            emptyUnit.apply(
+                                                    createFilePath(
+                                                            getProjectOutputDirectory().toString(),
+                                                            getSourcesDirectory().toString(),
+                                                            getBasePackage(),
+                                                            "repository",
+                                                            pipelineId.getIdentifier() + "Repository")))
                                     .setContext(
                                             new ProcessingContext(
                                                     pipelineId,
@@ -315,13 +335,8 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                             Map.entry(ProcessingProperty.Name.REPOSITORY_ID_CLASS_NAME,
                                                                     Long.class.getSimpleName()))))
                                     .process();
-                            save(repositoryUnit,
-                                    createFilePath(
-                                            getProjectOutputDirectory().toString(),
-                                            getSourcesDirectory().toString(),
-                                            getBasePackage(),
-                                    "repository",
-                                            pipelineId.getIdentifier() + "Repository"));
+                            save(repositoryUnit);
+                            //TODO: add to save operation
                             _indexPipelineIdToRepositoryUnit.put(pipelineId.toString(), repositoryUnit);
                         }
 
@@ -410,7 +425,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                             pipeline,
                                             storageType.getRepositoryImplementationMethodDeclarations(),
                                             pipelineId,
-                                            new MatchWithRestEndpointMethod());
+                                            new MatchWithRestEndpointMethodStrategy());
 
                             if (abstractServiceMethodDeclaration.isPresent()) {
                                 var abstractServiceUnit = ProcessingStage.ADD_SERVICE_ABSTRACT_METHOD
@@ -622,9 +637,9 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
         dependenciesToAdd.add(Dependency.of(getDbType().dependencyDescriptor()));
 
         var projectDescriptor =
-                new File(getProjectOutputDirectory().getAbsolutePath() + File.separator + "pom.xml");
+                new File(getProjectOutputDirectory().getAbsolutePath() + File.separator + POM_XML);
         var projectDescriptorBackup =
-                new File(getProjectOutputDirectory().getAbsolutePath() + File.separator + "pom.xml.bak");
+                new File(getProjectOutputDirectory().getAbsolutePath() + System.currentTimeMillis() + File.separator + POM_XML_BACKUP);
 
         Document document;
 
@@ -654,6 +669,10 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
             getLog().error("Cannot edit project descriptor: " + projectDescriptor, e);
             throw new MojoFailureException("Cannot edit project descriptor: " + projectDescriptor, e);
         }
+
+        getProject().getDependencies().stream()
+                .filter(d -> d.getGroupId().contains("log4j") || d.getArtifactId().contains("log4j"))
+                .forEach(d -> System.out.println("!!!log4j:"+d));
 
         try (var outputStream = new FileOutputStream(projectDescriptor)) {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();

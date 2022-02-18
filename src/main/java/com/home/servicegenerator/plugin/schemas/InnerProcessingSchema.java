@@ -1,4 +1,4 @@
-package com.home.servicegenerator.plugin.processing.schemas;
+package com.home.servicegenerator.plugin.schemas;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;

@@ -1,4 +1,4 @@
-package com.home.servicegenerator.plugin.processing.descriptor;
+package com.home.servicegenerator.plugin;
 
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
