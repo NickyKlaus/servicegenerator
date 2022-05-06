@@ -14,7 +14,7 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -66,9 +66,9 @@ public class InjectServiceIntoControllerSchemaTest {
                         modelClassName,
                         null,
                         Map.ofEntries(
-                                Map.entry(ProcessingProperty.Name.ABSTRACT_SERVICE_PACKAGE_NAME,
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
                                         ABSTRACT_SERVICE_PACKAGE_NAME),
-                                Map.entry(ProcessingProperty.Name.ABSTRACT_SERVICE_NAME,
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
                                         ABSTRACT_SERVICE_NAME)
                         ));
         final Generator generator =

@@ -5,8 +5,9 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
+import com.home.servicegenerator.plugin.processing.context.properties.DbType;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -23,7 +24,7 @@ public class CreateAbstractServiceSchemaTest {
                     .setIdentifier(TestModel.class.getSimpleName());
     private static final String SERVICE_PACKAGE_NAME = "com.home.service";
     private static final String SERVICE_NAME = "TestService";
-    private static final ProcessingProperty.DbType DB_TYPE = ProcessingProperty.DbType.mongo;
+    private static final DbType DB_TYPE = DbType.mongo;
     private static CompilationUnit serviceClassUnit;
 
     @BeforeAll
@@ -39,9 +40,9 @@ public class CreateAbstractServiceSchemaTest {
                         modelClassName,
                         controllerMethodDeclaration,
                         Map.ofEntries(
-                                Map.entry(ProcessingProperty.Name.ABSTRACT_SERVICE_PACKAGE_NAME, SERVICE_PACKAGE_NAME),
-                                Map.entry(ProcessingProperty.Name.ABSTRACT_SERVICE_NAME, SERVICE_NAME),
-                                Map.entry(ProcessingProperty.Name.DB_TYPE, DB_TYPE)));
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME, SERVICE_PACKAGE_NAME),
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME, SERVICE_NAME),
+                                Map.entry(PropertyName.DB_TYPE, DB_TYPE)));
         serviceClassUnit = (CompilationUnit) generator.generate(new CompilationUnit(), context);
     }
 

@@ -7,8 +7,9 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
+import com.home.servicegenerator.plugin.processing.context.properties.DbType;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class CreateRepositorySchemaTest {
     private static final String SPRING_REPOSITORY = "org.springframework.stereotype.Repository";
-    private static final ProcessingProperty.DbType DB_NAME = ProcessingProperty.DbType.mongo;
+    private static final DbType DB_NAME = DbType.mongo;
     private static final String SPRING_DATA_CRUD_REPOSITORY = DB_NAME.getCrudRepositoryInterfaceName();
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";
     private static final String REPOSITORY_NAME = "TestRepository";
@@ -49,10 +50,10 @@ public class CreateRepositorySchemaTest {
                         modelClassName,
                         controllerMethodDeclaration,
                         Map.ofEntries(
-                                Map.entry(ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME, REPOSITORY_PACKAGE_NAME),
-                                Map.entry(ProcessingProperty.Name.REPOSITORY_NAME, REPOSITORY_NAME),
-                                Map.entry(ProcessingProperty.Name.REPOSITORY_ID_CLASS_NAME, REPOSITORY_ID_CLASS),
-                                Map.entry(ProcessingProperty.Name.DB_TYPE, DB_NAME)
+                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME, REPOSITORY_PACKAGE_NAME),
+                                Map.entry(PropertyName.REPOSITORY_NAME, REPOSITORY_NAME),
+                                Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME, REPOSITORY_ID_CLASS),
+                                Map.entry(PropertyName.DB_TYPE, DB_NAME)
                         ));
         repositoryClassUnit = (CompilationUnit) generator.generate(new CompilationUnit(), context);
     }

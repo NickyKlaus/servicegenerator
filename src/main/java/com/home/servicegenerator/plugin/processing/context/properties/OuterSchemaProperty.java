@@ -1,4 +1,4 @@
-package com.home.servicegenerator.plugin.processing.context;
+package com.home.servicegenerator.plugin.processing.context.properties;
 
 import com.home.servicegenerator.api.context.Property;
 

@@ -17,7 +17,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -100,8 +100,8 @@ public class AddControllerMethodImplementationSchemaTest {
                         modelClassName,
                         controllerMethodDeclaration,
                         Map.ofEntries(
-                                Map.entry(ProcessingProperty.Name.ABSTRACT_SERVICE_NAME, ABSTRACT_SERVICE_NAME),
-                                Map.entry(ProcessingProperty.Name.ABSTRACT_SERVICE_METHOD_DECLARATION, serviceMethodDeclaration)));
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME, ABSTRACT_SERVICE_NAME),
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION, serviceMethodDeclaration)));
         final Generator generator =
                 DefaultGenerator.builder()
                         .processingSchema(InnerProcessingSchema.AddControllerMethodImplementation)

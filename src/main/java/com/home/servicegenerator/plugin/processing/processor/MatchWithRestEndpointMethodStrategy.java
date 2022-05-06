@@ -11,6 +11,12 @@ import java.util.stream.IntStream;
 import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL;
 
 public class MatchWithRestEndpointMethodStrategy implements MatchingMethodStrategy {
+    @Override
+    public BiPredicate<MethodDeclaration, MethodDeclaration> matchMethods(final String pipelineId) {
+        return (MethodDeclaration pipeline, MethodDeclaration checkedMethod) ->
+            _getMatched(pipeline, checkedMethod, pipelineId).isPresent();
+    }
+
     private Optional<MethodDeclaration> _getMatched(
             MethodDeclaration pipeline, MethodDeclaration checkedMethod, String pipelineId
     ) {
@@ -20,23 +26,12 @@ public class MatchWithRestEndpointMethodStrategy implements MatchingMethodStrate
         var pipelineParameters = normalPipeline.getParameters();
         var checkedMethodReturnType = normalCheckedMethod.getType();
         var checkedMethodParameters = normalCheckedMethod.getParameters();
-
-        if (
-                checkedMethodReturnType.equals(pipelineReturnType) &&
-                        checkedMethodParameters.size() == pipelineParameters.size() &&
-                        IntStream.range(0, checkedMethodParameters.size())
-                                .mapToObj(i -> ImmutablePair.of(
-                                        pipelineParameters.get(i).getType(), checkedMethodParameters.get(i).getType()))
-                                .allMatch(pair -> pair.getLeft().equals(pair.getRight()))
-        ) {
-            return Optional.of(checkedMethod);
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public BiPredicate<MethodDeclaration, MethodDeclaration> matchMethods(final String pipelineId) {
-        return (MethodDeclaration pipeline, MethodDeclaration checkedMethod) ->
-            _getMatched(pipeline, checkedMethod, pipelineId).isPresent();
+        var isMatched = checkedMethodReturnType.equals(pipelineReturnType) &&
+                checkedMethodParameters.size() == pipelineParameters.size() &&
+                IntStream.range(0, checkedMethodParameters.size())
+                        .mapToObj(i -> ImmutablePair.of(
+                                pipelineParameters.get(i).getType(), checkedMethodParameters.get(i).getType()))
+                        .allMatch(pair -> pair.getLeft().equals(pair.getRight()));
+        return isMatched ? Optional.of(checkedMethod) : Optional.empty();
     }
 }

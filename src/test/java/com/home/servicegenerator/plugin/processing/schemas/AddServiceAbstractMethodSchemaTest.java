@@ -9,7 +9,7 @@ import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -60,7 +60,7 @@ public class AddServiceAbstractMethodSchemaTest {
                             abstractServiceMethodDeclaration,
                             Map.ofEntries(
                                     Map.entry(
-                                            ProcessingProperty.Name.ABSTRACT_SERVICE_METHOD_DECLARATION,
+                                            PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
                                             abstractServiceMethodDeclaration)));
             final Generator generator =
                     DefaultGenerator

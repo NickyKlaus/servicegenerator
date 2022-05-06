@@ -13,8 +13,9 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
+import com.home.servicegenerator.plugin.processing.context.properties.DbType;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.apache.commons.lang3.StringUtils;
@@ -51,12 +52,12 @@ public class EditConfigurationSchemaTest {
             "    }",
             "}");
 
-    private static final Map<ProcessingProperty.DbType, AnnotationExpr> annotationMap =
-            new EnumMap<>(ProcessingProperty.DbType.class);
+    private static final Map<DbType, AnnotationExpr> annotationMap =
+            new EnumMap<>(DbType.class);
 
     static {
         annotationMap.put(
-                ProcessingProperty.DbType.mongo,
+                DbType.mongo,
                 new NormalAnnotationExpr(
                         new Name(SPRING_DATA_MONGO),
                         NodeList.nodeList(
@@ -68,7 +69,7 @@ public class EditConfigurationSchemaTest {
                                                         .map(StringLiteralExpr::new)
                                                         .collect(NodeList.toNodeList()))))));
         annotationMap.put(
-                ProcessingProperty.DbType.cassandra,
+                DbType.cassandra,
                 new NormalAnnotationExpr(
                         new Name(SPRING_DATA_CASSANDRA),
                         NodeList.nodeList(
@@ -102,14 +103,14 @@ public class EditConfigurationSchemaTest {
         }
     }
 
-    private CompilationUnit generate(ProcessingProperty.DbType storageType) {
+    private CompilationUnit generate(DbType storageType) {
         final Context context =
                 new ProcessingContext(
                         modelClassName,
                         null,
                         Map.ofEntries(
-                                Map.entry(ProcessingProperty.Name.DB_TYPE, storageType),
-                                Map.entry(ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME, REPOSITORY_PACKAGE_NAME)
+                                Map.entry(PropertyName.DB_TYPE, storageType),
+                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME, REPOSITORY_PACKAGE_NAME)
                         ));
 
         final Generator generator =
@@ -123,8 +124,8 @@ public class EditConfigurationSchemaTest {
 
     @ParameterizedTest(name = "Test for Spring Data annotation for {0} into configuration")
     @DisplayName("😎")
-    @EnumSource(value = ProcessingProperty.DbType.class)
-    void testAddSpringDataAnnotationsForDbIntoConfiguration(ProcessingProperty.DbType storageType) {
+    @EnumSource(value = DbType.class)
+    void testAddSpringDataAnnotationsForDbIntoConfiguration(DbType storageType) {
         var configurationUnitAfterEditing = generate(storageType);
         Assertions.assertEquals(
                 1,
@@ -166,7 +167,7 @@ public class EditConfigurationSchemaTest {
     @ParameterizedTest(name = "Test for Spring Data annotation if no required db type had been set")
     @DisplayName("😎")
     @NullSource
-    void configuringRepositoriesProcedureShouldBeFailedIfNoRequiredDbTypeHadBeenSet(ProcessingProperty.DbType storageType) {
+    void configuringRepositoriesProcedureShouldBeFailedIfNoRequiredDbTypeHadBeenSet(DbType storageType) {
         Assertions.assertThrows(
                 NullPointerException.class,
                 () -> generate(storageType),

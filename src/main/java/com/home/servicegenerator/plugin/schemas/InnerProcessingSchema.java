@@ -12,21 +12,21 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.DbType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
-import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.ABSTRACT_SERVICE_METHOD_DECLARATION;
-import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.ABSTRACT_SERVICE_NAME;
-import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.ABSTRACT_SERVICE_PACKAGE_NAME;
-import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.DB_TYPE;
-import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.REPOSITORY_ID_CLASS_NAME;
-import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.REPOSITORY_METHOD_DECLARATION;
-import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.REPOSITORY_NAME;
-import static com.home.servicegenerator.plugin.processing.context.ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.ABSTRACT_SERVICE_NAME;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.DB_TYPE;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.REPOSITORY_ID_CLASS_NAME;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.REPOSITORY_METHOD_DECLARATION;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.REPOSITORY_NAME;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.REPOSITORY_PACKAGE_NAME;
 import static java.lang.String.format;
 
 public enum InnerProcessingSchema implements ASTProcessingSchema {
@@ -36,7 +36,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
                 final Name model = context.getPipelineId();
-                final ProcessingProperty.DbType dbType = (ProcessingProperty.DbType) context
+                final DbType dbType = (DbType) context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
@@ -111,7 +111,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
                                                 ABSTRACT_SERVICE_NAME.name())))
                         .getValue()
                         .toString();
-                final ProcessingProperty.DbType storageType = (ProcessingProperty.DbType)context
+                final DbType storageType = (DbType)context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
@@ -192,7 +192,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
                                                 REPOSITORY_NAME.name())))
                         .getValue()
                         .toString();
-                final ProcessingProperty.DbType storageType = (ProcessingProperty.DbType)context
+                final DbType storageType = (DbType)context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
@@ -449,7 +449,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final ProcessingProperty.DbType storageType = (ProcessingProperty.DbType)context
+                final DbType storageType = (DbType)context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
@@ -468,7 +468,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
                 final String SPRING_BOOT_APPLICATION_SHORT = "SpringBootApplication";
 
                 // Register repository into Spring application class
-                final ProcessingProperty.DbType storageType = (ProcessingProperty.DbType)context
+                final DbType storageType = (DbType)context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
@@ -495,7 +495,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
     ;
 
     public static AnnotationExpr prepareDbRepositoryConfigAnnotation(
-            List<String> repositoriesBasePackageNames, ProcessingProperty.DbType dbType
+            List<String> repositoriesBasePackageNames, DbType dbType
     ) {
         var _name = StringUtils.split(dbType.dbRepositoryConfigAnnotationClass(), ".");
         return prepareSpringDataDbConfigAnnotation(

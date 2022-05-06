@@ -9,8 +9,9 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
+import com.home.servicegenerator.plugin.processing.context.properties.DbType;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -34,7 +35,7 @@ public class CreateServiceImplementationSchemaTest {
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";
     private static final String REPOSITORY_NAME = "TestRepository";
     private static final String REPOSITORY_FIELD_NAME = REPOSITORY_NAME.toLowerCase();
-    private static final ProcessingProperty.DbType DB_TYPE = ProcessingProperty.DbType.mongo;
+    private static final DbType DB_TYPE = DbType.mongo;
     private static CompilationUnit serviceImplementationClassUnit;
     private static AssignExpr repositoryAssignment;
 
@@ -51,15 +52,15 @@ public class CreateServiceImplementationSchemaTest {
                         modelClassName,
                         null,
                         Map.ofEntries(
-                                Map.entry(ProcessingProperty.Name.ABSTRACT_SERVICE_PACKAGE_NAME,
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
                                         ABSTRACT_SERVICE_PACKAGE_NAME),
-                                Map.entry(ProcessingProperty.Name.ABSTRACT_SERVICE_NAME,
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
                                         ABSTRACT_SERVICE_NAME),
-                                Map.entry(ProcessingProperty.Name.REPOSITORY_PACKAGE_NAME,
+                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
                                         REPOSITORY_PACKAGE_NAME),
-                                Map.entry(ProcessingProperty.Name.REPOSITORY_NAME,
+                                Map.entry(PropertyName.REPOSITORY_NAME,
                                         REPOSITORY_NAME),
-                                Map.entry(ProcessingProperty.Name.DB_TYPE,
+                                Map.entry(PropertyName.DB_TYPE,
                                         DB_TYPE)));
 
         serviceImplementationClassUnit = (CompilationUnit) generator.generate(new CompilationUnit(), context);

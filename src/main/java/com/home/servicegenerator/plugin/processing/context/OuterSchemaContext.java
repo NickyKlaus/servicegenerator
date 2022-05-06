@@ -3,6 +3,7 @@ package com.home.servicegenerator.plugin.processing.context;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.api.context.Context;
+import com.home.servicegenerator.plugin.processing.context.properties.OuterSchemaProperty;
 
 import java.util.Map;
 import java.util.Optional;

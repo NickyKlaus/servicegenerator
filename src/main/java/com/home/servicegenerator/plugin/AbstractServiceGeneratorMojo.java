@@ -1,6 +1,6 @@
 package com.home.servicegenerator.plugin;
 
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.DbType;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -18,7 +18,7 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
     private List<Transformation> transformations = List.of();
 
     @Parameter(name = "dbType")
-    private ProcessingProperty.DbType dbType;
+    private DbType dbType;
 
     @Parameter(name = "controllerPackage")
     private String controllerPackage;
@@ -89,7 +89,7 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
         return project;
     }
 
-    public ProcessingProperty.DbType getDbType() {
+    public DbType getDbType() {
         return dbType;
     }
 }

@@ -10,7 +10,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -84,11 +84,11 @@ public class AddServiceMethodImplementationSchemaTest {
                         modelClassName,
                         abstractServiceMethodDeclaration,
                         Map.ofEntries(
-                                Map.entry(ProcessingProperty.Name.REPOSITORY_NAME,
+                                Map.entry(PropertyName.REPOSITORY_NAME,
                                         REPOSITORY_NAME),
-                                Map.entry(ProcessingProperty.Name.REPOSITORY_METHOD_DECLARATION,
+                                Map.entry(PropertyName.REPOSITORY_METHOD_DECLARATION,
                                         repositoryMethodDeclaration),
-                                Map.entry(ProcessingProperty.Name.ABSTRACT_SERVICE_METHOD_DECLARATION,
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
                                         abstractServiceMethodDeclaration)
                         ));
 

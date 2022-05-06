@@ -1,55 +1,28 @@
 package com.home.servicegenerator.plugin.processing.registry;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.home.servicegenerator.plugin.processing.processor.ProcessingUnit;
+import org.apache.maven.plugin.MojoFailureException;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
-public class ProjectUnitsRegistry {
-    private static final Map<String, CompilationUnit> PROJECT_UNITS_REGISTRY =
-            Collections.synchronizedMap(new HashMap<>());
+public final class ProjectUnitsRegistry {
+    private static final ConcurrentMap<String, CompilationUnit> projectsUnitsIndex = new ConcurrentHashMap<>();
 
-    private ProjectUnitsRegistry() {
+    public static void register(final ProcessingUnit unit) {
+        projectsUnitsIndex.put(unit.getId(), unit.getCompilationUnit());
     }
 
-    public static CompilationUnit register(final CompilationUnit unit) throws IllegalArgumentException {
-        // uses client-side locking
-        synchronized (PROJECT_UNITS_REGISTRY) {
-            Objects.requireNonNull(unit, "Unit must not be null");
-            var _unit = unit.clone();
-            if (_unit.getPrimaryTypeName().isEmpty() || _unit.getPrimaryTypeName().get().isEmpty()) {
-                throw new IllegalArgumentException("Unit id must not be empty");
-            }
-            return PROJECT_UNITS_REGISTRY.put(_unit.getPrimaryTypeName().get(), _unit);
-        }
+    public static ProcessingUnit getOrDefault(
+            final String unitId,
+            final Supplier<ProcessingUnit> unitSupplier
+    ) throws MojoFailureException {
+        return isRegistered(unitId) ? ProcessingUnit.convert(projectsUnitsIndex.get(unitId)) : unitSupplier.get();
     }
 
-    public static void registerAll(final Collection<CompilationUnit> units) {
-        // uses client-side locking
-        synchronized (PROJECT_UNITS_REGISTRY) {
-            units.stream()
-                    .filter(u -> Objects.nonNull(u) && u.getPrimaryTypeName().isPresent() && !u.getPrimaryTypeName().get().isEmpty())
-                    .forEach(ProjectUnitsRegistry::register);
-        }
-    }
-
-    public static void registerAll(final CompilationUnit... units) {
-        // uses client-side locking
-        synchronized (PROJECT_UNITS_REGISTRY) {
-            Arrays.stream(units)
-                    .filter(u -> Objects.nonNull(u) && u.getPrimaryTypeName().isPresent() && !u.getPrimaryTypeName().get().isEmpty())
-                    .forEach(ProjectUnitsRegistry::register);
-        }
-    }
-
-    public static CompilationUnit lookup(final String unitId) {
-        // uses client-side locking
-        synchronized (PROJECT_UNITS_REGISTRY) {
-            return PROJECT_UNITS_REGISTRY.get(unitId);
-        }
+    public static boolean isRegistered(final String unitId) {
+        return projectsUnitsIndex.containsKey(unitId);
     }
 }

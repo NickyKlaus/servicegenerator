@@ -1,36 +1,34 @@
 package com.home.servicegenerator.plugin.processing.container;
 
-import com.home.servicegenerator.plugin.configuration.ProcessingConfiguration;
+import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
+import com.home.servicegenerator.plugin.processing.configuration.stages.ProcessingStage;
+import com.home.servicegenerator.plugin.processing.processor.Processor;
+import org.springframework.stereotype.Component;
 
-public final class ProcessingContainer {
+import java.util.stream.Collectors;
+
+@Component
+public class ProcessingContainer {
+    private final Processor processor;
     private final ProcessingConfiguration processingConfiguration;
 
-    private ProcessingContainer(final ProcessingContainer.Builder builder) {
-        this.processingConfiguration = builder.processingConfiguration;
+    public ProcessingContainer(Processor processor, ProcessingConfiguration processingConfiguration) {
+        this.processor = processor;
+        this.processingConfiguration = processingConfiguration;
     }
 
-    public static ProcessingContainer.Builder builder() {
-        return new ProcessingContainer.Builder();
+    public void start() {
+        processor.process(processingConfiguration.getProcessingStrategy());
     }
 
-    public static final class Builder {
-        private ProcessingConfiguration processingConfiguration;
+    private void prepareProcessingPlan() {
+        var extendedStages =
+                processingConfiguration
+                        .getProcessingPlan()
+                        .getProcessingStages()
+                        .stream()
+                        .map(ProcessingStage::new)
+                        .collect(Collectors.toList());
 
-        private Builder() {
-        }
-
-        public ProcessingContainer.Builder configuration(final ProcessingConfiguration processingConfiguration) {
-            if (processingConfiguration == null) {
-                throw new IllegalArgumentException("Processing configuration cannot be null!");
-            }
-            this.processingConfiguration = processingConfiguration;
-            return this;
-        }
-
-
-
-        public ProcessingContainer build() {
-            return new ProcessingContainer(this);
-        }
     }
 }
