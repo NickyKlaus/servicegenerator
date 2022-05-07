@@ -3,20 +3,13 @@ package com.home.servicegenerator.plugin.processing.processor.strategy;
 import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.plugin.PluginConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
-import com.home.servicegenerator.plugin.processing.events.ControllerParsedEvent;
-import com.home.servicegenerator.plugin.processing.events.ProcessingEvent;
-import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.processor.ProcessingUnit;
 import com.home.servicegenerator.plugin.processing.registry.ProjectUnitsRegistry;
 import com.home.servicegenerator.plugin.processing.scanner.UnitScanner;
 import com.home.servicegenerator.plugin.utils.FileUtils;
 import com.home.servicegenerator.plugin.utils.ResolverUtils;
 import org.apache.maven.plugin.MojoFailureException;
-import org.springframework.messaging.support.GenericMessage;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -95,47 +88,8 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
 
                     // A fully qualified name of an available model class that the pipeline deals with
                     var pipelineId = pipelineIdResolveResult.get();
-
-                    stateMachine.sendEvent(
-                            Mono.just(
-                                    MessageBuilder.withPayload(
-
-                                    )
-                            )
-                    );
-
-                    //TODO replace creation repo from here
-                    /*stateMachine.sendEvent(
-                            Mono.just(
-                                    new GenericMessage<>(
-                                            new ControllerParsedEvent(
-                                                    controllerUnit.getValue().getCompilationUnit(),
-                                                    ProcessingContext.of(
-                                                            pipelineId,
-                                                            pipeline,
-                                                            Map.ofEntries(
-                                                                    Map.entry(PropertyName.DB_TYPE,
-                                                                            configuration.getDbType()),
-                                                                    Map.entry(PropertyName.REPOSITORY_NAME,
-                                                                            pipelineId.getIdentifier() + "Repository"),
-                                                                    Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
-                                                                            configuration.getBasePackage() + ".repository"),
-                                                                    Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME,
-                                                                            Long.class.getSimpleName())))))));*/
-
-
-
-                    /*for (var stage : processingConfiguration.getProcessingPlan().getProcessingStages()) {
-                        //TODO: refactor
-                        var unit = (CompilationUnit) DefaultGenerator.builder()
-                                .processingSchema(stage.getSchema())
-                                .build()
-                                .generate(
-                                        ProjectUnitsRegistry.getOrDefault(
-                                                stage.getSourceLocation().toString(),
-                                                () -> new ProcessingUnit(stage.getSourceLocation().toString(), new CompilationUnit().setStorage(stage.getSourceLocation()))).getCompilationUnit(),
-                                        stage.getContext());
-                    }*/
+                    stateMachine.getExtendedState().getVariables().put("pipelineId", pipelineId);
+                    stateMachine.getExtendedState().getVariables().put("pipeline", pipeline);
                 }
             }
         };

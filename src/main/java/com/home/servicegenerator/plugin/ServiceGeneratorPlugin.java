@@ -1,28 +1,26 @@
 package com.home.servicegenerator.plugin;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.plugin.processing.configuration.DefaultProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.stages.ProcessingPlan;
-import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
 import com.home.servicegenerator.plugin.processing.container.ProcessingContainer;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
 import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.configuration.stages.InnerProcessingStage;
-import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
-import com.home.servicegenerator.plugin.processing.events.ProcessingEvent;
-import com.home.servicegenerator.plugin.processing.processor.ProcessingUnit;
+import com.home.servicegenerator.plugin.processing.processor.MatchWithRestEndpointMethodStrategy;
+import com.home.servicegenerator.plugin.processing.processor.MatchingMethodStrategy;
 import com.home.servicegenerator.plugin.processing.processor.strategy.PipelineIdBasedNamingStrategy;
 import com.home.servicegenerator.plugin.processing.processor.strategy.PipelineIdBasedProcessingStrategy;
-import com.home.servicegenerator.plugin.processing.registry.ProjectUnitsRegistry;
-import org.apache.commons.io.FilenameUtils;
+import com.home.servicegenerator.plugin.utils.MethodNormalizer;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.statemachine.action.Action;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -32,15 +30,15 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 import static com.github.javaparser.StaticJavaParser.parse;
-import static com.home.servicegenerator.plugin.utils.FileUtils.createDirPath;
 import static com.home.servicegenerator.plugin.utils.FileUtils.createFilePath;
+import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL;
 
 /**
  * Goal which generates microservice based on declared logic.
  */
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
-@Configuration
-@ComponentScan("com.home.*")
+//@Configuration
+//@ComponentScan("com.home.*")
 public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     private static final String POM_XML = "pom.xml";
     private static final String POM_XML_BACKUP = "pom.xml.bak";
@@ -68,109 +66,292 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                 .stage(
                         InnerProcessingStage.CREATE_REPOSITORY
                                 .setSourceLocation(
-                                        createFilePath(
-                                                getProjectOutputDirectory().toString(),
-                                                getSourcesDirectory().toString(),
-                                                getBasePackage(),
-                                                "repository",
-                                                pipelineId.getIdentifier() + "Repository"))
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            if (pipelineId != null) {
+                                                return createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "repository",
+                                                        pipelineId.getIdentifier() + "Repository").toString();
+                                            }
+                                            return null;
+                                        })
                                 .setContext(
-                                        new ProcessingContext(
-                                                pipelineId,
-                                                pipeline,
-                                                Map.ofEntries(
-                                                        Map.entry(PropertyName.DB_TYPE,
-                                                                storageType),
-                                                        Map.entry(PropertyName.REPOSITORY_NAME,
-                                                                pipelineId.getIdentifier() + "Repository"),
-                                                        Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
-                                                                getBasePackage() + ".repository"),
-                                                        Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME,
-                                                                Long.class.getSimpleName())))))
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
+                                            if (pipelineId != null && pipeline != null) {
+                                                return new ProcessingContext(
+                                                        pipelineId,
+                                                        pipeline,
+                                                        Map.ofEntries(
+                                                                Map.entry(PropertyName.DB_TYPE,
+                                                                        getDbType()),
+                                                                Map.entry(PropertyName.REPOSITORY_NAME,
+                                                                        pipelineId.getIdentifier() + "Repository"),
+                                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
+                                                                        getBasePackage() + ".repository"),
+                                                                Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME,
+                                                                        Long.class.getSimpleName())));
+                                            }
+                                            return null;
+                                        }))
                 .stage(
                         InnerProcessingStage.CREATE_ABSTRACT_SERVICE
                                 .setSourceLocation(
-                                        createFilePath(
-                                                getProjectOutputDirectory().toString(),
-                                                getSourcesDirectory().toString(),
-                                                getBasePackage(),
-                                                "service",
-                                                pipelineId.getIdentifier() + "Service"))
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            if (pipelineId != null) {
+                                                return createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "service",
+                                                        pipelineId.getIdentifier() + "Service").toString();
+                                            }
+                                            return null;
+                                        })
                                 .setContext(
-                                        new ProcessingContext(
-                                                pipelineId,
-                                                pipeline,
-                                                Map.ofEntries(
-                                                        Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
-                                                                getBasePackage() + ".service"),
-                                                        Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
-                                                                pipelineId.getIdentifier() + "Service"),
-                                                        Map.entry(PropertyName.DB_TYPE,
-                                                                storageType)))))
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
+                                            if (pipelineId != null && pipeline != null) {
+                                                return new ProcessingContext(
+                                                        pipelineId,
+                                                        pipeline,
+                                                        Map.ofEntries(
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
+                                                                        getBasePackage() + ".service"),
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
+                                                                        pipelineId.getIdentifier() + "Service"),
+                                                                Map.entry(PropertyName.DB_TYPE,
+                                                                        getDbType())));
+                                            }
+                                            return null;
+                                        }))
                 .stage(
                         InnerProcessingStage.INJECT_SERVICE_INTO_CONTROLLER
                                 .setSourceLocation(
-                                        createFilePath(
-                                                getProjectOutputDirectory().toString(),
-                                                getSourcesDirectory().toString(),
-                                                getBasePackage(),
-                                                getControllerPackage(),
-                                                FilenameUtils.removeExtension(controllerUnit.getStorage().get().getFileName())))
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            if (pipelineId != null) {
+                                                return createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        getControllerPackage(),
+                                                        pipelineId.getIdentifier() + "Repository").toString();
+                                            }
+                                            return null;
+                                        })
                                 .setContext(
-                                        new ProcessingContext(
-                                                pipelineId,
-                                                pipeline,
-                                                Map.ofEntries(
-                                                        Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
-                                                                getBasePackage() + ".service"),
-                                                        Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
-                                                                pipelineId.getIdentifier() + "Service")))))
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
+                                            if (pipelineId != null && pipeline != null) {
+                                                return new ProcessingContext(
+                                                        pipelineId,
+                                                        pipeline,
+                                                        Map.ofEntries(
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
+                                                                        getBasePackage() + ".service"),
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
+                                                                        pipelineId.getIdentifier() + "Service")));
+                                            }
+                                            return null;
+                                        }))
                 .stage(
                         InnerProcessingStage.CREATE_SERVICE_IMPLEMENTATION
                                 .setSourceLocation(
-                                        createFilePath(
-                                                getProjectOutputDirectory().toString(),
-                                                getSourcesDirectory().toString(),
-                                                getBasePackage(),
-                                                "service",
-                                                pipelineId.getIdentifier() + "ServiceImpl"))
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            if (pipelineId != null) {
+                                                return createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "service",
+                                                        pipelineId.getIdentifier() + "ServiceImpl").toString();
+                                            }
+                                            return null;
+                                        })
                                 .setContext(
-                                        new ProcessingContext(
-                                                pipelineId,
-                                                pipeline,
-                                                Map.ofEntries(
-                                                        Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
-                                                                getBasePackage() + ".service"),
-                                                        Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
-                                                                pipelineId.getIdentifier() + "Service"),
-                                                        Map.entry(PropertyName.REPOSITORY_NAME,
-                                                                pipelineId.getIdentifier() + "Repository"),
-                                                        Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
-                                                                getBasePackage() + ".repository"),
-                                                        Map.entry(PropertyName.DB_TYPE,
-                                                                storageType)))))
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
+                                            if (pipelineId != null && pipeline != null) {
+                                                new ProcessingContext(
+                                                        pipelineId,
+                                                        pipeline,
+                                                        Map.ofEntries(
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
+                                                                        getBasePackage() + ".service"),
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
+                                                                        pipelineId.getIdentifier() + "Service"),
+                                                                Map.entry(PropertyName.REPOSITORY_NAME,
+                                                                        pipelineId.getIdentifier() + "Repository"),
+                                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
+                                                                        getBasePackage() + ".repository"),
+                                                                Map.entry(PropertyName.DB_TYPE,
+                                                                        getDbType())));
+                                            }
+                                            return null;
+                                        }))
                 .stage(
                         InnerProcessingStage.ADD_SERVICE_ABSTRACT_METHOD
                                 .setSourceLocation(
-                                        createFilePath(
-                                                getProjectOutputDirectory().toString(),
-                                                getSourcesDirectory().toString(),
-                                                getBasePackage(),
-                                                "service",
-                                                pipelineId.getIdentifier() + "Service"))
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            if (pipelineId != null) {
+                                                return createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "service",
+                                                        pipelineId.getIdentifier() + "Service").toString();
+                                            }
+                                            return null;
+                                        })
                                 .setContext(
-                                        new ProcessingContext(
-                                                pipelineId,
-                                                //resolve method type and signature: signature is from controller, type is from repository
-                                                pipeline,
-                                                Map.ofEntries(
-                                                        Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
-                                                                abstractServiceMethodDeclaration.get())))));
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
+                                            var abstractServiceMethodDeclaration =
+                                                    getMethodMatchedWithPipeline(
+                                                            pipeline,
+                                                            getDbType().getRepositoryImplementationMethodDeclarations(),
+                                                            pipelineId,
+                                                            new MatchWithRestEndpointMethodStrategy());
+                                            if (pipelineId != null && pipeline != null && abstractServiceMethodDeclaration.isPresent()) {
+                                                return new ProcessingContext(
+                                                        pipelineId,
+                                                        //resolve method type and signature: signature is from controller, type is from repository
+                                                        pipeline,
+                                                        Map.ofEntries(
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
+                                                                        abstractServiceMethodDeclaration.get())));
+                                            }
+                                            return null;
+                                        }))
+                .stage(
+                        InnerProcessingStage.ADD_SERVICE_METHOD_IMPLEMENTATION
+                                .setSourceLocation(
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            if (pipelineId != null) {
+                                                return createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "service",
+                                                        pipelineId.getIdentifier() + "ServiceImpl").toString();
+                                            }
+                                            return null;
+                                        }
+                                )
+                                .setContext(
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
+                                            var abstractServiceMethodDeclaration =
+                                                    getMethodMatchedWithPipeline(
+                                                            pipeline,
+                                                            getDbType().getRepositoryImplementationMethodDeclarations(),
+                                                            pipelineId,
+                                                            new MatchWithRestEndpointMethodStrategy());
+                                            if (pipelineId != null && pipeline != null && abstractServiceMethodDeclaration.isPresent()) {
+                                                return new ProcessingContext(
+                                                        pipelineId,
+                                                        pipeline,
+                                                        Map.ofEntries(
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
+                                                                        abstractServiceMethodDeclaration.get()),
+                                                                Map.entry(PropertyName.REPOSITORY_METHOD_DECLARATION,
+                                                                        abstractServiceMethodDeclaration.get()),
+                                                                Map.entry(PropertyName.REPOSITORY_NAME,
+                                                                        pipelineId.getIdentifier() + "Repository"),
+                                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
+                                                                        getBasePackage() + ".repository")));
+                                            }
+                                            return null;
+                                        }))
+                .stage(
+                        InnerProcessingStage.EDIT_CONFIGURATION
+                                .setSourceLocation(
+                                        (ctx) -> {
+                                            var configurationClass =
+                                                    ctx.getExtendedState().get("configurationClass", String.class);
+                                            if (configurationClass != null) {
+                                                return createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        getConfigurationPackage(),
+                                                        configurationClass).toString();
+                                            }
+                                            return null;
+                                        }
+                                )
+                                .setContext(
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
+                                            if (pipelineId != null && pipeline != null) {
+                                                return new ProcessingContext(
+                                                        null,
+                                                        null,
+                                                        Map.ofEntries(
+                                                                Map.entry(PropertyName.DB_TYPE,
+                                                                        getDbType()),
+                                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
+                                                                        getBasePackage() + ".repository")));
+                                            }
+                                            return null;
+                                        }))
+                .stage(
+                        InnerProcessingStage.ADD_CONTROLLER_METHOD_IMPLEMENTATION
+                                .setSourceLocation(
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            if (pipelineId != null) {
+                                                return createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        getControllerPackage(),
+                                                        pipelineId.getIdentifier() + "Repository").toString();
+                                            }
+                                            return null;
+                                        }
+                                )
+                                .setContext(
+                                        (ctx) -> {
+                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
+                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
+                                            var abstractServiceMethodDeclaration =
+                                                    getMethodMatchedWithPipeline(
+                                                            pipeline,
+                                                            getDbType().getRepositoryImplementationMethodDeclarations(),
+                                                            pipelineId,
+                                                            new MatchWithRestEndpointMethodStrategy());
+                                            if (pipelineId != null && pipeline != null && abstractServiceMethodDeclaration.isPresent()) {
+                                                return new ProcessingContext(
+                                                        pipelineId,
+                                                        pipeline,
+                                                        Map.ofEntries(
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
+                                                                        pipelineId.getIdentifier() + "Service"),
+                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
+                                                                        abstractServiceMethodDeclaration.get())));
+                                            }
+                                            return null;
+                                        })
+                );
     }
 
-    //private final static Function<Path, CompilationUnit> emptyUnit = path -> new CompilationUnit().setStorage(path);
-
-    /*private static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
+    private static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
             final MethodDeclaration pipeline,
             final List<MethodDeclaration> checkedMethods,
             final Name pipelineId,
@@ -183,7 +364,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                         .test(pipeline, checkedMethod))
                 .map(m -> MethodNormalizer.denormalize(m, pipelineId.getIdentifier(), REPLACING_MODEL_TYPE_SYMBOL))
                 .findFirst();
-    }*/
+    }
 
     private void save(final CompilationUnit compilationUnit) throws MojoFailureException {
         if (compilationUnit.getStorage().isEmpty() || Objects.isNull(compilationUnit.getStorage().get().getPath()) ||
@@ -629,9 +810,9 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     public void execute() throws MojoFailureException {
         processingContainer.start();
 
-
         //executeInnerTransformations();
         //executeOuterTransformations();
         //prepareProjectDescriptor();
     }
 }
+

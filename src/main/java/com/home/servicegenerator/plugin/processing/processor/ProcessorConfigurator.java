@@ -4,8 +4,6 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
-import com.home.servicegenerator.plugin.processing.events.ProcessingEvent;
-import com.home.servicegenerator.plugin.processing.events.UnitProcessedEvent;
 import com.home.servicegenerator.plugin.processing.registry.ProjectUnitsRegistry;
 import org.apache.maven.plugin.MojoFailureException;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +17,7 @@ import org.springframework.statemachine.config.builders.StateMachineTransitionBu
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
 import org.springframework.statemachine.config.model.StateData;
 
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -28,19 +27,21 @@ public class ProcessorConfigurator {
     private final Action<Stage, String> generationAction = (ctx) -> {
         var processingStage = ctx.getSource().getId();
         try {
+            var location = processingStage.getSourceLocation().apply(ctx);
+            var context = processingStage.getContext().apply(ctx);
             var unit = (CompilationUnit) DefaultGenerator.builder()
                     .processingSchema(processingStage.getSchema())
                     .build()
                     .generate(
                             ProjectUnitsRegistry
                                     .getOrDefault(
-                                            processingStage.getSourceLocation().toString(),
+                                            location,
                                             () -> new ProcessingUnit(
-                                                    processingStage.getSourceLocation().toString(),
+                                                    location,
                                                     new CompilationUnit()
-                                                            .setStorage(processingStage.getSourceLocation())))
+                                                            .setStorage(Path.of(location))))
                                     .getCompilationUnit(),
-                            processingStage.getContext());
+                            context);
             ProjectUnitsRegistry.register(ProcessingUnit.convert(unit));
         } catch (MojoFailureException mojoFailureException) {
             ctx.getStateMachine().setStateMachineError(mojoFailureException);

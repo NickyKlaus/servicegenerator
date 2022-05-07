@@ -1,15 +1,6 @@
 package com.home.servicegenerator.plugin.processing.processor.listeners;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
-import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
-import com.home.servicegenerator.plugin.processing.events.ProcessingEvent;
-import com.home.servicegenerator.plugin.processing.processor.ProcessingUnit;
-import com.home.servicegenerator.plugin.processing.registry.ProjectUnitsRegistry;
-import org.apache.maven.plugin.MojoFailureException;
-import org.springframework.statemachine.action.Action;
 import org.springframework.statemachine.listener.StateMachineListenerAdapter;
-import org.springframework.statemachine.state.State;
 
 public class ProcessingListener<S, E> extends StateMachineListenerAdapter<S, E> {
     /*private void generate(Stage stage) {

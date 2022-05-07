@@ -5,7 +5,7 @@ import com.home.servicegenerator.api.ASTProcessingSchema;
 import java.util.function.Supplier;
 
 public enum ProcessingSchemaProvidingStrategy {
-    PRELOADED {
+    /*PRELOADED {
         @Override
         ASTProcessingSchema get(Supplier<Class<ASTProcessingSchema>> schemaSupplier) {
             final Class<? extends ASTProcessingSchema> schemaClass;
@@ -32,5 +32,5 @@ public enum ProcessingSchemaProvidingStrategy {
         }
     };
 
-    abstract ASTProcessingSchema get(final Supplier<Class<ASTProcessingSchema>> schemaSupplier);
+    abstract ASTProcessingSchema get(final Supplier<Class<ASTProcessingSchema>> schemaSupplier);*/
 }

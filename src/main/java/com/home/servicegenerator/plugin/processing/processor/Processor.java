@@ -1,7 +1,6 @@
 package com.home.servicegenerator.plugin.processing.processor;
 
 import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
-import com.home.servicegenerator.plugin.processing.events.ProcessingEvent;
 import com.home.servicegenerator.plugin.processing.processor.strategy.ProcessingStrategy;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.stereotype.Component;

@@ -22,7 +22,7 @@
         <maven-dependency-tree.version>3.1.0</maven-dependency-tree.version>
         <maven-plugin-plugin.version>3.6.0</maven-plugin-plugin.version>
         <javaparser.version>3.23.0</javaparser.version>
-        <asm.version>9.1</asm.version>
+        <asm.version>9.3</asm.version>
         <junit-jupiter.version>5.7.2</junit-jupiter.version>
         <junit-bom.version>5.8.1</junit-bom.version>
         <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
