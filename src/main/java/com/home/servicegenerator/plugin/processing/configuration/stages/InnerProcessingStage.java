@@ -1,11 +1,8 @@
 package com.home.servicegenerator.plugin.processing.configuration.stages;
 
 import com.home.servicegenerator.api.ASTProcessingSchema;
-import com.home.servicegenerator.api.context.Context;
-import org.springframework.statemachine.StateContext;
-import org.springframework.statemachine.action.Action;
 
-import java.util.function.Function;
+import java.util.Map;
 
 import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.AddControllerMethodImplementation;
 import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.AddServiceAbstractMethod;
@@ -79,42 +76,23 @@ public enum InnerProcessingStage implements Stage {
     ;
 
     private ASTProcessingSchema schema;
-    private Function<StateContext<Stage, String>, Context> context;
-    private Function<StateContext<Stage, String>, String> sourceLocation;
+    private Map<String, Object> processingData;
+    private String sourceLocation;
     private boolean repeatable;
-    private Action<Stage, String> action;
 
     public InnerProcessingStage setSchema(final ASTProcessingSchema schema) {
         this.schema = schema;
         return this;
     }
 
-    public InnerProcessingStage setSourceLocation(final Function<StateContext<Stage, String>, String> sourceLocation) {
+    @Override
+    public InnerProcessingStage setSourceLocation(String sourceLocation) {
         this.sourceLocation = sourceLocation;
-        return this;
-    }
-
-    /*public InnerProcessingStage setContext(final Context context) {
-        this.context = context;
-        return this;
-    }*/
-
-    public InnerProcessingStage setContext(final Function<StateContext<Stage, String>, Context> contextSupplier) {
-        this.context = contextSupplier;
         return this;
     }
 
     public InnerProcessingStage repeatable() {
         this.repeatable = true;
-        return this;
-    }
-
-    public Action<Stage, String> getAction() {
-        return action;
-    }
-
-    public InnerProcessingStage action(final Action<Stage, String> action) {
-        this.action = action;
         return this;
     }
 
@@ -124,12 +102,19 @@ public enum InnerProcessingStage implements Stage {
     }
 
     @Override
-    public Function<StateContext<Stage, String>, Context> getContext() {
-        return context;
+    public Map<String, Object> getProcessingData() {
+        return processingData;
     }
 
     @Override
-    public Function<StateContext<Stage, String>, String> getSourceLocation() {
+    public InnerProcessingStage setProcessingData(Map<String, Object> processingData) {
+        this.processingData = processingData;
+        return this;
+    }
+
+
+    @Override
+    public String getSourceLocation() {
         return sourceLocation;
     }
 

@@ -1,15 +1,18 @@
-package com.home.servicegenerator.plugin.processing.processor.strategy;
+package com.home.servicegenerator.plugin.processing.strategy;
 
 import com.github.javaparser.ast.expr.Name;
+import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.PluginConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
+import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
 import com.home.servicegenerator.plugin.processing.processor.ProcessingUnit;
+import com.home.servicegenerator.plugin.processing.processor.statemachine.ProcessingStateMachine;
 import com.home.servicegenerator.plugin.processing.registry.ProjectUnitsRegistry;
 import com.home.servicegenerator.plugin.processing.scanner.UnitScanner;
 import com.home.servicegenerator.plugin.utils.FileUtils;
 import com.home.servicegenerator.plugin.utils.ResolverUtils;
 import org.apache.maven.plugin.MojoFailureException;
-import org.springframework.statemachine.StateMachine;
+import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,8 +30,8 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
     }
 
     @Override
-    public Consumer<StateMachine<Stage, String>> getStrategy() {
-        return (StateMachine<Stage, String> stateMachine) -> {
+    public Consumer<AbstractStateMachine<ProcessingStateMachine, Stage, String, Context>> getStrategy() {
+        return (AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine) -> {
             final Map<String, ProcessingUnit> controllerIndex = new HashMap<>();
             final Map<String, ProcessingUnit> configurationIndex = new HashMap<>();
             final Map<String, ProcessingUnit> modelIndex = new HashMap<>();
@@ -86,12 +89,21 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
                     var pipelineIdResolveResult = ResolverUtils.lookupPipelineId(pipeline, availableModelNames);
                     if (pipelineIdResolveResult.isEmpty()) continue;
 
-                    // A fully qualified name of an available model class that the pipeline deals with
+                    // A fully qualified name of an available model class that the pipeline based on
                     var pipelineId = pipelineIdResolveResult.get();
-                    stateMachine.getExtendedState().getVariables().put("pipelineId", pipelineId);
-                    stateMachine.getExtendedState().getVariables().put("pipeline", pipeline);
+                    stateMachine.start(
+                            ProcessingContext.of(
+                                    pipelineId,
+                                    pipeline,
+                                    stateMachine.getInitialState().getProcessingData()));
+                    stateMachine.fire(pipelineId.asString(), ProcessingContext.of(
+                            pipelineId,
+                            pipeline,
+                            stateMachine.getCurrentState().getProcessingData()));
                 }
             }
+
+            stateMachine.terminate();
         };
     }
 }

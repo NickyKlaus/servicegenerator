@@ -4,9 +4,11 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.home.servicegenerator.plugin.processing.processor.ProcessingUnit;
 import org.apache.maven.plugin.MojoFailureException;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public final class ProjectUnitsRegistry {
     private static final ConcurrentMap<String, CompilationUnit> projectsUnitsIndex = new ConcurrentHashMap<>();
@@ -24,5 +26,9 @@ public final class ProjectUnitsRegistry {
 
     public static boolean isRegistered(final String unitId) {
         return projectsUnitsIndex.containsKey(unitId);
+    }
+
+    public static List<CompilationUnit> getAll() {
+        return projectsUnitsIndex.values().stream().collect(Collectors.toUnmodifiableList());
     }
 }

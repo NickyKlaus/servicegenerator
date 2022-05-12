@@ -2,16 +2,15 @@ package com.home.servicegenerator.plugin.processing.configuration.stages;
 
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
-import org.springframework.statemachine.StateContext;
-import org.springframework.statemachine.StateMachineContext;
 
-import java.nio.file.Path;
-import java.util.function.Function;
+import java.util.Map;
 
 public interface Stage {
     ASTProcessingSchema getSchema();
-    Function<StateContext<Stage, String>, Context> getContext();
-    Function<StateContext<Stage, String>, String> getSourceLocation();
+    Map<String, Object> getProcessingData();
+    Stage setProcessingData(Map<String, Object> processingData);
+    String getSourceLocation();
+    Stage setSourceLocation(String sourceLocation);
     boolean isRepeatable();
     String getName();
 }

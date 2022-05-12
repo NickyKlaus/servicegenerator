@@ -1,4 +1,4 @@
-package com.home.servicegenerator.plugin.processing.processor.strategy;
+package com.home.servicegenerator.plugin.processing.strategy;
 
 import java.util.function.Function;
 

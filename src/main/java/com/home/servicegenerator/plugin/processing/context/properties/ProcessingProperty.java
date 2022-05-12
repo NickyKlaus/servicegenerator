@@ -25,13 +25,13 @@ public final class ProcessingProperty implements Property {
         return new ProcessingProperty(propertyName, value);
     }
 
+    public static ProcessingProperty of(String propertyName, Object value) {
+        return new ProcessingProperty(propertyName, value);
+    }
+
     @Override
     public String getName() {
         return propertyName.name();
-    }
-
-    public PropertyName getPropertyName() {
-        return propertyName;
     }
 
     @Override

@@ -12,16 +12,15 @@ import com.home.servicegenerator.plugin.processing.context.properties.PropertyNa
 import com.home.servicegenerator.plugin.processing.configuration.stages.InnerProcessingStage;
 import com.home.servicegenerator.plugin.processing.processor.MatchWithRestEndpointMethodStrategy;
 import com.home.servicegenerator.plugin.processing.processor.MatchingMethodStrategy;
-import com.home.servicegenerator.plugin.processing.processor.strategy.PipelineIdBasedNamingStrategy;
-import com.home.servicegenerator.plugin.processing.processor.strategy.PipelineIdBasedProcessingStrategy;
+import com.home.servicegenerator.plugin.processing.strategy.PipelineIdBasedNamingStrategy;
+import com.home.servicegenerator.plugin.processing.strategy.PipelineIdBasedProcessingStrategy;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -37,15 +36,14 @@ import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_M
  * Goal which generates microservice based on declared logic.
  */
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
-//@Configuration
-//@ComponentScan("com.home.*")
+@Named
+@Singleton
 public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     private static final String POM_XML = "pom.xml";
     private static final String POM_XML_BACKUP = "pom.xml.bak";
     private final ProcessingContainer processingContainer;
 
-    @Bean
-    protected ProcessingConfiguration processingConfiguration() {
+    public ProcessingConfiguration processingConfiguration() {
         return DefaultProcessingConfiguration
                 .configuration()
                 .processingPlan(processingPlan())
@@ -55,17 +53,12 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                 .namingStrategy(new PipelineIdBasedNamingStrategy());
     }
 
-    public ServiceGeneratorPlugin(ProcessingContainer processingContainer) {
-        this.processingContainer = processingContainer;
-    }
-
-    // Processing plan
-    private ProcessingPlan processingPlan() {
+    public ProcessingPlan processingPlan() {
         return ProcessingPlan
                 .processingPlan()
                 .stage(
                         InnerProcessingStage.CREATE_REPOSITORY
-                                .setSourceLocation(
+                                /*.setSourceLocation(
                                         (ctx) -> {
                                             var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
                                             if (pipelineId != null) {
@@ -77,27 +70,17 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                         pipelineId.getIdentifier() + "Repository").toString();
                                             }
                                             return null;
-                                        })
-                                .setContext(
-                                        (ctx) -> {
-                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
-                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
-                                            if (pipelineId != null && pipeline != null) {
-                                                return new ProcessingContext(
-                                                        pipelineId,
-                                                        pipeline,
-                                                        Map.ofEntries(
-                                                                Map.entry(PropertyName.DB_TYPE,
-                                                                        getDbType()),
-                                                                Map.entry(PropertyName.REPOSITORY_NAME,
-                                                                        pipelineId.getIdentifier() + "Repository"),
-                                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
-                                                                        getBasePackage() + ".repository"),
-                                                                Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME,
-                                                                        Long.class.getSimpleName())));
-                                            }
-                                            return null;
-                                        }))
+                                        })*/
+                                .setProcessingData(
+                                        Map.ofEntries(
+                                                Map.entry(PropertyName.DB_TYPE.name(),
+                                                        getDbType()),
+                                                            /*Map.entry(PropertyName.REPOSITORY_NAME,
+                                                                    pipelineId.getIdentifier() + "Repository"),*/
+                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(),
+                                                        getBasePackage() + ".repository"),
+                                                Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME.name(),
+                                                        Long.class.getSimpleName()))))
                 .stage(
                         InnerProcessingStage.CREATE_ABSTRACT_SERVICE
                                 .setSourceLocation(
@@ -349,6 +332,10 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                             return null;
                                         })
                 );
+    }
+
+    public ServiceGeneratorPlugin(ProcessingContainer processingContainer) {
+        this.processingContainer = processingContainer;
     }
 
     private static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
@@ -809,10 +796,8 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     @Override
     public void execute() throws MojoFailureException {
         processingContainer.start();
-
         //executeInnerTransformations();
         //executeOuterTransformations();
         //prepareProjectDescriptor();
     }
 }
-
