@@ -15,7 +15,7 @@ public class ClassOrInterfaceTypeNormalizer extends ModifierVisitor<String> {
     @Override
     public Visitable visit(ClassOrInterfaceType n, String pipelineId) {
         super.visit(n, pipelineId);
-        var type = n.clone();
+        final ClassOrInterfaceType type = n.clone();
         type.setScope(null);
         if (type.getNameAsString().equals(pipelineId)) {
             type.setName(pipelineIdReplacingSymbol);

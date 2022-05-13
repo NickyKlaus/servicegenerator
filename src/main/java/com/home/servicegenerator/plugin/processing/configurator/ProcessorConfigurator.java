@@ -6,8 +6,11 @@ import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
 import com.home.servicegenerator.plugin.processing.processor.Processor;
 import com.home.servicegenerator.plugin.processing.processor.statemachine.ProcessingStateMachine;
 import org.squirrelframework.foundation.fsm.Condition;
+import org.squirrelframework.foundation.fsm.StateMachineBuilder;
 import org.squirrelframework.foundation.fsm.StateMachineBuilderFactory;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
+
+import java.util.List;
 
 public class ProcessorConfigurator {
     private final AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine;
@@ -25,21 +28,21 @@ public class ProcessorConfigurator {
             ProcessingConfiguration processingConfiguration
     ) {
         final AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine;
-        var stages = processingConfiguration.getProcessingPlan().getProcessingStages();
-        var stateMachineBuilder =
+        final List<Stage> stages = processingConfiguration.getProcessingPlan().getProcessingStages();
+        final StateMachineBuilder<ProcessingStateMachine, Stage, String, Context> stateMachineBuilder =
                 StateMachineBuilderFactory.create(ProcessingStateMachine.class, Stage.class, String.class, Context.class);
 
         if (stages.isEmpty()) {
             return null;
         }
 
-        for (var stage : stages) {
+        for (Stage stage : stages) {
             stateMachineBuilder
                     .internalTransition()
                     .within(stage)
                     .on("GENERATE_" + stage.getName())
                     .when(
-                            new Condition<>() {
+                            new Condition<Context>() {
                                 @Override
                                 public boolean isSatisfied(Context context) {
                                     return stage.getExecutingStageCondition().test(context);
@@ -49,8 +52,7 @@ public class ProcessorConfigurator {
                                 public String name() {
                                     return stage.getName();
                                 }
-                            }
-                    )
+                            })
                     .callMethod("generate");
             stateMachineBuilder
                     .transit()

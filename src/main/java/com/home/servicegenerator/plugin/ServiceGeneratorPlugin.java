@@ -7,10 +7,8 @@ import com.home.servicegenerator.plugin.processing.configuration.DefaultProcessi
 import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.stages.ProcessingPlan;
 import com.home.servicegenerator.plugin.processing.container.ProcessingContainer;
-import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
 import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.configuration.stages.InnerProcessingStage;
-import com.home.servicegenerator.plugin.processing.processor.MatchWithRestEndpointMethodStrategy;
 import com.home.servicegenerator.plugin.processing.processor.MatchingMethodStrategy;
 import com.home.servicegenerator.plugin.processing.strategy.PipelineIdBasedNamingStrategy;
 import com.home.servicegenerator.plugin.processing.strategy.PipelineIdBasedProcessingStrategy;
@@ -19,9 +17,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
-import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -30,7 +26,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 import static com.github.javaparser.StaticJavaParser.parse;
-import static com.home.servicegenerator.plugin.utils.FileUtils.createFilePath;
 import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL;
 
 /**
@@ -40,18 +35,17 @@ import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_M
 public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     private static final String POM_XML = "pom.xml";
     private static final String POM_XML_BACKUP = "pom.xml.bak";
-    private final ProcessingContainer processingContainer;
 
+    @Named
     public ProcessingConfiguration processingConfiguration() {
         return DefaultProcessingConfiguration
                 .configuration()
                 .processingPlan(processingPlan())
-                .processingStrategy(
-                        new PipelineIdBasedProcessingStrategy(
-                                PluginConfigurationMapper.toPluginConfiguration(this)))
+                .processingStrategy(new PipelineIdBasedProcessingStrategy())
                 .namingStrategy(new PipelineIdBasedNamingStrategy());
     }
 
+    @Named
     public ProcessingPlan processingPlan() {
         return ProcessingPlan
                 .processingPlan()
@@ -293,9 +287,9 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                 );
     }
 
-    public ServiceGeneratorPlugin(ProcessingContainer processingContainer) {
-        this.processingContainer = new ProcessingContainer(processingConfiguration());
-    }
+    /*public ServiceGeneratorPlugin(ProcessingContainer processingContainer) {
+
+    }*/
 
     private static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
             final MethodDeclaration pipeline,
@@ -328,12 +322,12 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
 
     //TODO: unify saving procedure for inner/outer schemas (rewrite/create)
     private void save(CompilationUnit targetCompilationUnit, Path targetLocation) throws MojoFailureException {
-        var targetCharset =
+        final Charset targetCharset =
                 targetCompilationUnit.getStorage().isPresent() ?
                         targetCompilationUnit.getStorage().get().getEncoding() :
                         Charset.defaultCharset();
         try {
-            var targetPath = Files.writeString(
+            final Path targetPath = Files.writeString(
                     targetLocation,
                     targetCompilationUnit.toString(),
                     targetCharset,
@@ -754,7 +748,9 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        //processingContainer.start();
+        new ProcessingContainer(processingConfiguration())
+                .prepare(this)
+                .start();
 
         //executeInnerTransformations();
         //executeOuterTransformations();

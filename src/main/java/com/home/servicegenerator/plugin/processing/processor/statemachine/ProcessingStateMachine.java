@@ -23,7 +23,7 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
     {
         generationAction = (stage, ctx) -> {
             try {
-                var unit = (CompilationUnit) DefaultGenerator.builder()
+                final CompilationUnit unit = (CompilationUnit) DefaultGenerator.builder()
                         .processingSchema(stage.getSchema())
                         .build()
                         .generate(
@@ -73,7 +73,7 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
 
     void generate(Stage fromState, Stage toState, String event, Context context) {
         try {
-            var unit = (CompilationUnit) DefaultGenerator.builder()
+            final CompilationUnit unit = (CompilationUnit) DefaultGenerator.builder()
                     .processingSchema(fromState.getSchema())
                     .build()
                     .generate(

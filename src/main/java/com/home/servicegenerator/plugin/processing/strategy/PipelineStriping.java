@@ -44,7 +44,7 @@ public class PipelineStriping {
                 .flatMap(c -> c.getImplementedTypes().stream())
                 .flatMap(type -> {
                     if (controller.getStorage().isPresent()) {
-                        var path =
+                        final Path path =
                                 Path.of(controller.getStorage().get().getDirectory().toString(),
                                         type.getName().getIdentifier() + JAVA_EXT);
                         if (Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) {

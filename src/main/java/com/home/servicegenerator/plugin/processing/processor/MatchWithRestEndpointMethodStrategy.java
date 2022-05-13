@@ -1,6 +1,9 @@
 package com.home.servicegenerator.plugin.processing.processor;
 
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.type.Type;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -20,13 +23,13 @@ public class MatchWithRestEndpointMethodStrategy implements MatchingMethodStrate
     private Optional<MethodDeclaration> _getMatched(
             MethodDeclaration pipeline, MethodDeclaration checkedMethod, String pipelineId
     ) {
-        var normalPipeline = MethodNormalizer.normalize(pipeline, pipelineId, REPLACING_MODEL_TYPE_SYMBOL);
-        var normalCheckedMethod = MethodNormalizer.normalize(checkedMethod, pipelineId, REPLACING_MODEL_TYPE_SYMBOL);
-        var pipelineReturnType = normalPipeline.getType();
-        var pipelineParameters = normalPipeline.getParameters();
-        var checkedMethodReturnType = normalCheckedMethod.getType();
-        var checkedMethodParameters = normalCheckedMethod.getParameters();
-        var isMatched = checkedMethodReturnType.equals(pipelineReturnType) &&
+        final MethodDeclaration normalPipeline = MethodNormalizer.normalize(pipeline, pipelineId, REPLACING_MODEL_TYPE_SYMBOL);
+        final MethodDeclaration normalCheckedMethod = MethodNormalizer.normalize(checkedMethod, pipelineId, REPLACING_MODEL_TYPE_SYMBOL);
+        final Type pipelineReturnType = normalPipeline.getType();
+        final NodeList<Parameter> pipelineParameters = normalPipeline.getParameters();
+        final Type checkedMethodReturnType = normalCheckedMethod.getType();
+        final NodeList<Parameter> checkedMethodParameters = normalCheckedMethod.getParameters();
+        boolean isMatched = checkedMethodReturnType.equals(pipelineReturnType) &&
                 checkedMethodParameters.size() == pipelineParameters.size() &&
                 IntStream.range(0, checkedMethodParameters.size())
                         .mapToObj(i -> ImmutablePair.of(

@@ -47,7 +47,7 @@ public class UnitScanner implements Scanner {
                     .flatMap(c -> c.getImplementedTypes().stream())
                     .anyMatch(c -> {
                         if (cu.getStorage().isPresent()) {
-                            var path =
+                            final Path path =
                                     Path.of(cu.getStorage().get().getDirectory().toString(),
                                             c.getName().getIdentifier() + JAVA_EXT);
                             if (Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) {
@@ -89,19 +89,19 @@ public class UnitScanner implements Scanner {
 
     @Override
     public List<CompilationUnit> scanController() throws MojoFailureException {
-        var units = new HashSet<>(parseControllerUnit(configuration.getControllerPackage()));
+        final HashSet<CompilationUnit> units = new HashSet<>(parseControllerUnit(configuration.getControllerPackage()));
         return units.stream().collect(Collectors.toUnmodifiableList());
     }
 
     @Override
     public List<CompilationUnit> scanModel() throws MojoFailureException {
-        var units = new HashSet<>(parseControllerUnit(configuration.getModelPackage()));
+        final HashSet<CompilationUnit> units = new HashSet<>(parseControllerUnit(configuration.getModelPackage()));
         return units.stream().collect(Collectors.toUnmodifiableList());
     }
 
     @Override
     public List<CompilationUnit> scanConfiguration() throws MojoFailureException {
-        var units = new HashSet<>(parseControllerUnit(configuration.getConfigurationPackage()));
+        final HashSet<CompilationUnit> units = new HashSet<>(parseControllerUnit(configuration.getConfigurationPackage()));
         return units.stream().collect(Collectors.toUnmodifiableList());
     }
 

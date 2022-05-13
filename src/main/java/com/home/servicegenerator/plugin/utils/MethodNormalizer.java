@@ -2,6 +2,7 @@ package com.home.servicegenerator.plugin.utils;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.ModifierVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
@@ -22,8 +23,8 @@ public class MethodNormalizer extends ModifierVisitor<String> {
             return n;
         }
 
-        var method = n.clone();
-        var _returnType = method.getType().asClassOrInterfaceType();
+        final MethodDeclaration method = n.clone();
+        final ClassOrInterfaceType _returnType = method.getType().asClassOrInterfaceType();
         Type returnType = n.getType();
 
         if (_returnType.getName().getIdentifier().equals("ResponseEntity") &&
@@ -31,7 +32,7 @@ public class MethodNormalizer extends ModifierVisitor<String> {
             returnType = _returnType.getTypeArguments().get().get(0).clone().asClassOrInterfaceType();
         }
 
-        var classOrInterfaceTypeNormalizer = new ClassOrInterfaceTypeNormalizer(pipelineIdReplacingSymbol);
+        final ClassOrInterfaceTypeNormalizer classOrInterfaceTypeNormalizer = new ClassOrInterfaceTypeNormalizer(pipelineIdReplacingSymbol);
         returnType.accept(classOrInterfaceTypeNormalizer, pipelineId);
         method.setType(returnType);
         method.getParameters().stream()

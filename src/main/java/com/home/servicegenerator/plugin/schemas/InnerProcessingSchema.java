@@ -323,7 +323,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
                                                                         .map(Parameter::getNameAsExpression)
                                                                         .collect(NodeList.toNodeList())))));
 
-                var method = n.addMethod(abstractServiceMethod.getNameAsString(), Modifier.Keyword.PUBLIC)
+                final MethodDeclaration method = n.addMethod(abstractServiceMethod.getNameAsString(), Modifier.Keyword.PUBLIC)
                         .setParameters(abstractServiceMethod.getParameters())
                         .setBody(methodBody);
                 method.setType(abstractServiceMethod.getType());
@@ -533,7 +533,7 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
     public static AnnotationExpr prepareDbRepositoryConfigAnnotation(
             List<String> repositoriesBasePackageNames, DbType dbType
     ) {
-        var _name = StringUtils.split(dbType.dbRepositoryConfigAnnotationClass(), ".");
+        final String[] _name = StringUtils.split(dbType.dbRepositoryConfigAnnotationClass(), ".");
         return prepareSpringDataDbConfigAnnotation(
                 _name[_name.length-1],
                 NodeList.nodeList(

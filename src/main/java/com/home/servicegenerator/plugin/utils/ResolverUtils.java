@@ -18,8 +18,8 @@ import java.util.Optional;
 
 public final class ResolverUtils {
     public static JavaSymbolSolver createJavaSymbolSolver(Path... paths) throws IOException {
-        var solver = new CombinedTypeSolver(new ReflectionTypeSolver());
-        for (var path : paths) {
+        final CombinedTypeSolver solver = new CombinedTypeSolver(new ReflectionTypeSolver());
+        for (Path path : paths) {
             switch (FilenameUtils.getExtension(path.toString())) {
                 case "jar": {
                     solver.add(new JarTypeSolver(path));

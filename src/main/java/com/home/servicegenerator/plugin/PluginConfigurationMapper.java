@@ -2,7 +2,7 @@ package com.home.servicegenerator.plugin;
 
 public class PluginConfigurationMapper {
     public static PluginConfiguration toPluginConfiguration(AbstractServiceGeneratorMojo mojo) {
-        var configuration = new PluginConfiguration();
+        final PluginConfiguration configuration = new PluginConfiguration();
         configuration.setConfigurationPackage(mojo.getConfigurationPackage());
         configuration.setBasePackage(mojo.getBasePackage());
         configuration.setControllerPackage(mojo.getControllerPackage());

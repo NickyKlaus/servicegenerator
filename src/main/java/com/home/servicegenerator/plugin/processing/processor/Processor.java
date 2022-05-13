@@ -2,6 +2,8 @@ package com.home.servicegenerator.plugin.processing.processor;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.home.servicegenerator.api.context.Context;
+import com.home.servicegenerator.plugin.PluginConfiguration;
+import com.home.servicegenerator.plugin.PluginConfigurationMapper;
 import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.processing.processor.statemachine.ProcessingStateMachine;
@@ -25,7 +27,7 @@ public class Processor {
         this.stateMachine = stateMachine;
     }
 
-    public void process() {
-        processingStrategy.getStrategy().accept(stateMachine);
+    public void process(PluginConfiguration pluginConfiguration) {
+        processingStrategy.getStrategy().accept(stateMachine, pluginConfiguration);
     }
 }

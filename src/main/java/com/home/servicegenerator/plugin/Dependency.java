@@ -2,6 +2,7 @@ package com.home.servicegenerator.plugin;
 
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.util.Objects;
@@ -48,8 +49,8 @@ public class Dependency {
                 StringUtils.isEmpty(StringUtils.split(description, ":")[1])) {
             throw new IllegalArgumentException("Dependency descriptor must contain at least non empty groupId and artifactId separated by a colon");
         }
-        var descriptorParts = StringUtils.split(description, ":");
-        var dependency =
+        final String[] descriptorParts = StringUtils.split(description, ":");
+        final Dependency dependency =
                 Dependency.of(StringUtils.split(description, ":")[0],
                         StringUtils.split(description, ":")[1]);
         if (descriptorParts.length > 2 &&
@@ -63,15 +64,15 @@ public class Dependency {
         Objects.requireNonNull(dependency, "Dependency must not be null");
         Objects.requireNonNull(document, "XML document node must not be null");
 
-        var dependencyElement = document.createElement("dependency");
-        var groupIdElement = document.createElement("groupId");
+        final Element dependencyElement = document.createElement("dependency");
+        final Element groupIdElement = document.createElement("groupId");
         groupIdElement.appendChild(document.createTextNode(dependency.getGroupId()));
-        var artifactIdElement = document.createElement("artifactId");
+        final Element artifactIdElement = document.createElement("artifactId");
         artifactIdElement.appendChild(document.createTextNode(dependency.getArtifactId()));
         dependencyElement.appendChild(groupIdElement);
         dependencyElement.appendChild(artifactIdElement);
         if (StringUtils.isNoneEmpty(dependency.getVersion())) {
-            var versionElement = document.createElement("version");
+            final Element versionElement = document.createElement("version");
             versionElement.appendChild(document.createTextNode(dependency.getVersion()));
             dependencyElement.appendChild(versionElement);
         }

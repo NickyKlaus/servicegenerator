@@ -34,7 +34,7 @@ public final class DefaultGenerator implements Generator {
     @Override
     public Visitable generate(final Visitable baseUnit, final Context context) {
         if (baseUnit instanceof Node) {
-            for (var n : ((Node)baseUnit).getChildNodes()) {
+            for (Node n : ((Node)baseUnit).getChildNodes()) {
                 generate(n, context);
             }
         }
