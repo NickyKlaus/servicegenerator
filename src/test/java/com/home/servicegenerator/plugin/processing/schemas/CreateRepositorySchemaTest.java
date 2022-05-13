@@ -47,13 +47,13 @@ public class CreateRepositorySchemaTest {
 
         final Context context =
                 new ProcessingContext(
-                        modelClassName,
-                        controllerMethodDeclaration,
                         Map.ofEntries(
-                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME, REPOSITORY_PACKAGE_NAME),
-                                Map.entry(PropertyName.REPOSITORY_NAME, REPOSITORY_NAME),
-                                Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME, REPOSITORY_ID_CLASS),
-                                Map.entry(PropertyName.DB_TYPE, DB_NAME)
+                                Map.entry(PropertyName.PIPELINE.name(), controllerMethodDeclaration),
+                                Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
+                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(), REPOSITORY_PACKAGE_NAME),
+                                Map.entry(PropertyName.REPOSITORY_NAME.name(), REPOSITORY_NAME),
+                                Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME.name(), REPOSITORY_ID_CLASS),
+                                Map.entry(PropertyName.DB_TYPE.name(), DB_NAME)
                         ));
         repositoryClassUnit = (CompilationUnit) generator.generate(new CompilationUnit(), context);
     }

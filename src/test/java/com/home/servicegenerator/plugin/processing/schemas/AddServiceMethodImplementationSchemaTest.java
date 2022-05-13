@@ -80,15 +80,15 @@ public class AddServiceMethodImplementationSchemaTest {
         }
 
         final Context context =
-                new ProcessingContext(
-                        modelClassName,
-                        abstractServiceMethodDeclaration,
+                ProcessingContext.of(
                         Map.ofEntries(
-                                Map.entry(PropertyName.REPOSITORY_NAME,
+                                Map.entry(PropertyName.PIPELINE.name(), abstractServiceMethodDeclaration),
+                                Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
+                                Map.entry(PropertyName.REPOSITORY_NAME.name(),
                                         REPOSITORY_NAME),
-                                Map.entry(PropertyName.REPOSITORY_METHOD_DECLARATION,
+                                Map.entry(PropertyName.REPOSITORY_METHOD_DECLARATION.name(),
                                         repositoryMethodDeclaration),
-                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION.name(),
                                         abstractServiceMethodDeclaration)
                         ));
 

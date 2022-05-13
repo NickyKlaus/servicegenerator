@@ -96,12 +96,12 @@ public class AddControllerMethodImplementationSchemaTest {
         }
 
         final Context context =
-                new ProcessingContext(
-                        modelClassName,
-                        controllerMethodDeclaration,
+                ProcessingContext.of(
                         Map.ofEntries(
-                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME, ABSTRACT_SERVICE_NAME),
-                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION, serviceMethodDeclaration)));
+                                Map.entry(PropertyName.PIPELINE.name(), controllerMethodDeclaration),
+                                Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME.name(), ABSTRACT_SERVICE_NAME),
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION.name(), serviceMethodDeclaration)));
         final Generator generator =
                 DefaultGenerator.builder()
                         .processingSchema(InnerProcessingSchema.AddControllerMethodImplementation)

@@ -62,13 +62,12 @@ public class InjectServiceIntoControllerSchemaTest {
         }
 
         final Context context =
-                new ProcessingContext(
-                        modelClassName,
-                        null,
+                ProcessingContext.of(
                         Map.ofEntries(
-                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
+                                Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
                                         ABSTRACT_SERVICE_PACKAGE_NAME),
-                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME.name(),
                                         ABSTRACT_SERVICE_NAME)
                         ));
         final Generator generator =

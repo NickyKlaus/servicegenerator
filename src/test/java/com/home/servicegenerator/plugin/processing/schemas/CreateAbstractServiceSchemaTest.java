@@ -36,13 +36,13 @@ public class CreateAbstractServiceSchemaTest {
                         .build();
         final MethodDeclaration controllerMethodDeclaration = new MethodDeclaration();
         final Context context =
-                new ProcessingContext(
-                        modelClassName,
-                        controllerMethodDeclaration,
+                ProcessingContext.of(
                         Map.ofEntries(
-                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME, SERVICE_PACKAGE_NAME),
-                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME, SERVICE_NAME),
-                                Map.entry(PropertyName.DB_TYPE, DB_TYPE)));
+                                Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
+                                Map.entry(PropertyName.PIPELINE.name(), controllerMethodDeclaration),
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(), SERVICE_PACKAGE_NAME),
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME.name(), SERVICE_NAME),
+                                Map.entry(PropertyName.DB_TYPE.name(), DB_TYPE)));
         serviceClassUnit = (CompilationUnit) generator.generate(new CompilationUnit(), context);
     }
 

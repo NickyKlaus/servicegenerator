@@ -19,6 +19,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.*;
@@ -35,9 +36,7 @@ import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_M
 /**
  * Goal which generates microservice based on declared logic.
  */
-@Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
-@Named
-@Singleton
+@Mojo(name = "service-generator", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     private static final String POM_XML = "pom.xml";
     private static final String POM_XML_BACKUP = "pom.xml.bak";
@@ -295,7 +294,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     }
 
     public ServiceGeneratorPlugin(ProcessingContainer processingContainer) {
-        this.processingContainer = processingContainer;
+        this.processingContainer = new ProcessingContainer(processingConfiguration());
     }
 
     private static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
@@ -755,7 +754,8 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        processingContainer.start();
+        //processingContainer.start();
+
         //executeInnerTransformations();
         //executeOuterTransformations();
         //prepareProjectDescriptor();

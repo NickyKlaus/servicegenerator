@@ -55,12 +55,12 @@ public class AddServiceAbstractMethodSchemaTest {
 
         if (parsingServiceDeclarationResult.isSuccessful() && parsingServiceDeclarationResult.getResult().isPresent()) {
             final Context context =
-                    new ProcessingContext(
-                            modelClassName,
-                            abstractServiceMethodDeclaration,
+                    ProcessingContext.of(
                             Map.ofEntries(
+                                    Map.entry(PropertyName.PIPELINE.name(), abstractServiceMethodDeclaration),
+                                    Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
                                     Map.entry(
-                                            PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
+                                            PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION.name(),
                                             abstractServiceMethodDeclaration)));
             final Generator generator =
                     DefaultGenerator

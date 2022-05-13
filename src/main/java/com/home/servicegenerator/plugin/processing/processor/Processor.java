@@ -11,6 +11,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.slf4j.Logger;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 
@@ -23,7 +25,7 @@ public class Processor {
         this.stateMachine = stateMachine;
     }
 
-    public void process(ProcessingStrategy processingStrategy) {
+    public void process() {
         processingStrategy.getStrategy().accept(stateMachine);
     }
 }

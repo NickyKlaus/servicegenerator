@@ -6,14 +6,13 @@ import com.home.servicegenerator.plugin.processing.processor.Processor;
 
 public class ProcessingContainer {
     private final Processor processor;
-    private final ProcessingConfiguration processingConfiguration;
 
     public ProcessingContainer(ProcessingConfiguration processingConfiguration) {
-        var processorConfigurator = new ProcessorConfigurator((this.processingConfiguration = processingConfiguration));
+        var processorConfigurator = new ProcessorConfigurator(processingConfiguration);
         this.processor = processorConfigurator.configure();
     }
 
     public void start() {
-        processor.process(processingConfiguration.getProcessingStrategy());
+        processor.process();
     }
 }

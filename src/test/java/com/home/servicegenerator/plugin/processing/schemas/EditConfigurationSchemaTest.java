@@ -105,12 +105,11 @@ public class EditConfigurationSchemaTest {
 
     private CompilationUnit generate(DbType storageType) {
         final Context context =
-                new ProcessingContext(
-                        modelClassName,
-                        null,
+                ProcessingContext.of(
                         Map.ofEntries(
-                                Map.entry(PropertyName.DB_TYPE, storageType),
-                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME, REPOSITORY_PACKAGE_NAME)
+                                Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
+                                Map.entry(PropertyName.DB_TYPE.name(), storageType),
+                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(), REPOSITORY_PACKAGE_NAME)
                         ));
 
         final Generator generator =
