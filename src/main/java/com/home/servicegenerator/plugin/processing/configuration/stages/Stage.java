@@ -4,6 +4,7 @@ import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
 
 import java.util.Map;
+import java.util.function.Predicate;
 
 public interface Stage {
     ASTProcessingSchema getSchema();
@@ -11,6 +12,9 @@ public interface Stage {
     Stage setProcessingData(Map<String, Object> processingData);
     String getSourceLocation();
     Stage setSourceLocation(String sourceLocation);
-    boolean isRepeatable();
+    Context getContext();
+    Stage setContext(Context context);
     String getName();
+    Predicate<Context> getExecutingStageCondition();
+    Stage setExecutingStageCondition(Predicate<Context> condition);
 }

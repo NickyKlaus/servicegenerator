@@ -19,14 +19,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
-import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION;
-import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.ABSTRACT_SERVICE_NAME;
-import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME;
-import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.DB_TYPE;
-import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.REPOSITORY_ID_CLASS_NAME;
-import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.REPOSITORY_METHOD_DECLARATION;
-import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.REPOSITORY_NAME;
-import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.REPOSITORY_PACKAGE_NAME;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.*;
 import static java.lang.String.format;
 
 public enum InnerProcessingSchema implements ASTProcessingSchema {
@@ -35,7 +28,13 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = context.getPipelineId();
+                final Name model = (Name) context
+                        .getPropertyByName(PIPELINE_ID.name())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                PIPELINE_ID.name())))
+                        .getValue();
                 final DbType dbType = (DbType) context
                         .getPropertyByName(DB_TYPE.name())
                         .orElseThrow(() ->
@@ -94,7 +93,13 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = context.getPipelineId();
+                final Name model = (Name) context
+                        .getPropertyByName(PIPELINE_ID.name())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                PIPELINE_ID.name())))
+                        .getValue();
                 final String servicePackageName = context
                         .getPropertyByName(ABSTRACT_SERVICE_PACKAGE_NAME.name())
                         .orElseThrow(() ->
@@ -157,7 +162,13 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = context.getPipelineId();
+                final Name model = (Name) context
+                        .getPropertyByName(PIPELINE_ID.name())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                PIPELINE_ID.name())))
+                        .getValue();
                 final String abstractServicePackageName = context
                         .getPropertyByName(ABSTRACT_SERVICE_PACKAGE_NAME.name())
                         .orElseThrow(() ->
@@ -249,7 +260,13 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<TypeParameter, Context, TypeParameter> postProcessTypeParameter() {
             return (TypeParameter n, Context context) -> {
-                final Name model = context.getPipelineId();
+                final Name model = (Name) context
+                        .getPropertyByName(PIPELINE_ID.name())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                PIPELINE_ID.name())))
+                        .getValue();
 
                 if (n.getNameAsString().length() == 1) {
                     n.setName(model.getIdentifier());
@@ -261,7 +278,13 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
-                final Name model = context.getPipelineId();
+                final Name model = (Name) context
+                        .getPropertyByName(PIPELINE_ID.name())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                PIPELINE_ID.name())))
+                        .getValue();
                 final String repositoryName = context
                         .getPropertyByName(REPOSITORY_NAME.name())
                         .orElseThrow(() ->
@@ -372,7 +395,13 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> postProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = context.getPipelineId();
+                final Name model = (Name) context
+                        .getPropertyByName(PIPELINE_ID.name())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                PIPELINE_ID.name())))
+                        .getValue();
 
                 //TODO: refactor import
                 n.getImports().removeIf(importDeclaration -> importDeclaration.getName().getQualifier().isPresent() &&
@@ -401,7 +430,14 @@ public enum InnerProcessingSchema implements ASTProcessingSchema {
                         .getValue()
                         .toString();
                 final String serviceFieldName = abstractServiceName.toLowerCase();
-                final MethodDeclaration controllerMethodDeclaration = context.getPipeline();
+                final MethodDeclaration controllerMethodDeclaration =
+                        (MethodDeclaration) context
+                                .getPropertyByName(PIPELINE.name())
+                                .orElseThrow(() ->
+                                        new IllegalArgumentException(
+                                                format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                        PIPELINE.name())))
+                                .getValue();
                 final MethodDeclaration abstractServiceMethod = (MethodDeclaration)context
                         .getPropertyByName(ABSTRACT_SERVICE_METHOD_DECLARATION.name())
                         .orElseThrow(() ->

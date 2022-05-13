@@ -2,10 +2,9 @@ package com.home.servicegenerator.plugin.processing.configuration.stages;
 
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
-import org.springframework.statemachine.StateContext;
-import org.springframework.statemachine.StateMachineContext;
 
-import java.util.function.Function;
+import java.util.Map;
+import java.util.function.Predicate;
 
 public class ProcessingStage implements Stage {
     private final Stage wrappedStage;
@@ -20,22 +19,47 @@ public class ProcessingStage implements Stage {
     }
 
     @Override
-    public Function<StateContext<Stage, String>, Context> getContext() {
+    public Context getContext() {
         return wrappedStage.getContext();
     }
 
     @Override
-    public Function<StateContext<Stage, String>, String> getSourceLocation() {
+    public String getSourceLocation() {
         return wrappedStage.getSourceLocation();
-    }
-
-    @Override
-    public boolean isRepeatable() {
-        return false;
     }
 
     @Override
     public String getName() {
         return toString();
+    }
+
+    @Override
+    public Map<String, Object> getProcessingData() {
+        return wrappedStage.getProcessingData();
+    }
+
+    @Override
+    public Stage setProcessingData(Map<String, Object> processingData) {
+        return wrappedStage.setProcessingData(processingData);
+    }
+
+    @Override
+    public Stage setSourceLocation(String sourceLocation) {
+        return wrappedStage.setSourceLocation(sourceLocation);
+    }
+
+    @Override
+    public Stage setContext(Context context) {
+        return wrappedStage.setContext(context);
+    }
+
+    @Override
+    public Predicate<Context> getExecutingStageCondition() {
+        return wrappedStage.getExecutingStageCondition();
+    }
+
+    @Override
+    public Stage setExecutingStageCondition(Predicate<Context> condition) {
+        return wrappedStage.setExecutingStageCondition(condition);
     }
 }

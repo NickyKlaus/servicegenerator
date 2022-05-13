@@ -1,8 +1,11 @@
 package com.home.servicegenerator.plugin.processing.configuration.stages;
 
 import com.home.servicegenerator.api.ASTProcessingSchema;
+import com.home.servicegenerator.api.context.Context;
+import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
 
 import java.util.Map;
+import java.util.function.Predicate;
 
 import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.AddControllerMethodImplementation;
 import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.AddServiceAbstractMethod;
@@ -76,9 +79,9 @@ public enum InnerProcessingStage implements Stage {
     ;
 
     private ASTProcessingSchema schema;
-    private Map<String, Object> processingData;
+    private Context context = new ProcessingContext();
     private String sourceLocation;
-    private boolean repeatable;
+    private Predicate<Context> executionCondition;
 
     public InnerProcessingStage setSchema(final ASTProcessingSchema schema) {
         this.schema = schema;
@@ -91,8 +94,14 @@ public enum InnerProcessingStage implements Stage {
         return this;
     }
 
-    public InnerProcessingStage repeatable() {
-        this.repeatable = true;
+    @Override
+    public Context getContext() {
+        return context;
+    }
+
+    @Override
+    public Stage setContext(Context context) {
+        this.context = context;
         return this;
     }
 
@@ -103,15 +112,14 @@ public enum InnerProcessingStage implements Stage {
 
     @Override
     public Map<String, Object> getProcessingData() {
-        return processingData;
+        return context.getProperties();
     }
 
     @Override
     public InnerProcessingStage setProcessingData(Map<String, Object> processingData) {
-        this.processingData = processingData;
+        this.context.getProperties().putAll(processingData);
         return this;
     }
-
 
     @Override
     public String getSourceLocation() {
@@ -119,12 +127,18 @@ public enum InnerProcessingStage implements Stage {
     }
 
     @Override
-    public boolean isRepeatable() {
-        return repeatable;
+    public String getName() {
+        return this.name();
     }
 
     @Override
-    public String getName() {
-        return this.name();
+    public Predicate<Context> getExecutingStageCondition() {
+        return executionCondition;
+    }
+
+    @Override
+    public Stage setExecutingStageCondition(Predicate<Context> executionCondition) {
+        this.executionCondition = executionCondition;
+        return this;
     }
 }

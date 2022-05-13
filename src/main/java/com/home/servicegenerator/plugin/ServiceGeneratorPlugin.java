@@ -83,7 +83,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                         Long.class.getSimpleName()))))
                 .stage(
                         InnerProcessingStage.CREATE_ABSTRACT_SERVICE
-                                .setSourceLocation(
+                                /*.setSourceLocation(
                                         (ctx) -> {
                                             var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
                                             if (pipelineId != null) {
@@ -95,28 +95,18 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                         pipelineId.getIdentifier() + "Service").toString();
                                             }
                                             return null;
-                                        })
-                                .setContext(
-                                        (ctx) -> {
-                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
-                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
-                                            if (pipelineId != null && pipeline != null) {
-                                                return new ProcessingContext(
-                                                        pipelineId,
-                                                        pipeline,
-                                                        Map.ofEntries(
-                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
-                                                                        getBasePackage() + ".service"),
-                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
-                                                                        pipelineId.getIdentifier() + "Service"),
-                                                                Map.entry(PropertyName.DB_TYPE,
-                                                                        getDbType())));
-                                            }
-                                            return null;
-                                        }))
+                                        })*/
+                                .setProcessingData(
+                                        Map.ofEntries(
+                                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
+                                                        getBasePackage() + ".service"),
+                                                /*Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
+                                                        pipelineId.getIdentifier() + "Service"),*/
+                                                Map.entry(PropertyName.DB_TYPE.name(),
+                                                        getDbType()))))
                 .stage(
                         InnerProcessingStage.INJECT_SERVICE_INTO_CONTROLLER
-                                .setSourceLocation(
+                                /*.setSourceLocation(
                                         (ctx) -> {
                                             var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
                                             if (pipelineId != null) {
@@ -128,26 +118,16 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                         pipelineId.getIdentifier() + "Repository").toString();
                                             }
                                             return null;
-                                        })
-                                .setContext(
-                                        (ctx) -> {
-                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
-                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
-                                            if (pipelineId != null && pipeline != null) {
-                                                return new ProcessingContext(
-                                                        pipelineId,
-                                                        pipeline,
-                                                        Map.ofEntries(
-                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
-                                                                        getBasePackage() + ".service"),
-                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
-                                                                        pipelineId.getIdentifier() + "Service")));
-                                            }
-                                            return null;
-                                        }))
+                                        })*/
+                                .setProcessingData(
+                                        Map.ofEntries(
+                                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
+                                                        getBasePackage() + ".service")/*,
+                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
+                                                        pipelineId.getIdentifier() + "Service")*/)))
                 .stage(
                         InnerProcessingStage.CREATE_SERVICE_IMPLEMENTATION
-                                .setSourceLocation(
+                                /*.setSourceLocation(
                                         (ctx) -> {
                                             var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
                                             if (pipelineId != null) {
@@ -159,32 +139,23 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                         pipelineId.getIdentifier() + "ServiceImpl").toString();
                                             }
                                             return null;
-                                        })
-                                .setContext(
-                                        (ctx) -> {
-                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
-                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
-                                            if (pipelineId != null && pipeline != null) {
-                                                new ProcessingContext(
-                                                        pipelineId,
-                                                        pipeline,
-                                                        Map.ofEntries(
-                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME,
-                                                                        getBasePackage() + ".service"),
-                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
-                                                                        pipelineId.getIdentifier() + "Service"),
-                                                                Map.entry(PropertyName.REPOSITORY_NAME,
-                                                                        pipelineId.getIdentifier() + "Repository"),
-                                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
-                                                                        getBasePackage() + ".repository"),
-                                                                Map.entry(PropertyName.DB_TYPE,
-                                                                        getDbType())));
-                                            }
-                                            return null;
-                                        }))
+                                        })*/
+                                .setProcessingData(
+                                        Map.ofEntries(
+                                                        Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
+                                                                getBasePackage() + ".service"),
+                                                       /* Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
+                                                                pipelineId.getIdentifier() + "Service"),*/
+                                                        /*Map.entry(PropertyName.REPOSITORY_NAME,
+                                                                pipelineId.getIdentifier() + "Repository"),*/
+                                                        Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(),
+                                                                getBasePackage() + ".repository"),
+                                                        Map.entry(PropertyName.DB_TYPE.name(),
+                                                                getDbType()
+                                ))))
                 .stage(
                         InnerProcessingStage.ADD_SERVICE_ABSTRACT_METHOD
-                                .setSourceLocation(
+                                /*.setSourceLocation(
                                         (ctx) -> {
                                             var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
                                             if (pipelineId != null) {
@@ -196,31 +167,15 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                         pipelineId.getIdentifier() + "Service").toString();
                                             }
                                             return null;
-                                        })
-                                .setContext(
-                                        (ctx) -> {
-                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
-                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
-                                            var abstractServiceMethodDeclaration =
-                                                    getMethodMatchedWithPipeline(
-                                                            pipeline,
-                                                            getDbType().getRepositoryImplementationMethodDeclarations(),
-                                                            pipelineId,
-                                                            new MatchWithRestEndpointMethodStrategy());
-                                            if (pipelineId != null && pipeline != null && abstractServiceMethodDeclaration.isPresent()) {
-                                                return new ProcessingContext(
-                                                        pipelineId,
-                                                        //resolve method type and signature: signature is from controller, type is from repository
-                                                        pipeline,
-                                                        Map.ofEntries(
-                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
-                                                                        abstractServiceMethodDeclaration.get())));
-                                            }
-                                            return null;
-                                        }))
+                                        })*/
+                                /*.setProcessingData(
+                                        Map.ofEntries(
+                                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION.name(),
+                                                        abstractServiceMethodDeclaration.get())
+                                )*/)
                 .stage(
                         InnerProcessingStage.ADD_SERVICE_METHOD_IMPLEMENTATION
-                                .setSourceLocation(
+                                /*.setSourceLocation(
                                         (ctx) -> {
                                             var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
                                             if (pipelineId != null) {
@@ -233,8 +188,19 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                             }
                                             return null;
                                         }
+                                )*/
+                                .setProcessingData(
+                                        Map.ofEntries(
+                                                /*Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
+                                                        abstractServiceMethodDeclaration.get()),*/
+                                                /*Map.entry(PropertyName.REPOSITORY_METHOD_DECLARATION,
+                                                        abstractServiceMethodDeclaration.get()),*/
+                                                /*Map.entry(PropertyName.REPOSITORY_NAME,
+                                                        pipelineId.getIdentifier() + "Repository"),*/
+                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(),
+                                                        getBasePackage() + ".repository"))
                                 )
-                                .setContext(
+                                /*.setContext(
                                         (ctx) -> {
                                             var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
                                             var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
@@ -259,10 +225,10 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                                         getBasePackage() + ".repository")));
                                             }
                                             return null;
-                                        }))
+                                        })*/)
                 .stage(
                         InnerProcessingStage.EDIT_CONFIGURATION
-                                .setSourceLocation(
+                                /*.setSourceLocation(
                                         (ctx) -> {
                                             var configurationClass =
                                                     ctx.getExtendedState().get("configurationClass", String.class);
@@ -276,26 +242,17 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                             }
                                             return null;
                                         }
-                                )
-                                .setContext(
-                                        (ctx) -> {
-                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
-                                            var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
-                                            if (pipelineId != null && pipeline != null) {
-                                                return new ProcessingContext(
-                                                        null,
-                                                        null,
-                                                        Map.ofEntries(
-                                                                Map.entry(PropertyName.DB_TYPE,
-                                                                        getDbType()),
-                                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME,
-                                                                        getBasePackage() + ".repository")));
-                                            }
-                                            return null;
-                                        }))
+                                )*/
+                                .setProcessingData(
+                                        Map.ofEntries(
+                                                Map.entry(PropertyName.DB_TYPE.name(),
+                                                        getDbType()),
+                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(),
+                                                        getBasePackage() + ".repository"))
+                                ))
                 .stage(
                         InnerProcessingStage.ADD_CONTROLLER_METHOD_IMPLEMENTATION
-                                .setSourceLocation(
+                                /*.setSourceLocation(
                                         (ctx) -> {
                                             var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
                                             if (pipelineId != null) {
@@ -308,8 +265,15 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                             }
                                             return null;
                                         }
-                                )
-                                .setContext(
+                                )*/
+                                /*.setProcessingData(
+                                        Map.ofEntries(
+                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
+                                                        pipelineId.getIdentifier() + "Service"),
+                                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
+                                                        abstractServiceMethodDeclaration.get())
+                                )*/
+                                /*.setContext(
                                         (ctx) -> {
                                             var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
                                             var pipeline = ctx.getExtendedState().get("pipeline", MethodDeclaration.class);
@@ -323,14 +287,10 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                 return new ProcessingContext(
                                                         pipelineId,
                                                         pipeline,
-                                                        Map.ofEntries(
-                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
-                                                                        pipelineId.getIdentifier() + "Service"),
-                                                                Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION,
-                                                                        abstractServiceMethodDeclaration.get())));
+                                                        ));
                                             }
                                             return null;
-                                        })
+                                        })*/
                 );
     }
 

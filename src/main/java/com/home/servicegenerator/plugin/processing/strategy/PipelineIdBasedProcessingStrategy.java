@@ -5,6 +5,8 @@ import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.PluginConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
+import com.home.servicegenerator.plugin.processing.context.properties.ProcessingProperty;
+import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.processor.ProcessingUnit;
 import com.home.servicegenerator.plugin.processing.processor.statemachine.ProcessingStateMachine;
 import com.home.servicegenerator.plugin.processing.registry.ProjectUnitsRegistry;
@@ -91,15 +93,11 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
 
                     // A fully qualified name of an available model class that the pipeline based on
                     var pipelineId = pipelineIdResolveResult.get();
+                    stateMachine.getInitialState().getProcessingData().put(PropertyName.PIPELINE.name(), pipeline);
+                    stateMachine.getInitialState().getProcessingData().put(PropertyName.PIPELINE_ID.name(), pipelineId);
                     stateMachine.start(
                             ProcessingContext.of(
-                                    pipelineId,
-                                    pipeline,
                                     stateMachine.getInitialState().getProcessingData()));
-                    stateMachine.fire(pipelineId.asString(), ProcessingContext.of(
-                            pipelineId,
-                            pipeline,
-                            stateMachine.getCurrentState().getProcessingData()));
                 }
             }
 

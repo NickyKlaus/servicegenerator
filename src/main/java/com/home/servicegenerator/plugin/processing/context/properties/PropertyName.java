@@ -1,6 +1,8 @@
 package com.home.servicegenerator.plugin.processing.context.properties;
 
 public enum PropertyName {
+    PIPELINE_ID,
+    PIPELINE,
     DB_TYPE,
     REPOSITORY_ID_CLASS_NAME,
     REPOSITORY_NAME,
