@@ -27,7 +27,7 @@ public class ProcessorConfigurator {
     private AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> prepareStateMachine(
             ProcessingConfiguration processingConfiguration
     ) {
-        final AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine;
+        //final AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine;
         final List<Stage> stages = processingConfiguration.getProcessingPlan().getProcessingStages();
         final StateMachineBuilder<ProcessingStateMachine, Stage, String, Context> stateMachineBuilder =
                 StateMachineBuilderFactory.create(ProcessingStateMachine.class, Stage.class, String.class, Context.class);

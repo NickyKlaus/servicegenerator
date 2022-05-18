@@ -3,6 +3,7 @@ package com.home.servicegenerator.plugin;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
+import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.plugin.processing.configuration.DefaultProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.stages.ProcessingPlan;
@@ -13,12 +14,16 @@ import com.home.servicegenerator.plugin.processing.processor.MatchingMethodStrat
 import com.home.servicegenerator.plugin.processing.strategy.PipelineIdBasedNamingStrategy;
 import com.home.servicegenerator.plugin.processing.strategy.PipelineIdBasedProcessingStrategy;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import javax.inject.Named;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,17 +31,20 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 import static com.github.javaparser.StaticJavaParser.parse;
+import static com.home.servicegenerator.plugin.processing.context.properties.PropertyName.PIPELINE_ID;
+import static com.home.servicegenerator.plugin.utils.FileUtils.createFilePath;
 import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL;
+import static java.lang.String.format;
 
 /**
  * Goal which generates microservice based on declared logic.
  */
-@Mojo(name = "service-generator", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
+@Mojo(name = "generate-service", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
+    private static final String CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE = "%s is not set";
     private static final String POM_XML = "pom.xml";
     private static final String POM_XML_BACKUP = "pom.xml.bak";
 
-    @Named
     public ProcessingConfiguration processingConfiguration() {
         return DefaultProcessingConfiguration
                 .configuration()
@@ -45,25 +53,27 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                 .namingStrategy(new PipelineIdBasedNamingStrategy());
     }
 
-    @Named
     public ProcessingPlan processingPlan() {
         return ProcessingPlan
                 .processingPlan()
                 .stage(
                         InnerProcessingStage.CREATE_REPOSITORY
-                                /*.setSourceLocation(
+                                .setSourceLocation(
                                         (ctx) -> {
-                                            var pipelineId = ctx.getExtendedState().get("pipelineId", Name.class);
-                                            if (pipelineId != null) {
-                                                return createFilePath(
-                                                        getProjectOutputDirectory().toString(),
-                                                        getSourcesDirectory().toString(),
-                                                        getBasePackage(),
-                                                        "repository",
-                                                        pipelineId.getIdentifier() + "Repository").toString();
-                                            }
-                                            return null;
-                                        })*/
+                                            var pipelineId =
+                                                    (Name) ctx
+                                                            .getPropertyByName(PIPELINE_ID.name())
+                                                            .orElseThrow(() ->
+                                                                    new IllegalArgumentException(
+                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                                                    PIPELINE_ID.name())));
+                                            return createFilePath(
+                                                    getProjectOutputDirectory().toString(),
+                                                    getSourcesDirectory().toString(),
+                                                    getBasePackage(),
+                                                    "repository",
+                                                    pipelineId.getIdentifier() + "Repository").toString();
+                                        })
                                 .setProcessingData(
                                         Map.ofEntries(
                                                 Map.entry(PropertyName.DB_TYPE.name(),
@@ -115,9 +125,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                 .setProcessingData(
                                         Map.ofEntries(
                                                 Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
-                                                        getBasePackage() + ".service")/*,
-                                                Map.entry(PropertyName.ABSTRACT_SERVICE_NAME,
-                                                        pipelineId.getIdentifier() + "Service")*/)))
+                                                        getBasePackage() + ".service"))))
                 .stage(
                         InnerProcessingStage.CREATE_SERVICE_IMPLEMENTATION
                                 /*.setSourceLocation(

@@ -5,9 +5,9 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
-import com.home.servicegenerator.plugin.processing.context.properties.DbType;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
 import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
+import com.home.servicegenerator.plugin.processing.context.properties.Storage;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -24,7 +24,7 @@ public class CreateAbstractServiceSchemaTest {
                     .setIdentifier(TestModel.class.getSimpleName());
     private static final String SERVICE_PACKAGE_NAME = "com.home.service";
     private static final String SERVICE_NAME = "TestService";
-    private static final DbType DB_TYPE = DbType.mongo;
+    private static final Storage.DbType DB_TYPE = Storage.DbType.mongo;
     private static CompilationUnit serviceClassUnit;
 
     @BeforeAll

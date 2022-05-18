@@ -34,7 +34,7 @@ public class InjectServiceIntoControllerSchemaTest {
                     .setQualifier(new Name("com.home.servicegenerator.plugin.schemas"))
                     .setIdentifier(TestModel.class.getSimpleName());
     private final static String ABSTRACT_SERVICE_PACKAGE_NAME = "com.home.service";
-    private final static String ABSTRACT_SERVICE_NAME = "TestService";
+    private final static String ABSTRACT_SERVICE_NAME = modelClassName.getIdentifier() + "Service";
     private final static String SERVICE_FIELD_NAME = ABSTRACT_SERVICE_NAME.toLowerCase();
     private static AssignExpr serviceAssignment;
     private static ClassOrInterfaceDeclaration controllerDeclarationAfterInjectionService;
@@ -66,9 +66,9 @@ public class InjectServiceIntoControllerSchemaTest {
                         Map.ofEntries(
                                 Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
                                 Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
-                                        ABSTRACT_SERVICE_PACKAGE_NAME),
+                                        ABSTRACT_SERVICE_PACKAGE_NAME)/*,
                                 Map.entry(PropertyName.ABSTRACT_SERVICE_NAME.name(),
-                                        ABSTRACT_SERVICE_NAME)
+                                        ABSTRACT_SERVICE_NAME)*/
                         ));
         final Generator generator =
                 DefaultGenerator

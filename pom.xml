@@ -113,12 +113,6 @@
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
             <version>${javaparser.version}</version>
-            <!--<exclusions>
-                <exclusion>
-                    <groupId>org.sonatype.sisu</groupId>
-                    <artifactId>sisu-guava</artifactId>
-                </exclusion>
-            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>com.github.javaparser</groupId>
@@ -148,9 +142,9 @@
                         <version>${asm.version}</version>
                     </dependency>
                 </dependencies>
-                <configuration>
+                <!--<configuration>
                     <goalPrefix>service-generator</goalPrefix>
-                </configuration>
+                </configuration>-->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

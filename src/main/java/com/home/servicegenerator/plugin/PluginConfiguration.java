@@ -1,6 +1,6 @@
 package com.home.servicegenerator.plugin;
 
-import com.home.servicegenerator.plugin.processing.context.properties.DbType;
+import com.home.servicegenerator.plugin.processing.context.properties.Storage;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -13,7 +13,7 @@ public class PluginConfiguration {
     private String configurationPackage;
     private String modelPackage;
     private String controllerPackage;
-    private DbType dbType;
+    private Storage.DbType dbType;
     private List<Transformation> transformations;
 
     public Path getSourcesLocation() {
@@ -72,11 +72,11 @@ public class PluginConfiguration {
         this.controllerPackage = controllerPackage;
     }
 
-    public DbType getDbType() {
+    public Storage.DbType getDbType() {
         return dbType;
     }
 
-    public void setDbType(DbType dbType) {
+    public void setDbType(Storage.DbType dbType) {
         this.dbType = dbType;
     }
 

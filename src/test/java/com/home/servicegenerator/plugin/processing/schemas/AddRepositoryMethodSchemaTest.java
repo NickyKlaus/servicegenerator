@@ -5,9 +5,9 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
-import com.home.servicegenerator.plugin.processing.context.properties.DbType;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
 import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
+import com.home.servicegenerator.plugin.processing.context.properties.Storage;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -23,7 +23,7 @@ public class AddRepositoryMethodSchemaTest {
                     .setIdentifier(TestModel.class.getSimpleName());
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";
     private static final String REPOSITORY_NAME = "TestRepository";
-    private static final DbType DB_NAME = DbType.mongo;
+    private static final Storage.DbType DB_NAME = Storage.DbType.mongo;
     private static final String REPOSITORY_ID_CLASS = Long.class.getCanonicalName();
 
     private static CompilationUnit repositoryUnitAfterCreating;

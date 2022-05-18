@@ -8,9 +8,11 @@ import org.w3c.dom.Node;
 import java.util.Objects;
 
 public class Dependency {
-    private final String groupId;
-    private final String artifactId;
+    private String groupId;
+    private String artifactId;
     private String version;
+
+    public Dependency() {}
 
     public Dependency(String groupId, String artifactId, String version) {
         this.groupId = groupId;

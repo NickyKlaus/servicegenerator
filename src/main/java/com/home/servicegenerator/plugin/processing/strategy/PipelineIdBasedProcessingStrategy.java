@@ -5,10 +5,8 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.PluginConfiguration;
-import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
-import com.home.servicegenerator.plugin.processing.context.properties.ProcessingProperty;
 import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.processor.ProcessingUnit;
 import com.home.servicegenerator.plugin.processing.processor.statemachine.ProcessingStateMachine;
@@ -23,7 +21,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
     @Override

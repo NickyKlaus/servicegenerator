@@ -11,8 +11,7 @@ public enum DataInterpolationStrategy {
             return (placeholder == null || context == null) ?
                     null :
                     context.getPropertyByName(placeholder)
-                            .orElseThrow(() -> new IllegalArgumentException("!!!"))
-                            .getValue();
+                            .orElseThrow(() -> new IllegalArgumentException("!!!"));
         }
     },
 

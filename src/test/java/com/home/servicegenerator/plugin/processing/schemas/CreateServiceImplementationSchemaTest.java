@@ -9,9 +9,9 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.home.servicegenerator.api.Generator;
 import com.home.servicegenerator.api.context.Context;
-import com.home.servicegenerator.plugin.processing.context.properties.DbType;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
 import com.home.servicegenerator.plugin.processing.context.properties.PropertyName;
+import com.home.servicegenerator.plugin.processing.context.properties.Storage;
 import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
 import com.home.servicegenerator.plugin.schemas.InnerProcessingSchema;
 import org.junit.jupiter.api.Assertions;
@@ -35,7 +35,7 @@ public class CreateServiceImplementationSchemaTest {
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";
     private static final String REPOSITORY_NAME = "TestRepository";
     private static final String REPOSITORY_FIELD_NAME = REPOSITORY_NAME.toLowerCase();
-    private static final DbType DB_TYPE = DbType.mongo;
+    private static final Storage.DbType DB_TYPE = Storage.DbType.mongo;
     private static CompilationUnit serviceImplementationClassUnit;
     private static AssignExpr repositoryAssignment;
 

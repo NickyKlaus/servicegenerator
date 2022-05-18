@@ -5,6 +5,7 @@ import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.processing.context.ProcessingContext;
 
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.home.servicegenerator.plugin.schemas.InnerProcessingSchema.AddControllerMethodImplementation;
@@ -81,6 +82,7 @@ public enum InnerProcessingStage implements Stage {
     private ASTProcessingSchema schema;
     private Context context = new ProcessingContext();
     private String sourceLocation;
+    private Function<Context, String> sourceLocationProvider;
     private Predicate<Context> executionCondition;
 
     public InnerProcessingStage setSchema(final ASTProcessingSchema schema) {
@@ -90,7 +92,14 @@ public enum InnerProcessingStage implements Stage {
 
     @Override
     public InnerProcessingStage setSourceLocation(String sourceLocation) {
+        this.sourceLocationProvider = null;
         this.sourceLocation = sourceLocation;
+        return this;
+    }
+
+    public InnerProcessingStage setSourceLocation(Function<Context, String> locationProvider) {
+        this.sourceLocation = null;
+        this.sourceLocationProvider = locationProvider;
         return this;
     }
 
@@ -123,7 +132,7 @@ public enum InnerProcessingStage implements Stage {
 
     @Override
     public String getSourceLocation() {
-        return sourceLocation;
+        return sourceLocationProvider == null ? sourceLocation : sourceLocationProvider.apply(getContext());
     }
 
     @Override
