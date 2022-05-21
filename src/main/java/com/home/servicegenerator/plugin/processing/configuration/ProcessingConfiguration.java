@@ -1,8 +1,8 @@
 package com.home.servicegenerator.plugin.processing.configuration;
 
 import com.home.servicegenerator.plugin.processing.configuration.stages.ProcessingPlan;
-import com.home.servicegenerator.plugin.processing.strategy.NamingStrategy;
-import com.home.servicegenerator.plugin.processing.strategy.ProcessingStrategy;
+import com.home.servicegenerator.plugin.processing.configuration.strategy.naming.NamingStrategy;
+import com.home.servicegenerator.plugin.processing.configuration.strategy.processing.ProcessingStrategy;
 
 public interface ProcessingConfiguration {
     ProcessingConfiguration processingPlan(final ProcessingPlan plan);

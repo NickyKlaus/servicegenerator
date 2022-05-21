@@ -15,7 +15,7 @@ public final class ProcessingPlan {
         return PROCESSING_PLAN;
     }
 
-    public ProcessingPlan stage(final InnerProcessingStage stage) {
+    public ProcessingPlan stage(final Stage stage) {
         stages.add(stage);
         return PROCESSING_PLAN;
     }

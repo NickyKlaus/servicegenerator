@@ -11,6 +11,7 @@ import org.squirrelframework.foundation.fsm.StateMachineBuilderFactory;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class ProcessorConfigurator {
     private final AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine;
@@ -27,39 +28,58 @@ public class ProcessorConfigurator {
     private AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> prepareStateMachine(
             ProcessingConfiguration processingConfiguration
     ) {
-        //final AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine;
         final List<Stage> stages = processingConfiguration.getProcessingPlan().getProcessingStages();
         final StateMachineBuilder<ProcessingStateMachine, Stage, String, Context> stateMachineBuilder =
                 StateMachineBuilderFactory.create(ProcessingStateMachine.class, Stage.class, String.class, Context.class);
 
-        if (stages.isEmpty()) {
-            return null;
-        }
+        if (stages.isEmpty()) return null;
 
-        for (Stage stage : stages) {
+        if (stages.size() == 1) {
+            var singleStage = stages.get(0);
             stateMachineBuilder
                     .internalTransition()
-                    .within(stage)
-                    .on("GENERATE_" + stage.getName())
+                    .within(singleStage)
+                    .on("GENERATE_" + singleStage.getName())
                     .when(
-                            new Condition<Context>() {
+                            new Condition<>() {
                                 @Override
                                 public boolean isSatisfied(Context context) {
-                                    return stage.getExecutingStageCondition().test(context);
+                                    return singleStage.getExecutingStageCondition().test(context);
                                 }
 
                                 @Override
                                 public String name() {
-                                    return stage.getName();
+                                    return singleStage.getName();
                                 }
                             })
                     .callMethod("generate");
-            stateMachineBuilder
-                    .transit()
-                    .from(stage)
-                    .toAny()
-                    .on("REGISTER_" + stage.getName())
-                    .callMethod("register");
+        } else {
+            IntStream.range(1, stages.size())
+                    .mapToObj(i -> List.of(stages.get(i-1), stages.get(i)))
+                    .forEach(
+                            pair -> {
+                                var fromStage = pair.get(0);
+                                var toStage = pair.get(1);
+                                stateMachineBuilder
+                                        .externalTransition()
+                                        .from(fromStage)
+                                        .to(toStage)
+                                        .on("GENERATE_" + fromStage.getName())
+                                        .when(
+                                                new Condition<>() {
+                                                    @Override
+                                                    public boolean isSatisfied(Context context) {
+                                                        return fromStage.getExecutingStageCondition().test(context);
+                                                    }
+
+                                                    @Override
+                                                    public String name() {
+                                                        return fromStage.getName();
+                                                    }
+                                                })
+                                        .callMethod("generate");
+                            }
+                    );
         }
 
         stateMachineBuilder.defineFinalState(stages.get(stages.size()-1));

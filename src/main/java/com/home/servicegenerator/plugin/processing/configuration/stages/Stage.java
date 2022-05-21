@@ -4,6 +4,8 @@ import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
 
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface Stage {
@@ -12,9 +14,12 @@ public interface Stage {
     Stage setProcessingData(Map<String, Object> processingData);
     String getSourceLocation();
     Stage setSourceLocation(String sourceLocation);
-    Context getContext();
-    Stage setContext(Context context);
     String getName();
-    Predicate<Context> getExecutingStageCondition();
+    Stage postProcessingAction(Consumer<Context> action);
+    Consumer<Context> getPostProcessingAction();
+    Stage setSourceLocation(Function<Context, String> locationProvider);
+    default Predicate<Context> getExecutingStageCondition() {
+        return ctx -> true;
+    }
     Stage setExecutingStageCondition(Predicate<Context> condition);
 }

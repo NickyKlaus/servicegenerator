@@ -1,6 +1,6 @@
 package com.home.servicegenerator.plugin;
 
-import com.home.servicegenerator.plugin.processing.context.properties.Storage;
+import com.home.servicegenerator.plugin.processing.configuration.context.properties.Storage;
 
 import java.nio.file.Path;
 import java.util.List;

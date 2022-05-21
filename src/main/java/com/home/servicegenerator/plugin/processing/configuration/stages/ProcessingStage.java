@@ -4,8 +4,11 @@ import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
 
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
+@Deprecated
 public class ProcessingStage implements Stage {
     private final Stage wrappedStage;
 
@@ -16,11 +19,6 @@ public class ProcessingStage implements Stage {
     @Override
     public ASTProcessingSchema getSchema() {
         return wrappedStage.getSchema();
-    }
-
-    @Override
-    public Context getContext() {
-        return wrappedStage.getContext();
     }
 
     @Override
@@ -49,11 +47,6 @@ public class ProcessingStage implements Stage {
     }
 
     @Override
-    public Stage setContext(Context context) {
-        return wrappedStage.setContext(context);
-    }
-
-    @Override
     public Predicate<Context> getExecutingStageCondition() {
         return wrappedStage.getExecutingStageCondition();
     }
@@ -61,5 +54,20 @@ public class ProcessingStage implements Stage {
     @Override
     public Stage setExecutingStageCondition(Predicate<Context> condition) {
         return wrappedStage.setExecutingStageCondition(condition);
+    }
+
+    @Override
+    public Stage postProcessingAction(Consumer<Context> action) {
+        return wrappedStage.postProcessingAction(action);
+    }
+
+    @Override
+    public Stage setSourceLocation(Function<Context, String> locationProvider) {
+        return wrappedStage.setSourceLocation(locationProvider);
+    }
+
+    @Override
+    public Consumer<Context> getPostProcessingAction() {
+        return wrappedStage.getPostProcessingAction();
     }
 }
