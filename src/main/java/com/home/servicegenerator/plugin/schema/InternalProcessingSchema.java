@@ -428,7 +428,12 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
                                 new IllegalArgumentException(
                                         format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
                                                 DB_TYPE.name())));
+
                 n.addImport(storageType.dbRepositoryConfigAnnotationClass());
+                /*n.addImport("org.springframework.context.annotation.Bean");
+                n.addImport("com.fasterxml.jackson.databind.Module");
+                n.addImport("com.fasterxml.jackson.datatype.jsr310.JavaTimeModule");*/
+
                 return n;
             };
         }
@@ -458,7 +463,18 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
                 if (n.getAnnotationByName(SPRING_BOOT_APPLICATION_FULL).isPresent() ||
                         n.getAnnotationByName(SPRING_BOOT_APPLICATION_SHORT).isPresent()) {
                     n.addAnnotation(prepareDbRepositoryConfigAnnotation(List.of(repositoryPackageName), storageType));
+
+                    /*n.addMethod("javaTimeModule", Modifier.Keyword.PUBLIC)
+                            .addMarkerAnnotation("Bean")
+                            .setType("Module")
+                            .setBody(
+                                    new BlockStmt()
+                                            .addStatement(
+                                                    new ReturnStmt(
+                                                            new ObjectCreationExpr()
+                                                                    .setType("JavaTimeModule"))));*/
                 }
+
                 return n;
             };
         }

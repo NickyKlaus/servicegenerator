@@ -1,6 +1,7 @@
 package com.home.servicegenerator.plugin.processing.container.registry;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.home.servicegenerator.plugin.processing.container.ProcessingUnit;
 import org.apache.maven.plugin.MojoFailureException;
 
 import java.util.List;
@@ -25,6 +26,10 @@ public final class ProjectUnitsRegistry {
 
     public static boolean isRegistered(final String unitId) {
         return projectsUnitsIndex.containsKey(unitId);
+    }
+
+    public static boolean notRegistered(final String unitId) {
+        return !projectsUnitsIndex.containsKey(unitId);
     }
 
     public static List<CompilationUnit> getAll() {

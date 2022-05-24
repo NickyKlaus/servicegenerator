@@ -2,9 +2,12 @@ package com.home.servicegenerator.plugin;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
+import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.plugin.processing.configuration.DefaultProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.stages.ProcessingPlan;
+import com.home.servicegenerator.plugin.processing.configuration.stages.ProcessingStage;
+import com.home.servicegenerator.plugin.processing.configuration.strategy.processing.SequentialProcessingStrategy;
 import com.home.servicegenerator.plugin.processing.container.ProcessingContainer;
 import com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName;
 import com.home.servicegenerator.plugin.processing.configuration.stages.InternalProcessingStage;
@@ -13,7 +16,9 @@ import com.home.servicegenerator.plugin.processing.configuration.strategy.matchm
 import com.home.servicegenerator.plugin.processing.configuration.strategy.matchmethod.MatchingMethodStrategy;
 import com.home.servicegenerator.plugin.processing.configuration.strategy.naming.PipelineIdBasedNamingStrategy;
 import com.home.servicegenerator.plugin.processing.configuration.strategy.processing.PipelineIdBasedProcessingStrategy;
+import com.home.servicegenerator.plugin.processing.container.registry.ProjectUnitsRegistry;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -36,12 +41,15 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.github.javaparser.StaticJavaParser.parse;
 import static com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION;
 import static com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName.DB_TYPE;
 import static com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName.PIPELINE;
@@ -62,26 +70,20 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     private static final String POM_XML_BACKUP = "pom.xml.bak";
 
     private ProcessingPlan processingPlan() {
+        //TODO: InnerStages -> ProcessingStages with predefined conditions etc
         return ProcessingPlan
                 .processingPlan()
                 .stage(
                         InternalProcessingStage.CREATE_REPOSITORY
                                 .setSourceLocation(
-                                        (ctx) -> {
-                                            var pipelineId =
-                                                    (Name) ctx
-                                                            .getPropertyByName(PIPELINE_ID.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    PIPELINE_ID.name())));
-                                            return createFilePath(
-                                                    getProjectOutputDirectory().toString(),
-                                                    getSourcesDirectory().toString(),
-                                                    getBasePackage(),
-                                                    "repository",
-                                                    pipelineId.getIdentifier() + "Repository").toString();
-                                        })
+                                        (ctx) ->
+                                                //TODO: default base package, preset component package, naming strategy
+                                                createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "repository",
+                                                        ctx.get(PIPELINE_ID.name(), Name.class).getIdentifier() + "Repository").toString())
                                 .setProcessingData(
                                         Map.ofEntries(
                                                 Map.entry(PropertyName.DB_TYPE.name(),
@@ -89,7 +91,18 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                 Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(),
                                                         getBasePackage() + ".repository"),
                                                 Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME.name(),
-                                                        Long.class.getSimpleName()))))
+                                                        Long.class.getSimpleName())))
+                                //default
+                                .setExecutingStageCondition(
+                                        ctx -> {
+                                            var unitId =
+                                                    createFilePath(getProjectOutputDirectory().toString(),
+                                                            getSourcesDirectory().toString(),
+                                                            getBasePackage(),
+                                                            "repository",
+                                                            ctx.get(PIPELINE_ID.name(), Name.class).getIdentifier() + "Repository").toString();
+                                            return ProjectUnitsRegistry.notRegistered(unitId);
+                                        }))
                 .stage(
                         InternalProcessingStage.CREATE_ABSTRACT_SERVICE
                                 .setSourceLocation(
@@ -284,111 +297,104 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                 .namingStrategy(new PipelineIdBasedNamingStrategy());
     }
 
-    /*private void executeOuterTransformations() throws MojoFailureException {
-        var classTransformations = getTransformations();
-        if (!classTransformations.isEmpty()) {
-            for (var transformation : classTransformations) {
-                var sourceClassPath = Optional.<Path>empty();
-                var targetClassPath = Optional.<Path>empty();
+    private ProcessingConfiguration executeOuterTransformations() throws MojoFailureException {
+        var externalProcessingPlan = ProcessingPlan.processingPlan();
 
-                if (StringUtils.isNoneEmpty(transformation.getSourceClassPackage()) &&
-                        StringUtils.isNoneEmpty(transformation.getSourceClassName())) {
-                    sourceClassPath =
-                            Optional.of(
-                                    createFilePath(
-                                            StringUtils.isEmpty(transformation.getSourceDirectory()) ?
-                                                    getProjectBaseDirectory() :
-                                                    transformation.getSourceDirectory(),
-                                            StringUtils.isEmpty(transformation.getSourceDirectory()) ?
-                                                    getSourcesDirectory().toString() :
-                                                    "",
-                                            "",
-                                            transformation.getSourceClassPackage(),
-                                            transformation.getSourceClassName()));
-                }
+        for (var transformation : getTransformations()) {
+            var sourceClassPath = Optional.<Path>empty();
+            var targetClassPath = Optional.<Path>empty();
 
-                if (sourceClassPath.isPresent()) {
-                    if (transformation.getSourceClassPackage().equals(transformation.getTargetClassPackage()) &&
-                            transformation.getSourceClassName().equals(transformation.getTargetClassName())) {
-                        targetClassPath = sourceClassPath;
-                    } else {
-                        targetClassPath = Optional.of(
+            if (StringUtils.isNoneEmpty(transformation.getSourceClassPackage()) &&
+                    StringUtils.isNoneEmpty(transformation.getSourceClassName())) {
+                sourceClassPath =
+                        Optional.of(
                                 createFilePath(
-                                        getProjectOutputDirectory().toString(),
-                                        getSourcesDirectory().toString(),
+                                        StringUtils.isEmpty(transformation.getSourceDirectory()) ?
+                                                getProjectBaseDirectory() :
+                                                transformation.getSourceDirectory(),
+                                        StringUtils.isEmpty(transformation.getSourceDirectory()) ?
+                                                getSourcesDirectory().toString() :
+                                                "",
                                         "",
-                                        transformation.getTargetClassPackage(),
-                                        transformation.getTargetClassName()));
-                    }
-                } else if (StringUtils.isNoneEmpty(transformation.getTargetClassPackage()) &&
-                        StringUtils.isNoneEmpty(transformation.getTargetClassName())) {
+                                        transformation.getSourceClassPackage(),
+                                        transformation.getSourceClassName()));
+            }
+
+            if (sourceClassPath.isPresent()) {
+                if (transformation.getSourceClassPackage().equals(transformation.getTargetClassPackage()) &&
+                        transformation.getSourceClassName().equals(transformation.getTargetClassName())) {
+                    targetClassPath = sourceClassPath;
+                } else {
                     targetClassPath = Optional.of(
                             createFilePath(
-                                    StringUtils.isEmpty(transformation.getTargetDirectory()) ?
-                                            getProjectOutputDirectory().toString() :
-                                            transformation.getTargetDirectory(),
-                                    StringUtils.isEmpty(transformation.getTargetDirectory()) ?
-                                            getSourcesDirectory().toString() :
-                                            "",
+                                    getProjectOutputDirectory().toString(),
+                                    getSourcesDirectory().toString(),
                                     "",
                                     transformation.getTargetClassPackage(),
                                     transformation.getTargetClassName()));
+                }
+            } else if (StringUtils.isNoneEmpty(transformation.getTargetClassPackage()) &&
+                    StringUtils.isNoneEmpty(transformation.getTargetClassName())) {
+                targetClassPath = Optional.of(
+                        createFilePath(
+                                StringUtils.isEmpty(transformation.getTargetDirectory()) ?
+                                        getProjectOutputDirectory().toString() :
+                                        transformation.getTargetDirectory(),
+                                StringUtils.isEmpty(transformation.getTargetDirectory()) ?
+                                        getSourcesDirectory().toString() :
+                                        "",
+                                "",
+                                transformation.getTargetClassPackage(),
+                                transformation.getTargetClassName()));
+            } else {
+                throw new MojoFailureException("Cannot find target path for generated classes");
+            }
+
+            try {
+                var processingSchemaInstance =
+                        URLClassLoader
+                                .newInstance(
+                                        new URL[]{transformation.getProcessingSchemaLocation().toURI().toURL()},
+                                        getClass().getClassLoader())
+                                .loadClass(transformation.getProcessingSchemaClass())
+                                .getDeclaredConstructor()
+                                .newInstance();
+
+                if (processingSchemaInstance instanceof ASTProcessingSchema) {
+                    var externalStage = ProcessingStage
+                            .of((ASTProcessingSchema)processingSchemaInstance)
+                            .setSourceLocation(targetClassPath.get().toString())
+                            .setProcessingData(
+                                    transformation
+                                            .getTransformationProperties()
+                                            .stream()
+                                            .collect(Collectors.toUnmodifiableMap(
+                                                    TransformationProperty::getName,
+                                                    TransformationProperty::getValue,
+                                                    (s, a) -> s)));
+
+                    externalProcessingPlan.stage(externalStage);
                 } else {
-                    throw new MojoFailureException("Cannot find target path for generated classes");
+                    throw new MojoFailureException("Invalid processing schema found: " + processingSchemaInstance);
                 }
-
-                try {
-                    var processingSchemaInstance =
-                            URLClassLoader
-                                    .newInstance(
-                                            new URL[]{transformation.getProcessingSchemaLocation().toURI().toURL()},
-                                            getClass().getClassLoader())
-                                    .loadClass(transformation.getProcessingSchemaClass())
-                                    .getDeclaredConstructor()
-                                    .newInstance();
-
-                    if (processingSchemaInstance instanceof ASTProcessingSchema) {
-                        var baseUnit =
-                                sourceClassPath.isPresent() ? parse(sourceClassPath.get()).clone() : new CompilationUnit();
-                        var processedUnit = InnerProcessingStage.PROCESS_OUTER_SCHEMA
-                                .setCompilationUnit(baseUnit)
-                                .setSchema((ASTProcessingSchema)processingSchemaInstance)
-                                .setContext(new OuterSchemaContext(
-                                        transformation
-                                                .getTransformationProperties()
-                                                .stream()
-                                                .collect(Collectors.toUnmodifiableMap(
-                                                        TransformationProperty::getName,
-                                                        TransformationProperty::getValue,
-                                                        (s, a) -> s))))
-                                .process();
-                        save(processedUnit, targetClassPath.get());
-                        getLog().info(
-                                String.format("Processed schema: %s",
-                                        String.join(
-                                                File.separator,
-                                                transformation.getProcessingSchemaLocation().toString(),
-                                                transformation.getProcessingSchemaClass())) +
-                                        "\nBase class: " +
-                                        sourceClassPath +
-                                        "\nTarget class: " +
-                                        targetClassPath
-                        );
-                    } else {
-                        throw new MojoFailureException("Invalid processing schema found: " + processingSchemaInstance);
-                    }
-                } catch (IOException | ClassNotFoundException | ClassCastException | NoSuchMethodException | InstantiationException |
-                        IllegalAccessException | InvocationTargetException e) {
-                    getLog().error("Cannot create generated class into " + targetClassPath.get(), e);
-                    throw new MojoFailureException("Cannot create generated class into " + targetClassPath.get(), e);
-                }
+            } catch (IOException | ClassNotFoundException | ClassCastException | NoSuchMethodException | InstantiationException |
+                    IllegalAccessException | InvocationTargetException e) {
+                getLog().error("Cannot create generated class into " + targetClassPath.get(), e);
+                throw new MojoFailureException("Cannot create generated class into " + targetClassPath.get(), e);
             }
         }
-    }*/
+
+        return DefaultProcessingConfiguration
+                        .configuration()
+                        .processingPlan(externalProcessingPlan)
+                        .processingStrategy(new SequentialProcessingStrategy())
+                        .namingStrategy(new PipelineIdBasedNamingStrategy());
+    }
 
     private void prepareProjectDescriptor() throws MojoFailureException {
         var DEP_SPRING_BOOT_STARTER_WEB = "org.springframework.boot:spring-boot-starter-web:2.5.3";
         var DEP_GUAVA = "com.google.guava:guava:31.0.1-jre";
+        //var DEP_JSR310 = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3";
 
         var dependenciesToAdd =
                 getTransformations()
@@ -398,6 +404,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                         .collect(Collectors.toSet());
         dependenciesToAdd.add(Dependency.of(DEP_SPRING_BOOT_STARTER_WEB));
         dependenciesToAdd.add(Dependency.of(DEP_GUAVA));
+        //dependenciesToAdd.add(Dependency.of(DEP_JSR310));
         dependenciesToAdd.add(Dependency.of(getDbType().dependencyDescriptor()));
 
         var projectDescriptor =
@@ -449,11 +456,10 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        new ProcessingContainer(processingConfiguration())
+        new ProcessingContainer(processingConfiguration(), executeOuterTransformations())
                 .prepare(this)
                 .start();
 
-        //executeOuterTransformations();
         prepareProjectDescriptor();
     }
 

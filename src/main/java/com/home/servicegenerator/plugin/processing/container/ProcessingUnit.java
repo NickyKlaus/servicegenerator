@@ -1,4 +1,4 @@
-package com.home.servicegenerator.plugin.processing.container.registry;
+package com.home.servicegenerator.plugin.processing.container;
 
 import com.github.javaparser.ast.CompilationUnit;
 import org.apache.maven.plugin.MojoFailureException;

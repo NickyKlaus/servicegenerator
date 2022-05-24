@@ -4,12 +4,11 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
 import com.home.servicegenerator.plugin.engine.generator.DefaultGenerator;
-import com.home.servicegenerator.plugin.processing.container.registry.ProcessingUnit;
+import com.home.servicegenerator.plugin.processing.container.ProcessingUnit;
 import com.home.servicegenerator.plugin.processing.container.registry.ProjectUnitsRegistry;
 import org.apache.maven.plugin.MojoFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.squirrelframework.foundation.fsm.StateMachineStatus;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
 import java.nio.file.Path;
@@ -46,6 +45,7 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
                     .generate(
                             ProjectUnitsRegistry
                                     .getOrDefault(
+
                                             fromState.getSourceLocation(),
                                             () -> new ProcessingUnit(
                                                     fromState.getSourceLocation(),
@@ -56,18 +56,15 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
             ProjectUnitsRegistry.register(ProcessingUnit.convert(unit));
 
             if (toState != null) {
+                if (fromState == toState) {
+                    return;
+                }
                 context.getProperties().putAll(toState.getProcessingData());
                 fire("GENERATE_" + toState.getName(), context);
             }
         } catch (MojoFailureException e) {
             LOG.error("Error: cannot generate unit", e);
         }
-    }
-
-    @Override
-    public synchronized void start(Context context) {
-        super.start(context);
-        fire("GENERATE_" + getInitialState().getName(), context);
     }
 
     @Override
@@ -80,6 +77,5 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
     public void terminate() {
         super.terminate();
         ProjectUnitsRegistry.getAll().forEach(savingAction);
-        super.setStatus(StateMachineStatus.IDLE);
     }
 }

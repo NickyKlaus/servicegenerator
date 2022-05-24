@@ -5,19 +5,18 @@ import java.util.Collections;
 import java.util.List;
 
 public final class ProcessingPlan {
-    private static final ProcessingPlan PROCESSING_PLAN = new ProcessingPlan();
-    private static final List<Stage> stages = Collections.synchronizedList(new ArrayList<>());
+    private final List<Stage> stages = Collections.synchronizedList(new ArrayList<>());
 
     private ProcessingPlan() {
     }
 
     public static ProcessingPlan processingPlan() {
-        return PROCESSING_PLAN;
+        return new ProcessingPlan();
     }
 
     public ProcessingPlan stage(final Stage stage) {
         stages.add(stage);
-        return PROCESSING_PLAN;
+        return this;
     }
 
     public List<Stage> getProcessingStages() {

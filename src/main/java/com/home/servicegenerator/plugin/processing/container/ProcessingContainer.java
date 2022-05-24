@@ -2,16 +2,14 @@ package com.home.servicegenerator.plugin.processing.container;
 
 import com.home.servicegenerator.plugin.AbstractServiceGeneratorMojo;
 import com.home.servicegenerator.plugin.PluginConfiguration;
-import com.home.servicegenerator.plugin.PluginConfigurationMapper;
 import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
-import com.home.servicegenerator.plugin.processing.configurator.ProcessorConfigurator;
-import com.home.servicegenerator.plugin.processing.processor.Processor;
+import com.home.servicegenerator.plugin.PluginConfigurationMapper;
 
 public class ProcessingContainer {
     private final Processor processor;
 
-    public ProcessingContainer(ProcessingConfiguration processingConfiguration) {
-        this.processor = new ProcessorConfigurator(processingConfiguration).configure();
+    public ProcessingContainer(ProcessingConfiguration... processingConfigurations) {
+        this.processor = new ProcessorConfigurator(processingConfigurations).configure();
     }
 
     public Starter prepare(AbstractServiceGeneratorMojo mojo) {

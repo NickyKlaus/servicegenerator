@@ -5,34 +5,33 @@ import com.home.servicegenerator.plugin.processing.configuration.strategy.naming
 import com.home.servicegenerator.plugin.processing.configuration.strategy.processing.ProcessingStrategy;
 
 public class DefaultProcessingConfiguration implements ProcessingConfiguration {
-    private static final ProcessingConfiguration CONFIGURATION = new DefaultProcessingConfiguration();
-    private static ProcessingPlan processingPlan;
-    private static ProcessingStrategy processingStrategy;
-    private static NamingStrategy namingStrategy;
+    private ProcessingPlan processingPlan;
+    private ProcessingStrategy processingStrategy;
+    private NamingStrategy namingStrategy;
     
     private DefaultProcessingConfiguration() {
     }
 
     public static ProcessingConfiguration configuration() {
-        return CONFIGURATION;
+        return new DefaultProcessingConfiguration();
     }
 
     @Override
     public ProcessingConfiguration processingPlan(final ProcessingPlan plan) {
-        DefaultProcessingConfiguration.processingPlan = plan;
-        return CONFIGURATION;
+        this.processingPlan = plan;
+        return this;
     }
 
     @Override
     public ProcessingConfiguration processingStrategy(final ProcessingStrategy strategy) {
-        DefaultProcessingConfiguration.processingStrategy = strategy;
-        return CONFIGURATION;
+        this.processingStrategy = strategy;
+        return this;
     }
 
     @Override
     public ProcessingConfiguration namingStrategy(final NamingStrategy strategy) {
-        DefaultProcessingConfiguration.namingStrategy = strategy;
-        return CONFIGURATION;
+        this.namingStrategy = strategy;
+        return this;
     }
 
     @Override
