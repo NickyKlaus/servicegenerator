@@ -20,7 +20,6 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import static com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName.*;
-import static java.lang.String.format;
 
 public enum InternalProcessingSchema implements ASTProcessingSchema {
 
@@ -28,33 +27,11 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = (Name) context
-                        .getPropertyByName(PIPELINE_ID.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                PIPELINE_ID.name())));
-                final Storage.DbType dbType = (Storage.DbType) context
-                        .getPropertyByName(DB_TYPE.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                DB_TYPE.name())));
-                final String repositoryPackageName = context
-                        .getPropertyByName(REPOSITORY_PACKAGE_NAME.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                REPOSITORY_PACKAGE_NAME.name())))
-                        .toString();
+                final Name model = context.get(PIPELINE_ID.name(), Name.class);
+                final Storage.DbType dbType = context.get(DB_TYPE.name(), Storage.DbType.class);
+                final String repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
                 final String repositoryName = model.getIdentifier() + "Repository";
-                final String repositoryIdClass = context
-                        .getPropertyByName(REPOSITORY_ID_CLASS_NAME.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                REPOSITORY_ID_CLASS_NAME.name())))
-                        .toString();
+                final String repositoryIdClass = context.get(REPOSITORY_ID_CLASS_NAME.name(), String.class);
 
                 // Create public interface extended Spring Data CrudRepository and mark it as Spring Repository bean.
                 n.setPackageDeclaration(repositoryPackageName)
@@ -78,27 +55,10 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = (Name) context
-                        .getPropertyByName(PIPELINE_ID.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                PIPELINE_ID.name())));
-                final String servicePackageName = context
-                        .getPropertyByName(ABSTRACT_SERVICE_PACKAGE_NAME.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                ABSTRACT_SERVICE_PACKAGE_NAME.name())))
-                        
-                        .toString();
+                final Name model = context.get(PIPELINE_ID.name(), Name.class);
+                final String servicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
                 final String serviceName = model.getIdentifier() + "Service";
-                final Storage.DbType storageType = (Storage.DbType)context
-                        .getPropertyByName(DB_TYPE.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                DB_TYPE.name())));
+                final Storage.DbType storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
 
                 ClassOrInterfaceDeclaration abstractServiceInterface =
                         new ClassOrInterfaceDeclaration()
@@ -118,12 +78,9 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
-                final MethodDeclaration methodDeclaration = (MethodDeclaration) context
-                        .getPropertyByName(ABSTRACT_SERVICE_METHOD_DECLARATION.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                ABSTRACT_SERVICE_METHOD_DECLARATION.name())));
+                final MethodDeclaration methodDeclaration =
+                        context.get(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), MethodDeclaration.class);
+
                 n.addMethod(methodDeclaration.getNameAsString(), Modifier.Keyword.PUBLIC, Modifier.Keyword.ABSTRACT)
                         .setType(methodDeclaration.getType())
                         .setBody(null)
@@ -137,39 +94,14 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = (Name) context
-                        .getPropertyByName(PIPELINE_ID.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                PIPELINE_ID.name())));
-                final String abstractServicePackageName = context
-                        .getPropertyByName(ABSTRACT_SERVICE_PACKAGE_NAME.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                ABSTRACT_SERVICE_PACKAGE_NAME.name())))
-                        
-                        .toString();
+                final Name model = context.get(PIPELINE_ID.name(), Name.class);
+                final String abstractServicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
                 final String abstractServiceName = model.getIdentifier() + "Service";
                 final String servicePackageName = abstractServicePackageName + ".impl";
                 final String serviceName = abstractServiceName + "Impl";
-                final String repositoryPackageName = context
-                        .getPropertyByName(REPOSITORY_PACKAGE_NAME.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                REPOSITORY_PACKAGE_NAME.name())))
-                        
-                        .toString();
+                final String repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
                 final String repositoryName = model.getIdentifier() + "Repository";
-                final Storage.DbType storageType = (Storage.DbType)context
-                        .getPropertyByName(DB_TYPE.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                DB_TYPE.name())));
-
+                final Storage.DbType storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
                 final String fullyQualifiedRepositoryName = repositoryPackageName + "." + repositoryName;
                 final String fullyQualifiedAbstractServiceName = abstractServicePackageName + "." + abstractServiceName;
                 final String repositoryFieldName = repositoryName.toLowerCase();
@@ -219,12 +151,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<TypeParameter, Context, TypeParameter> postProcessTypeParameter() {
             return (TypeParameter n, Context context) -> {
-                final Name model = (Name) context
-                        .getPropertyByName(PIPELINE_ID.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                PIPELINE_ID.name())));
+                final Name model = context.get(PIPELINE_ID.name(), Name.class);
 
                 if (n.getNameAsString().length() == 1) {
                     n.setName(model.getIdentifier());
@@ -236,19 +163,9 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
-                final Name model = (Name) context
-                        .getPropertyByName(PIPELINE_ID.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                PIPELINE_ID.name())));
+                final Name model = context.get(PIPELINE_ID.name(), Name.class);
                 final String repositoryName = model.getIdentifier() + "Repository";
-                final MethodDeclaration abstractServiceMethod = (MethodDeclaration) context
-                        .getPropertyByName(ABSTRACT_SERVICE_METHOD_DECLARATION.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                ABSTRACT_SERVICE_METHOD_DECLARATION.name())));
+                final MethodDeclaration abstractServiceMethod = context.get(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), MethodDeclaration.class);
                 final String repositoryFieldName = repositoryName.toLowerCase();
 
                 final BlockStmt methodBody = new BlockStmt()
@@ -280,20 +197,8 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
                 final Predicate<ConstructorDeclaration> isNotDefaultConstructor =
                         (ConstructorDeclaration constructor) -> constructor.getParameters().isNonEmpty();
-                final Name model = (Name) context
-                        .getPropertyByName(PIPELINE_ID.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                PIPELINE_ID.name())));
-                final String abstractServicePackageName = context
-                        .getPropertyByName(ABSTRACT_SERVICE_PACKAGE_NAME.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                ABSTRACT_SERVICE_PACKAGE_NAME.name())))
-                        
-                        .toString();
+                final Name model = context.get(PIPELINE_ID.name(), Name.class);
+                final String abstractServicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
                 final String abstractServiceName = model.getIdentifier() + "Service";
                 final String fullyQualifiedAbstractServiceTypeName = abstractServicePackageName + "." + abstractServiceName;
                 final String serviceFieldName = abstractServiceName.toLowerCase();
@@ -336,14 +241,8 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> postProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = (Name) context
-                        .getPropertyByName(PIPELINE_ID.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                PIPELINE_ID.name())));
+                final Name model = context.get(PIPELINE_ID.name(), Name.class);
 
-                //TODO: refactor import
                 n.getImports().removeIf(importDeclaration -> importDeclaration.getName().getQualifier().isPresent() &&
                         importDeclaration.getName().getQualifier().get().toString().equals("java.util"));
                 n.addImport("java.util", false, true);
@@ -361,27 +260,11 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
-                final Name model = (Name) context
-                        .getPropertyByName(PIPELINE_ID.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                PIPELINE_ID.name())));
+                final Name model = context.get(PIPELINE_ID.name(), Name.class);
                 final String abstractServiceName = model.getIdentifier() + "Service";
                 final String serviceFieldName = abstractServiceName.toLowerCase();
-                final MethodDeclaration controllerMethodDeclaration =
-                        (MethodDeclaration) context
-                                .getPropertyByName(PIPELINE.name())
-                                .orElseThrow(() ->
-                                        new IllegalArgumentException(
-                                                format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                        PIPELINE.name())));
-                final MethodDeclaration abstractServiceMethod = (MethodDeclaration)context
-                        .getPropertyByName(ABSTRACT_SERVICE_METHOD_DECLARATION.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                ABSTRACT_SERVICE_METHOD_DECLARATION.name())));
+                final MethodDeclaration controllerMethodDeclaration = context.get(PIPELINE.name(), MethodDeclaration.class);
+                final MethodDeclaration abstractServiceMethodDeclaration = context.get(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), MethodDeclaration.class);
 
                 // Controller method implementation (body)
                 final BlockStmt methodBody = new BlockStmt()
@@ -395,7 +278,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
                                                                 NodeList.nodeList(
                                                                         new MethodCallExpr()
                                                                                 .setScope(new NameExpr().setName(serviceFieldName))
-                                                                                .setName(abstractServiceMethod.getName())
+                                                                                .setName(abstractServiceMethodDeclaration.getName())
                                                                                 .setArguments(
                                                                                         controllerMethodDeclaration
                                                                                                 .getParameters()
@@ -422,18 +305,9 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Storage.DbType storageType = (Storage.DbType)context
-                        .getPropertyByName(DB_TYPE.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                DB_TYPE.name())));
+                final Storage.DbType storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
 
                 n.addImport(storageType.dbRepositoryConfigAnnotationClass());
-                /*n.addImport("org.springframework.context.annotation.Bean");
-                n.addImport("com.fasterxml.jackson.databind.Module");
-                n.addImport("com.fasterxml.jackson.datatype.jsr310.JavaTimeModule");*/
-
                 return n;
             };
         }
@@ -443,36 +317,13 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
                 final String SPRING_BOOT_APPLICATION_FULL = "org.springframework.boot.autoconfigure.SpringBootApplication";
                 final String SPRING_BOOT_APPLICATION_SHORT = "SpringBootApplication";
-
                 // Register repository into Spring application class
-                final Storage.DbType storageType = (Storage.DbType)context
-                        .getPropertyByName(DB_TYPE.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                DB_TYPE.name())));
-                final String repositoryPackageName = context
-                        .getPropertyByName(REPOSITORY_PACKAGE_NAME.name())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                REPOSITORY_PACKAGE_NAME.name())))
-                        
-                        .toString();
+                final Storage.DbType storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
+                final String repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
 
                 if (n.getAnnotationByName(SPRING_BOOT_APPLICATION_FULL).isPresent() ||
                         n.getAnnotationByName(SPRING_BOOT_APPLICATION_SHORT).isPresent()) {
                     n.addAnnotation(prepareDbRepositoryConfigAnnotation(List.of(repositoryPackageName), storageType));
-
-                    /*n.addMethod("javaTimeModule", Modifier.Keyword.PUBLIC)
-                            .addMarkerAnnotation("Bean")
-                            .setType("Module")
-                            .setBody(
-                                    new BlockStmt()
-                                            .addStatement(
-                                                    new ReturnStmt(
-                                                            new ObjectCreationExpr()
-                                                                    .setType("JavaTimeModule"))));*/
                 }
 
                 return n;
