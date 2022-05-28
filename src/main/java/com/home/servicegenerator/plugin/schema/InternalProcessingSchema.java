@@ -36,6 +36,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
                 // Create public interface extended Spring Data CrudRepository and mark it as Spring Repository bean.
                 n.setPackageDeclaration(repositoryPackageName)
                         .addImport(model.toString())
+                        .addImport("org.springframework.stereotype.Repository")
                         .addInterface(repositoryName, Modifier.Keyword.PUBLIC)
                         .addMarkerAnnotation(SPRING_REPOSITORY)
                         .setExtendedTypes(
@@ -120,28 +121,30 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
 
                 // Add package, private final field for repository and public non-default constructor.
                 // Mark class as Spring service bean.
-                final ClassOrInterfaceType abstractServiceType =
-                        new ClassOrInterfaceType()
-                                .setName(fullyQualifiedAbstractServiceName);
-
                 final ClassOrInterfaceDeclaration classOrInterfaceDeclaration =
                         n.setPackageDeclaration(servicePackageName)
                                 .addImport(model.toString())
+                                .addImport("org.springframework.stereotype.Service")
+                                .addImport(fullyQualifiedAbstractServiceName)
+                                .addImport(fullyQualifiedRepositoryName)
                                 .addClass(serviceName, Modifier.Keyword.PUBLIC)
-                                .addMarkerAnnotation(SPRING_SERVICE)
-                                .setImplementedTypes(NodeList.nodeList(abstractServiceType));
+                                .setImplementedTypes(
+                                        NodeList.nodeList(
+                                                new ClassOrInterfaceType().setName(abstractServiceName)));
                 storageType.getUsedImportDeclarations().forEach(n::addImport);
 
                 classOrInterfaceDeclaration
+                        .addMarkerAnnotation(SPRING_SERVICE)
                         .addField(
-                                fullyQualifiedRepositoryName,
+                                repositoryName,
                                 repositoryFieldName,
                                 Modifier.Keyword.PRIVATE,
                                 Modifier.Keyword.FINAL);
                 classOrInterfaceDeclaration
                         .addConstructor(Modifier.Keyword.PUBLIC)
-                        .addParameter(fullyQualifiedRepositoryName, repositoryFieldName)
+                        .addParameter(repositoryName, repositoryFieldName)
                         .setBody(constructorBody);
+
                 return n;
             };
         }
@@ -193,6 +196,19 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
 
     InjectServiceIntoController {
         @Override
+        public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
+            return (CompilationUnit n, Context context) -> {
+                final Name model = context.get(PIPELINE_ID.name(), Name.class);
+                final String abstractServicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
+                final String abstractServiceName = model.getIdentifier() + "Service";
+                final String fullyQualifiedAbstractServiceTypeName = abstractServicePackageName + "." + abstractServiceName;
+                n.addImport(fullyQualifiedAbstractServiceTypeName);
+
+                return n;
+            };
+        }
+
+        @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
                 final Predicate<ConstructorDeclaration> isNotDefaultConstructor =
@@ -205,7 +221,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
 
                 // Add field for service
                 n.addField(
-                        fullyQualifiedAbstractServiceTypeName,
+                        abstractServiceName,
                         serviceFieldName,
                         Modifier.Keyword.PRIVATE,
                         Modifier.Keyword.FINAL);
@@ -219,7 +235,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
                                     // Constructor injection
                                     constructorDeclaration
                                             .addParameter(
-                                                    fullyQualifiedAbstractServiceTypeName,
+                                                    abstractServiceName,
                                                     serviceFieldName)
                                             .getBody()
                                             .addStatement(
@@ -317,6 +333,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
                 final String SPRING_BOOT_APPLICATION_FULL = "org.springframework.boot.autoconfigure.SpringBootApplication";
                 final String SPRING_BOOT_APPLICATION_SHORT = "SpringBootApplication";
+                final String basePackage = context.get(BASE_PACKAGE.name(), String.class) + ".*";
                 // Register repository into Spring application class
                 final Storage.DbType storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
                 final String repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
@@ -324,6 +341,29 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
                 if (n.getAnnotationByName(SPRING_BOOT_APPLICATION_FULL).isPresent() ||
                         n.getAnnotationByName(SPRING_BOOT_APPLICATION_SHORT).isPresent()) {
                     n.addAnnotation(prepareDbRepositoryConfigAnnotation(List.of(repositoryPackageName), storageType));
+                    n.getAnnotationByName("ComponentScan")
+                            .ifPresent(
+                                    annotationExpr -> {
+                                        var _basePackages =
+                                                annotationExpr
+                                                        .asNormalAnnotationExpr()
+                                                        .getPairs()
+                                                        .stream()
+                                                        .filter(pair -> "basePackages".equals(pair.getName().getIdentifier()))
+                                                        .findFirst();
+                                        if (_basePackages.isPresent()) {
+                                            annotationExpr
+                                                    .asNormalAnnotationExpr()
+                                                    .getPairs()
+                                                    .removeIf(pair -> "basePackages".equals(pair.getName().getIdentifier()));
+                                        }
+                                        annotationExpr
+                                                .asNormalAnnotationExpr()
+                                                .addPair(
+                                                        "basePackages",
+                                                        new ArrayInitializerExpr(
+                                                                NodeList.nodeList(new StringLiteralExpr(basePackage))));
+                                    });
                 }
 
                 return n;
@@ -354,9 +394,8 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         return new NormalAnnotationExpr(new com.github.javaparser.ast.expr.Name(enableAnnotationName), annotationMembers);
     }
 
-    private static final String SPRING_REPOSITORY = "org.springframework.stereotype.Repository";
-    private static final String SPRING_SERVICE = "org.springframework.stereotype.Service";
+    private static final String SPRING_REPOSITORY = "Repository";
+    private static final String SPRING_SERVICE = "Service";
     private static final String SPRING_HTTP_STATUS_200 = "org.springframework.http.HttpStatus.OK";
     private static final String OVERRIDE = "Override";
-    private static final String CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE = "%s is not set";
 }

@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class CreateRepositorySchemaTest {
-    private static final String SPRING_REPOSITORY = "org.springframework.stereotype.Repository";
+    private static final String SPRING_REPOSITORY = "Repository";
     private static final Storage.DbType DB_NAME = Storage.DbType.mongo;
     private static final String SPRING_DATA_CRUD_REPOSITORY = DB_NAME.getCrudRepositoryInterfaceName();
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";

@@ -16,6 +16,7 @@ import com.home.servicegenerator.plugin.processing.configuration.strategy.matchm
 import com.home.servicegenerator.plugin.processing.configuration.strategy.matchmethod.MatchingMethodStrategy;
 import com.home.servicegenerator.plugin.processing.configuration.strategy.naming.PipelineIdBasedNamingStrategy;
 import com.home.servicegenerator.plugin.processing.configuration.strategy.processing.PipelineIdBasedProcessingStrategy;
+import com.home.servicegenerator.plugin.processing.container.ProcessingUnit;
 import com.home.servicegenerator.plugin.processing.container.registry.ProjectUnitsRegistry;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
 import org.apache.commons.lang3.StringUtils;
@@ -50,10 +51,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION;
-import static com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName.DB_TYPE;
-import static com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName.PIPELINE;
-import static com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName.PIPELINE_ID;
+import static com.home.servicegenerator.plugin.processing.configuration.context.properties.PropertyName.*;
 import static com.home.servicegenerator.plugin.utils.FileUtils.createFilePath;
 import static com.home.servicegenerator.plugin.utils.NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL;
 import static java.lang.String.format;
@@ -130,21 +128,8 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                 .stage(
                         InternalProcessingStage.INJECT_SERVICE_INTO_CONTROLLER
                                 .setSourceLocation(
-                                        (ctx) -> {
-                                            var pipelineId =
-                                                    (Name) ctx
-                                                            .getPropertyByName(PIPELINE_ID.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    PIPELINE_ID.name())));
-                                            return createFilePath(
-                                                    getProjectOutputDirectory().toString(),
-                                                    getSourcesDirectory().toString(),
-                                                    getBasePackage(),
-                                                    getControllerPackage(),
-                                                    pipelineId.getIdentifier() + "Controller").toString();
-                                        })
+                                        (ctx) ->
+                                                ctx.get(PropertyName.CONTROLLER_UNIT.name(), ProcessingUnit.class).getId())
                                 .setProcessingData(
                                         Map.ofEntries(
                                                 Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
@@ -265,28 +250,16 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                         "Swagger2SpringBoot").toString())
                                 .setProcessingData(
                                         Map.ofEntries(
+                                                Map.entry(PropertyName.BASE_PACKAGE.name(),
+                                                        getBasePackage()),
                                                 Map.entry(PropertyName.DB_TYPE.name(),
                                                         getDbType()),
                                                 Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(),
                                                         getBasePackage() + ".repository"))))
                 .stage(
                         InternalProcessingStage.ADD_CONTROLLER_METHOD_IMPLEMENTATION
-                                .setSourceLocation(
-                                        (ctx) -> {
-                                            var pipelineId =
-                                                    (Name) ctx
-                                                            .getPropertyByName(PIPELINE_ID.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    PIPELINE_ID.name())));
-                                            return createFilePath(
-                                                    getProjectOutputDirectory().toString(),
-                                                    getSourcesDirectory().toString(),
-                                                    getBasePackage(),
-                                                    getControllerPackage(),
-                                                    pipelineId.getIdentifier() + "Controller").toString();
-                                        }));
+                                .setSourceLocation((ctx) ->
+                                        ctx.get(PropertyName.CONTROLLER_UNIT.name(), ProcessingUnit.class).getId()));
     }
 
     private ProcessingConfiguration processingConfiguration() {

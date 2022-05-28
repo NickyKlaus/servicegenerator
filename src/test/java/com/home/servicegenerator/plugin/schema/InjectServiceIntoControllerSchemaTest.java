@@ -107,15 +107,14 @@ public class InjectServiceIntoControllerSchemaTest {
                         .isFinal(),
                 "Field " + SERVICE_FIELD_NAME + " is not final");
         Assertions.assertEquals(
-                ABSTRACT_SERVICE_PACKAGE_NAME + "." + ABSTRACT_SERVICE_NAME,
+                ABSTRACT_SERVICE_NAME,
                 controllerDeclarationAfterInjectionService
                         .getFieldByName(SERVICE_FIELD_NAME)
                         .get()
                         .getVariable(0)
                         .getType()
                         .toString(),
-                "Field " + SERVICE_FIELD_NAME + " has not type " + ABSTRACT_SERVICE_PACKAGE_NAME + "." +
-                        ABSTRACT_SERVICE_NAME);
+                "Field " + SERVICE_FIELD_NAME + " has not type " + ABSTRACT_SERVICE_NAME);
 
         final Predicate<ConstructorDeclaration> isNotDefaultConstructor =
                 (ConstructorDeclaration constructorDeclaration) -> constructorDeclaration.getParameters().isNonEmpty();
@@ -129,13 +128,9 @@ public class InjectServiceIntoControllerSchemaTest {
                 controllerDeclarationAfterInjectionService
                         .getConstructors()
                         .stream()
-                        .filter(constructorDeclaration ->
-                                constructorDeclaration
-                                        .getParameterByType(ABSTRACT_SERVICE_PACKAGE_NAME + "." + ABSTRACT_SERVICE_NAME)
-                                        .isPresent())
+                        .filter(constructorDeclaration -> constructorDeclaration.getParameterByType(ABSTRACT_SERVICE_NAME).isPresent())
                         .count(),
-                "Edited controller class has not constructor with argument of type " +
-                        ABSTRACT_SERVICE_PACKAGE_NAME + "." + ABSTRACT_SERVICE_NAME);
+                "Edited controller class has not constructor with argument of type " + ABSTRACT_SERVICE_NAME);
         Assertions.assertTrue(
                 controllerDeclarationAfterInjectionService
                         .getConstructors()
@@ -144,7 +139,7 @@ public class InjectServiceIntoControllerSchemaTest {
                         .allMatch(constructorDeclaration -> {
                                 final Optional<Parameter> parameter =
                                         constructorDeclaration
-                                                .getParameterByType(ABSTRACT_SERVICE_PACKAGE_NAME + "." + ABSTRACT_SERVICE_NAME);
+                                                .getParameterByType(ABSTRACT_SERVICE_NAME);
                                 return parameter.isPresent() && SERVICE_FIELD_NAME.equals(parameter.get().getNameAsString());
                         }),
                 "Non-default constructor of edited controller class has not argument with name " + SERVICE_FIELD_NAME);

@@ -33,6 +33,7 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
     @Override
     public void process(Stage initialStage, AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine, PluginConfiguration configuration) {
         final Map<String, ProcessingUnit> controllerIndex = new HashMap<>();
+        // TODO: remove both
         final Map<String, ProcessingUnit> configurationIndex = new HashMap<>();
         final Map<String, ProcessingUnit> modelIndex = new HashMap<>();
         final List<Name> availableModelNames = new ArrayList<>();
@@ -91,7 +92,8 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
                                     .putAll(
                                             Map.of(
                                                     PropertyName.PIPELINE.name(), pipeline,
-                                                    PropertyName.PIPELINE_ID.name(), pipelineIdResolveResult.get())));
+                                                    PropertyName.PIPELINE_ID.name(), pipelineIdResolveResult.get(),
+                                                    PropertyName.CONTROLLER_UNIT.name(), controllerUnit.getValue())));
 
                 stateMachine
                         .fire(

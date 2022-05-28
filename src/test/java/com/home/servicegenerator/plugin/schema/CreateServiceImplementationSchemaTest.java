@@ -23,11 +23,11 @@ import java.util.Map;
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 
 public class CreateServiceImplementationSchemaTest {
+    private static final String SPRING_SERVICE = "Service";
     private static final Name modelClassName =
             new Name()
                     .setQualifier(new Name("com.home.servicegenerator.plugin.schemas"))
                     .setIdentifier(TestModel.class.getSimpleName());
-    private static final String SPRING_SERVICE = "org.springframework.stereotype.Service";
     private static final String ABSTRACT_SERVICE_PACKAGE_NAME = "com.home.service";
     private static final String ABSTRACT_SERVICE_NAME = "TestModelService";
     private static final String GENERATED_SERVICE_NAME = ABSTRACT_SERVICE_NAME + "Impl";
@@ -97,12 +97,6 @@ public class CreateServiceImplementationSchemaTest {
                 "Generated service implementation class is not public");
         Assertions.assertTrue(
                 serviceDeclaration
-                        .getAnnotations()
-                        .stream()
-                        .anyMatch(annotationExpr -> SPRING_SERVICE.equals(annotationExpr.getNameAsString())),
-                "Generated service implementation unit is not annotated by '@Service'");
-        Assertions.assertTrue(
-                serviceDeclaration
                         .getImplementedTypes()
                         .isNonEmpty(),
                 "Generated service implementation class has not super type");
@@ -110,22 +104,16 @@ public class CreateServiceImplementationSchemaTest {
                 serviceDeclaration
                         .getImplementedTypes()
                         .stream()
-                        .anyMatch(classOrInterfaceType ->
-                                        (ABSTRACT_SERVICE_PACKAGE_NAME + "." + ABSTRACT_SERVICE_NAME)
-                                                .equals(classOrInterfaceType.getNameAsString())),
-                "Generated service implementation class does not implement " + ABSTRACT_SERVICE_PACKAGE_NAME +
-                        "." + ABSTRACT_SERVICE_NAME);
+                        .anyMatch(classOrInterfaceType -> ABSTRACT_SERVICE_NAME.equals(classOrInterfaceType.getNameAsString())),
+                "Generated service implementation class does not implement " + ABSTRACT_SERVICE_NAME);
         Assertions.assertEquals(
                 1,
                 serviceDeclaration
                         .getImplementedTypes()
                         .stream()
-                        .filter(classOrInterfaceType ->
-                                (ABSTRACT_SERVICE_PACKAGE_NAME + "." + ABSTRACT_SERVICE_NAME)
-                                        .equals(classOrInterfaceType.getNameAsString()))
+                        .filter(classOrInterfaceType -> ABSTRACT_SERVICE_NAME.equals(classOrInterfaceType.getNameAsString()))
                         .count(),
-                "Generated service implementation class does not implement one " + ABSTRACT_SERVICE_PACKAGE_NAME
-                        + "." + ABSTRACT_SERVICE_NAME);
+                "Generated service implementation class does not implement one " + ABSTRACT_SERVICE_NAME);
         Assertions.assertTrue(
                 serviceDeclaration
                         .getFieldByName(REPOSITORY_FIELD_NAME)
@@ -144,29 +132,28 @@ public class CreateServiceImplementationSchemaTest {
                         .isFinal(),
                 "Field " + REPOSITORY_FIELD_NAME + " is not final");
         Assertions.assertEquals(
-                REPOSITORY_PACKAGE_NAME + "." + REPOSITORY_NAME,
+                REPOSITORY_NAME,
                 serviceDeclaration
                         .getFieldByName(REPOSITORY_FIELD_NAME)
                         .get()
                         .getVariable(0)
                         .getType()
                         .toString(),
-                "Field " + REPOSITORY_FIELD_NAME + " has not type " + REPOSITORY_PACKAGE_NAME + "." + REPOSITORY_NAME);
+                "Field " + REPOSITORY_FIELD_NAME + " has not type " + REPOSITORY_NAME);
         Assertions.assertTrue(
                 serviceDeclaration
-                        .getConstructorByParameterTypes(REPOSITORY_PACKAGE_NAME + "." + REPOSITORY_NAME)
+                        .getConstructorByParameterTypes(REPOSITORY_NAME)
                         .isPresent(),
-                "Generated service implementation class has not contructor with one argument with type " +
-                        REPOSITORY_PACKAGE_NAME + "." + REPOSITORY_NAME);
+                "Generated service implementation class has not contructor with one argument with type " + REPOSITORY_NAME);
         Assertions.assertTrue(
                 serviceDeclaration
-                        .getConstructorByParameterTypes(REPOSITORY_PACKAGE_NAME + "." + REPOSITORY_NAME)
+                        .getConstructorByParameterTypes(REPOSITORY_NAME)
                         .get().asConstructorDeclaration().getBody().asBlockStmt().getStatements().isNonEmpty(),
                 "Constructor of generated service implementation has empty block");
         Assertions.assertEquals(
                 1,
                 serviceDeclaration
-                        .getConstructorByParameterTypes(REPOSITORY_PACKAGE_NAME + "." + REPOSITORY_NAME)
+                        .getConstructorByParameterTypes(REPOSITORY_NAME)
                         .get()
                         .getBody()
                         .asBlockStmt()
@@ -178,5 +165,11 @@ public class CreateServiceImplementationSchemaTest {
                         .count(),
                 "Constructor of generated service implementation has not such repository field assertion statement: " +
                         trimToEmpty(repositoryAssignment.toString() + ";"));
+        Assertions.assertTrue(
+                serviceDeclaration
+                        .getAnnotations()
+                        .stream()
+                        .anyMatch(annotationExpr -> SPRING_SERVICE.equals(annotationExpr.getNameAsString())),
+                "Generated service implementation unit is not annotated by '@Service'");
     }
 }

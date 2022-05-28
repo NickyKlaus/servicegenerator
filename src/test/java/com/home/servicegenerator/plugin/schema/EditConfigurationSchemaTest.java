@@ -38,6 +38,7 @@ public class EditConfigurationSchemaTest {
             "EnableMongoRepositories";
     private static final String SPRING_DATA_CASSANDRA =
             "EnableCassandraRepositories";
+    private static final String BASE_PACKAGE = "com.home.test";
     private static final String REPOSITORY_PACKAGE_NAME = "com.home.repository";
     private static final List<String> repositoriesBasePackageNames = List.of(REPOSITORY_PACKAGE_NAME);
     private static ClassOrInterfaceDeclaration configurationDeclarationBeforeEditing;
@@ -106,6 +107,7 @@ public class EditConfigurationSchemaTest {
         final Context context =
                 ProcessingContext.of(
                         Map.ofEntries(
+                                Map.entry(PropertyName.BASE_PACKAGE.name(), BASE_PACKAGE),
                                 Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
                                 Map.entry(PropertyName.DB_TYPE.name(), storageType),
                                 Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(), REPOSITORY_PACKAGE_NAME)
