@@ -26,11 +26,14 @@ public class Processor {
                         stateMachine.getInitialState().getProcessingData()));
 
         for (var config : processingConfigurations) {
-            config.getProcessingStrategy()
-                    .process(
-                            config.getProcessingPlan().getProcessingStages().get(0),
-                            stateMachine,
-                            pluginConfiguration);
+            var stages = config.getProcessingPlan().getProcessingStages();
+            if (!stages.isEmpty()) {
+                config.getProcessingStrategy()
+                        .process(
+                                config.getProcessingPlan().getProcessingStages().get(0),
+                                stateMachine,
+                                pluginConfiguration);
+            }
         }
 
         stateMachine.terminate();
