@@ -69,11 +69,11 @@ public class Storage {
             private static final String SPRING_DATA_ENABLE_CASSANDRA =
                     "org.springframework.data.cassandra.repository.config.EnableCassandraRepositories";
             private static final String SPRING_BOOT_STARTER_DATA_CASSANDRA =
-                    "org.springframework.boot:spring-boot-starter-data-cassandra:2.5.3";
+                    "org.springframework.boot:spring-boot-starter-data-cassandra:2.7.0";
 
             @Override
             public String getCrudRepositoryInterfaceName() {
-                return "null";
+                return "org.springframework.data.cassandra.repository.CassandraRepository";
             }
 
             @Override

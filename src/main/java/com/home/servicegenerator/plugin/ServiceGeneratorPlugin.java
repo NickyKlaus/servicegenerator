@@ -365,8 +365,8 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     }
 
     private void prepareProjectDescriptor() throws MojoFailureException {
-        var DEP_SPRING_BOOT_STARTER_WEB = "org.springframework.boot:spring-boot-starter-web:2.5.3";
-        var DEP_GUAVA = "com.google.guava:guava:31.0.1-jre";
+        var DEP_SPRING_BOOT_STARTER_WEB = "org.springframework.boot:spring-boot-starter-web:2.6.7";
+        var DEP_GUAVA = "com.google.guava:guava:31.1-jre";
 
         var dependenciesToAdd =
                 getTransformations()
