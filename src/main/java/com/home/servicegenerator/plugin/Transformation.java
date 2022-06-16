@@ -34,7 +34,8 @@ public class Transformation {
     private String processingSchemaClass;
 
     @Parameter(name = "dependencies")
-    private Set<org.apache.maven.model.Dependency> dependencies = Set.of();
+    private Set<Dependency> dependencies = Set.of();
+    //private Set<org.apache.maven.model.Dependency> dependencies = Set.of();
 
     @Parameter(name = "transformationProperties")
     private Set<TransformationProperty> transformationProperties = Set.of();
@@ -71,7 +72,10 @@ public class Transformation {
         return processingSchemaClass;
     }
 
-    public Set<org.apache.maven.model.Dependency> getDependencies() {
+    /*public Set<org.apache.maven.model.Dependency> getDependencies() {
+        return dependencies;
+    }*/
+    public Set<Dependency> getDependencies() {
         return dependencies;
     }
 
