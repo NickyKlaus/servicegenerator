@@ -100,25 +100,34 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                             "repository",
                                                             ctx.get(PIPELINE_ID.name(), Name.class).getIdentifier() + "Repository").toString();
                                             return ProjectUnitsRegistry.notRegistered(unitId);
-                                        }))
+                                        })
+                                .postProcessingAction(
+                                        ctx ->
+                                                ctx.getProperties()
+                                                        .put(
+                                                                ABSTRACT_SERVICE_METHOD_DECLARATION.name(),
+                                                                getMethodMatchedWithPipeline(
+                                                                        ctx.get(PIPELINE.name(), MethodDeclaration.class),
+                                                                        ctx.get(DB_TYPE.name(), Storage.DbType.class)
+                                                                                .getRepositoryImplementationMethodDeclarations(),
+                                                                        ctx.get(PIPELINE_ID.name(), Name.class),
+                                                                        new MatchWithRestEndpointMethodStrategy()
+                                                                ).orElseThrow(
+                                                                        () -> new IllegalArgumentException(
+                                                                                format(
+                                                                                        CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                                                                        ABSTRACT_SERVICE_METHOD_DECLARATION.name()))))))
                 .stage(
                         InternalProcessingStage.CREATE_ABSTRACT_SERVICE
                                 .setSourceLocation(
-                                        (ctx) -> {
-                                            var pipelineId =
-                                                    (Name) ctx
-                                                            .getPropertyByName(PIPELINE_ID.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    PIPELINE_ID.name())));
-                                            return createFilePath(
-                                                    getProjectOutputDirectory().toString(),
-                                                    getSourcesDirectory().toString(),
-                                                    getBasePackage(),
-                                                    "service",
-                                                    pipelineId.getIdentifier() + "Service").toString();
-                                        })
+                                        (ctx) ->
+                                                createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "service",
+                                                        ctx.get(PIPELINE_ID.name(), Name.class).getIdentifier() + "Service"
+                                                ).toString())
                                 .setProcessingData(
                                         Map.ofEntries(
                                                 Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
@@ -128,8 +137,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                 .stage(
                         InternalProcessingStage.INJECT_SERVICE_INTO_CONTROLLER
                                 .setSourceLocation(
-                                        (ctx) ->
-                                                ctx.get(PropertyName.CONTROLLER_UNIT.name(), ProcessingUnit.class).getId())
+                                        (ctx) -> ctx.get(PropertyName.CONTROLLER_UNIT.name(), ProcessingUnit.class).getId())
                                 .setProcessingData(
                                         Map.ofEntries(
                                                 Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
@@ -137,21 +145,13 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                 .stage(
                         InternalProcessingStage.CREATE_SERVICE_IMPLEMENTATION
                                 .setSourceLocation(
-                                        (ctx) -> {
-                                            var pipelineId =
-                                                    (Name) ctx
-                                                            .getPropertyByName(PIPELINE_ID.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    PIPELINE_ID.name())));
-                                            return createFilePath(
-                                                    getProjectOutputDirectory().toString(),
-                                                    getSourcesDirectory().toString(),
-                                                    getBasePackage(),
-                                                    "service.impl",
-                                                    pipelineId.getIdentifier() + "ServiceImpl").toString();
-                                        })
+                                        (ctx) ->
+                                                createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "service.impl",
+                                                        ctx.get(PIPELINE_ID.name(), Name.class).getIdentifier() + "ServiceImpl").toString())
                                 .setProcessingData(
                                         Map.ofEntries(
                                                 Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(),
@@ -159,81 +159,27 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                 Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(),
                                                         getBasePackage() + ".repository"),
                                                 Map.entry(PropertyName.DB_TYPE.name(),
-                                                        getDbType())))
-                                .postProcessingAction(
-                                        ctx -> {
-                                            var pipeline =
-                                                    (MethodDeclaration) ctx
-                                                            .getPropertyByName(PIPELINE.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    PIPELINE.name())));
-                                            var pipelineId =
-                                                    (Name) ctx
-                                                            .getPropertyByName(PIPELINE_ID.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    PIPELINE_ID.name())));
-                                            var storageType =
-                                                    (Storage.DbType) ctx
-                                                            .getPropertyByName(DB_TYPE.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    DB_TYPE.name())));
-                                            var abstractServiceMethodDeclaration =
-                                                    getMethodMatchedWithPipeline(
-                                                            pipeline,
-                                                            storageType.getRepositoryImplementationMethodDeclarations(),
-                                                            pipelineId,
-                                                            new MatchWithRestEndpointMethodStrategy()
-                                                    ).orElseThrow(
-                                                            () -> new IllegalArgumentException(
-                                                                    format(
-                                                                            CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                            ABSTRACT_SERVICE_METHOD_DECLARATION.name())));
-                                            ctx
-                                                    .getProperties()
-                                                    .put(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), abstractServiceMethodDeclaration);
-                                        }))
+                                                        getDbType()))))
                 .stage(
                         InternalProcessingStage.ADD_SERVICE_ABSTRACT_METHOD
                                 .setSourceLocation(
-                                        (ctx) -> {
-                                            var pipelineId =
-                                                    (Name) ctx
-                                                            .getPropertyByName(PIPELINE_ID.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    PIPELINE_ID.name())));
-                                            return createFilePath(
-                                                    getProjectOutputDirectory().toString(),
-                                                    getSourcesDirectory().toString(),
-                                                    getBasePackage(),
-                                                    "service",
-                                                    pipelineId.getIdentifier() + "Service").toString();
-                                        }))
+                                        (ctx) ->
+                                                createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "service",
+                                                        ctx.get(PIPELINE_ID.name(), Name.class).getIdentifier() + "Service").toString()))
                 .stage(
                         InternalProcessingStage.ADD_SERVICE_METHOD_IMPLEMENTATION
                                 .setSourceLocation(
-                                        (ctx) -> {
-                                            var pipelineId =
-                                                    (Name) ctx
-                                                            .getPropertyByName(PIPELINE_ID.name())
-                                                            .orElseThrow(() ->
-                                                                    new IllegalArgumentException(
-                                                                            format(CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
-                                                                                    PIPELINE_ID.name())));
-                                            return createFilePath(
-                                                    getProjectOutputDirectory().toString(),
-                                                    getSourcesDirectory().toString(),
-                                                    getBasePackage(),
-                                                    "service.impl",
-                                                    pipelineId.getIdentifier() + "ServiceImpl").toString();
-                                        })
+                                        (ctx) ->
+                                                createFilePath(
+                                                        getProjectOutputDirectory().toString(),
+                                                        getSourcesDirectory().toString(),
+                                                        getBasePackage(),
+                                                        "service.impl",
+                                                        ctx.get(PIPELINE_ID.name(), Name.class).getIdentifier() + "ServiceImpl").toString())
                                 .setProcessingData(
                                         Map.ofEntries(
                                                 Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(),
@@ -351,17 +297,17 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                     throw new MojoFailureException("Invalid processing schema found: " + processingSchemaInstance);
                 }
             } catch (IOException | ClassNotFoundException | ClassCastException | NoSuchMethodException | InstantiationException |
-                    IllegalAccessException | InvocationTargetException e) {
+                     IllegalAccessException | InvocationTargetException e) {
                 getLog().error("Cannot create generated class into " + targetClassPath.get(), e);
                 throw new MojoFailureException("Cannot create generated class into " + targetClassPath.get(), e);
             }
         }
 
         return DefaultProcessingConfiguration
-                        .configuration()
-                        .processingPlan(externalProcessingPlan)
-                        .processingStrategy(new SequentialProcessingStrategy())
-                        .namingStrategy(new PipelineIdBasedNamingStrategy());
+                .configuration()
+                .processingPlan(externalProcessingPlan)
+                .processingStrategy(new SequentialProcessingStrategy())
+                .namingStrategy(new PipelineIdBasedNamingStrategy());
     }
 
     private void prepareProjectDescriptor() throws MojoFailureException {
@@ -425,15 +371,6 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
         }
     }
 
-    @Override
-    public void execute() throws MojoFailureException {
-        new ProcessingContainer(processingConfiguration(), executeOuterTransformations())
-                .prepare(this)
-                .start();
-
-        prepareProjectDescriptor();
-    }
-
     private Optional<MethodDeclaration> getMethodMatchedWithPipeline(
             final MethodDeclaration pipeline,
             final List<MethodDeclaration> checkedMethods,
@@ -447,5 +384,14 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                         .test(pipeline, checkedMethod))
                 .map(m -> MethodNormalizer.denormalize(m, pipelineId.getIdentifier(), REPLACING_MODEL_TYPE_SYMBOL))
                 .findFirst();
+    }
+
+    @Override
+    public void execute() throws MojoFailureException {
+        new ProcessingContainer(processingConfiguration(), executeOuterTransformations())
+                .prepare(this)
+                .start();
+
+        prepareProjectDescriptor();
     }
 }
