@@ -3,7 +3,12 @@ package com.home.servicegenerator.plugin.processing.configuration.stages;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.processing.configuration.context.ProcessingContext;
+import com.home.servicegenerator.plugin.processing.configuration.context.properties.ComponentPackage;
 import com.home.servicegenerator.plugin.processing.configuration.context.properties.ComponentType;
+import com.home.servicegenerator.plugin.processing.configuration.strategy.naming.NamingStrategy;
+import com.home.servicegenerator.plugin.processing.configuration.strategy.naming.PipelineIdBasedNamingStrategy;
+import com.home.servicegenerator.plugin.processing.configuration.strategy.naming.SimpleNamingStrategy;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -28,8 +33,18 @@ public enum InternalProcessingStage implements Stage {
         }
 
         @Override
+        public String getComponentPackage() {
+            return ComponentPackage.REPOSITORY.toString();
+        }
+
+        @Override
         public String getComponentType() {
             return ComponentType.REPOSITORY.toString();
+        }
+
+        @Override
+        public NamingStrategy getNamingStrategy() {
+            return new PipelineIdBasedNamingStrategy();
         }
     },
 
@@ -40,8 +55,18 @@ public enum InternalProcessingStage implements Stage {
         }
 
         @Override
+        public String getComponentPackage() {
+            return ComponentPackage.SERVICE.toString();
+        }
+
+        @Override
         public String getComponentType() {
             return ComponentType.SERVICE.toString();
+        }
+
+        @Override
+        public NamingStrategy getNamingStrategy() {
+            return new PipelineIdBasedNamingStrategy();
         }
     },
 
@@ -52,8 +77,18 @@ public enum InternalProcessingStage implements Stage {
         }
 
         @Override
+        public String getComponentPackage() {
+            return ComponentPackage.SERVICE_IMPLEMENTATION.toString();
+        }
+
+        @Override
         public String getComponentType() {
             return ComponentType.SERVICE_IMPLEMENTATION.toString();
+        }
+
+        @Override
+        public NamingStrategy getNamingStrategy() {
+            return new PipelineIdBasedNamingStrategy();
         }
     },
 
@@ -61,11 +96,6 @@ public enum InternalProcessingStage implements Stage {
         @Override
         public ASTProcessingSchema getSchema() {
             return InjectServiceIntoController;
-        }
-
-        @Override
-        public String getComponentType() {
-            return ComponentType.CONTROLLER.toString();
         }
     },
 
@@ -83,8 +113,18 @@ public enum InternalProcessingStage implements Stage {
         }
 
         @Override
+        public String getComponentPackage() {
+            return ComponentPackage.SERVICE.toString();
+        }
+
+        @Override
         public String getComponentType() {
             return ComponentType.SERVICE.toString();
+        }
+
+        @Override
+        public NamingStrategy getNamingStrategy() {
+            return new PipelineIdBasedNamingStrategy();
         }
     },
 
@@ -95,8 +135,18 @@ public enum InternalProcessingStage implements Stage {
         }
 
         @Override
+        public String getComponentPackage() {
+            return ComponentPackage.SERVICE_IMPLEMENTATION.toString();
+        }
+
+        @Override
         public String getComponentType() {
             return ComponentType.SERVICE_IMPLEMENTATION.toString();
+        }
+
+        @Override
+        public NamingStrategy getNamingStrategy() {
+            return new PipelineIdBasedNamingStrategy();
         }
     },
 
@@ -104,11 +154,6 @@ public enum InternalProcessingStage implements Stage {
         @Override
         public ASTProcessingSchema getSchema() {
             return AddControllerMethodImplementation;
-        }
-
-        @Override
-        public String getComponentType() {
-            return ComponentType.CONTROLLER.toString();
         }
     },
     ;
@@ -119,6 +164,54 @@ public enum InternalProcessingStage implements Stage {
     private Function<Context, String> sourceLocationProvider;
     private Predicate<Context> executionCondition = ctx -> true;
     private Consumer<Context> postProcessingAction = ctx -> {};
+    private String componentPackage = StringUtils.EMPTY;
+    private String componentType = StringUtils.EMPTY;
+    private NamingStrategy namingStrategy = new SimpleNamingStrategy();
+    private String componentName = "Component";
+
+    @Override
+    public Stage setComponentName(String componentName) {
+        this.componentName = componentName;
+        return this;
+    }
+
+    @Override
+    public String getComponentName() {
+        return this.componentName;
+    }
+    @Override
+    public NamingStrategy getNamingStrategy() {
+        return namingStrategy;
+    }
+
+    @Override
+    public Stage setNamingStrategy(NamingStrategy namingStrategy) {
+        this.namingStrategy = namingStrategy;
+        return this;
+    }
+
+    @Override
+    public Stage setComponentPackage(String packageName) {
+        this.componentPackage = packageName;
+        return this;
+    }
+
+    @Override
+    public String getComponentPackage() {
+        return this.componentPackage;
+    }
+
+    @Override
+    public Stage setComponentType(String componentType) {
+        this.componentType = componentType;
+        return this;
+    }
+
+    @Override
+    public String getComponentType() {
+        return this.componentType;
+    }
+
 
     @Override
     public Stage setSourceLocation(String sourceLocation) {

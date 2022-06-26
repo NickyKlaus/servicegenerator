@@ -10,13 +10,13 @@ import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
 public class Processor {
     private final AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine;
-    private final ProcessingConfiguration[] processingConfigurations;
+    private final ProcessingConfiguration processingConfiguration;
 
     public Processor(
-            ProcessingConfiguration[] processingConfigurations,
+            ProcessingConfiguration processingConfiguration,
             AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine
     ) {
-        this.processingConfigurations = processingConfigurations;
+        this.processingConfiguration = processingConfiguration;
         this.stateMachine = stateMachine;
     }
 
@@ -25,16 +25,12 @@ public class Processor {
                 ProcessingContext.of(
                         stateMachine.getInitialState().getProcessingData()));
 
-        for (var config : processingConfigurations) {
-            var stages = config.getProcessingPlan().getProcessingStages();
-            if (!stages.isEmpty()) {
-                config.getProcessingStrategy()
-                        .process(
-                                config.getProcessingPlan().getProcessingStages().get(0),
-                                stateMachine,
-                                pluginConfiguration);
-            }
-        }
+        processingConfiguration
+                .getProcessingStrategy()
+                .process(
+                        processingConfiguration.getProcessingPlan().getProcessingStages().get(0),
+                        stateMachine,
+                        pluginConfiguration);
 
         stateMachine.terminate();
     }

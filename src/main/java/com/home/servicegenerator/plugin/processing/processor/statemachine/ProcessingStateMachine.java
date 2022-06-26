@@ -45,7 +45,6 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
                     .generate(
                             ProjectUnitsRegistry
                                     .getOrDefault(
-
                                             fromState.getSourceLocation(),
                                             () -> new ProcessingUnit(
                                                     fromState.getSourceLocation(),

@@ -1,5 +1,6 @@
 package com.home.servicegenerator.plugin.processing.configuration.strategy.naming;
 
+import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.api.context.Context;
 import org.apache.commons.lang3.StringUtils;
 
@@ -10,7 +11,7 @@ import static com.home.servicegenerator.plugin.processing.configuration.context.
 public class PipelineIdBasedNamingStrategy implements NamingStrategy {
     @Override
     public Function<String, String> getName(Context context) {
-        var pipelineId = context.get(PIPELINE_ID.name(), String.class);
-        return componentType -> StringUtils.uncapitalize(pipelineId) + StringUtils.capitalize(componentType);
+        var pipelineId = context.get(PIPELINE_ID.name(), Name.class).getIdentifier();
+        return componentType -> StringUtils.capitalize(pipelineId) + StringUtils.capitalize(componentType);
     }
 }
