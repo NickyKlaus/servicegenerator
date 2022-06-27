@@ -3,13 +3,29 @@ on:
   push:
     branches:
       - plugin-dev
+
 jobs:
-  deploy:
+  documentation:
+    name: Build documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python runtime
+        uses: actions/setup-python@v4
         with:
           python-version: 3.x
-      - run: pip install mkdocs-material
+
+      - name: Install Python dependencies
+        run: |
+          pip install .
+          pip install \ 
+            "mkdocs-material" \
+            "mkdocs-minify-plugin>=0.3"
+
+      - name: Deploy documentation
       - run: mkdocs gh-deploy --force
