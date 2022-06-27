@@ -20,6 +20,9 @@ public class ProcessorConfigurator {
 
     public ProcessorConfigurator(ProcessingConfiguration[] processingConfigurations) {
         for (var config : processingConfigurations) {
+            if (config == null || config.getProcessingPlan() == null || config.getProcessingPlan().getProcessingStages().isEmpty()) {
+                continue;
+            }
             prepared.put(config, new Processor(config, prepareStateMachine(config)));
         }
     }
