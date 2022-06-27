@@ -1,0 +1,47 @@
+:root > * {
+    --md-default-fg-color: rgba(24, 32, 31, .87);
+    --md-default-fg-color--light: rgba(24, 32, 31, .54);
+    --md-default-fg-color--lighter: rgba(24, 32, 31, .32);
+    --md-default-fg-color--lightest: rgba(24, 32, 31, .57);
+    --md-primary-fg-color: #00b3b3;
+    --md-primary-fg-color--light: #00b3b3;
+    --md-primary-fg-color--dark: #00b3b3;
+    --md-accent-fg-color: #02eeee;
+    --md-accent-fg-color--light: #02eeee;
+    --md-accent-fg-color--dark: #02eeee;
+    --md-header-background-color: rgba(193, 255, 234, 0.8);
+    --md-tabs-background-color: rgba(193, 255, 234, 0.8);
+    --md-search__input-background-color: darkcyan;
+    --md-search__input-color: rgba(24, 32, 31, .87);
+    --md-main-background-color: rgb(240, 248, 255, .8);
+}
+
+.md-header {
+    background-color: var(--md-header-background-color);
+    color: var(--md-primary-fg-color);
+}
+
+.md-tabs {
+    background-color: var(--md-tabs-background-color);
+    color: var(--md-primary-fg-color);
+}
+
+.md-search__input {
+    background-color: var(--md-search__input-background-color);
+    color: var(--md-search__input-color);
+}
+
+.md-main {
+    background-color: var(--md-main-background-color);
+}
+
+.md-nav--primary {
+    background-color: var(--md-main-background-color);
+    color: var(--md-primary-fg-color);
+}
+
+.md-footer {
+    background-color: var(--md-main-background-color);
+    color: var(--md-primary-fg-color);
+}
+  
