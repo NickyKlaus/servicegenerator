@@ -4,7 +4,7 @@ Another part of generation microservices with **servicegenerator** is plugin con
 
 Let's add **servicegenerator** plugin to <code>plugins</code> section in our project <code>pom.xml</code>:
 
-```xml
+```xml linenums="1"
 <plugin>
     <groupId>com.home</groupId>
     <artifactId>service-generator-maven-plugin</artifactId>
@@ -26,7 +26,7 @@ Let's add **servicegenerator** plugin to <code>plugins</code> section in our pro
 There are two main parts of the plugin configuration: *common preferencies* and *transformations*.
 *Common preferencies* section has not its own XML tag and includes following configuration items:
 
-```xml
+```xml linenums="1"
 <configuration>
     <projectOutputDirectory>${project.build.directory}/generated-sources/swagger</projectOutputDirectory>
     <sourcesDirectory>/src/main/java</sourcesDirectory>
@@ -55,7 +55,7 @@ with following default values (might be ignored):
 
 *Transformations* section structure:
 
-```xml
+```xml linenums="1"
 <configuration>
     ...
     <transformations>

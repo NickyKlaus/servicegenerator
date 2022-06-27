@@ -5,7 +5,7 @@
 context.get([property_name], [value_class])
 ```
 For example, in the schema below we request some data from *Processing Context*:
-```java
+```java hl_lines="5 6 7" linenums="1"
 public class SomeProcessingSchema implements ASTProcessingSchema {
     @Override
     public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
@@ -25,7 +25,7 @@ Of course, the schema must know about the type of the data contained in context.
 It means that you should add such classes as `Name.class`, `Storage.class` to classpath of **servicegenerator** to process `SomeProcessingSchema`. 
 
 Note that property `varFromTransformation` was initialized in `<transformationProperty>` section in `pom.xml`:
-```xml
+```xml hl_lines="9 10" linenums="1"
 <configuration>
     ...
     <transformations>

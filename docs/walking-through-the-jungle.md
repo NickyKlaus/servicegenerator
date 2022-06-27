@@ -14,7 +14,7 @@ Of course, you can add any operations to your schema action (e.g. logging) or ev
 
 Let's take a look to the *Processing schema* declaration:
 
-```java
+```java linenums="1"
 public class SomeProcessingSchema implements ASTProcessingSchema {
 	@Override
     public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
