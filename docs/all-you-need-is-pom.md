@@ -102,4 +102,4 @@ with following default values (might be ignored):
 | `transformationProperties` | N/A                                                                |
 | `dependencies`             | N/A                                                                |
 
-`transformationPropertyies` contains key and value pairs that can be used in schema (you can get a property value by its name using Context object).
+`transformationProperties` contains key and value pairs that can be used in schema (you can get a property value by its name using Context object).
