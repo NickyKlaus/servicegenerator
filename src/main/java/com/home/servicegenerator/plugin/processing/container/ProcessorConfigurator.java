@@ -8,39 +8,36 @@ import org.squirrelframework.foundation.fsm.Condition;
 import org.squirrelframework.foundation.fsm.StateMachineBuilderFactory;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ProcessorConfigurator {
-    private final AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine;
-    private final ProcessingConfiguration[] processingConfigurations;
+    private final List<ProcessingConfiguration> processingConfigurations;
 
-    public ProcessorConfigurator(ProcessingConfiguration[] processingConfigurations) {
-        this.stateMachine = prepareStateMachine(( this.processingConfigurations = processingConfigurations ));
+    public ProcessorConfigurator(List<ProcessingConfiguration> processingConfigurations) {
+        this.processingConfigurations = processingConfigurations;
     }
 
-    public Processor configure() {
-        return new Processor(processingConfigurations, stateMachine);
+    public List<Processor> configure() {
+        return processingConfigurations
+                .stream()
+                .map(config -> new Processor(config, prepareStateMachine(config)))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> prepareStateMachine(
-            ProcessingConfiguration[] processingConfigurations
+            ProcessingConfiguration processingConfiguration
     ) {
-        if (processingConfigurations.length == 0 ||
-                processingConfigurations[0].getProcessingPlan().getProcessingStages().isEmpty()) {
+        if (processingConfiguration.getProcessingPlan().getProcessingStages().isEmpty()) {
             return null;
         }
 
         var stateMachineBuilder =
                 StateMachineBuilderFactory.create(ProcessingStateMachine.class, Stage.class, String.class, Context.class);
-        var _globalInitialStage = processingConfigurations[0].getProcessingPlan().getProcessingStages().get(0);
+        var _globalInitialStage = processingConfiguration.getProcessingPlan().getProcessingStages().get(0);
 
-        var stages = new ArrayList<Stage>();
-
-        for (var config : processingConfigurations) {
-            stages.addAll(config.getProcessingPlan().getProcessingStages());
-        }
+        var stages = processingConfiguration.getProcessingPlan().getProcessingStages();
 
         if (stages.isEmpty()) return null;
 

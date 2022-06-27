@@ -6,27 +6,31 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
-
     /**
      * Mappings for locations of base classes and corresponding processing schemas (location and class name).
      * Plugin uses processing schema mapped to base class to transform it and generate resulted version of this class.
      */
+
+    @Parameter(required = true)
+    private String inputSpec;
+
     @Parameter(name = "transformations")
     private List<Transformation> transformations = List.of();
 
     @Parameter(name = "dbType")
     private Storage.DbType dbType;
 
-    @Parameter(name = "controllerPackage")
+    @Parameter(defaultValue = "api")
     private String controllerPackage;
 
-    @Parameter(name = "modelPackage")
+    @Parameter(defaultValue = "model")
     private String modelPackage;
 
-    @Parameter(name = "configurationPackage")
+    @Parameter(defaultValue = "invoker")
     private String configurationPackage;
 
     /**
@@ -35,25 +39,33 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
     @Parameter(defaultValue = "${basedir}", readonly = true)
     private String projectBaseDirectory;
 
-    @Parameter(name = "basePackage")
+    @Parameter(defaultValue = "${project.groupId}.${project.artifactId}")
     private String basePackage;
 
     /**
      * Location of the output directory.
      */
-    @Parameter(name = "projectOutputDirectory", defaultValue = "${project.build.directory}/target/generated-sources/swagger")
-    private File projectOutputDirectory;
+    @Parameter(name = "projectOutputDirectory", defaultValue = "${project.build.directory}/generated-sources/swagger")
+    private String projectOutputDirectory;
 
     /**
      * Location of the project sources directory.
      */
-    @Parameter(defaultValue = "${sourceDir}")
-    private File sourcesDirectory;
+    @Parameter(defaultValue = "/src/main/java")
+    private String sourcesDirectory;
 
     @Parameter(name = "project", defaultValue = "${project}")
     private MavenProject project;
 
-    public File getProjectOutputDirectory() {
+    public String getInputSpec() {
+        return inputSpec;
+    }
+
+    public void setInputSpec(String inputSpec) {
+        this.inputSpec = inputSpec;
+    }
+
+    public String getProjectOutputDirectory() {
         return projectOutputDirectory;
     }
 
@@ -77,7 +89,7 @@ public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
         return basePackage;
     }
 
-    public File getSourcesDirectory() {
+    public String getSourcesDirectory() {
         return sourcesDirectory;
     }
 

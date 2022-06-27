@@ -3,6 +3,8 @@ package com.home.servicegenerator.plugin.processing.configuration.stages;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.processing.configuration.context.ProcessingContext;
+import com.home.servicegenerator.plugin.processing.configuration.strategy.naming.NamingStrategy;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -91,5 +93,25 @@ public class ProcessingStage implements Stage {
     @Override
     public Consumer<Context> getPostProcessingAction() {
         return afterProcessedAction;
+    }
+
+    @Override
+    public Stage setComponentPackage(String packageName) {
+        return this;
+    }
+
+    @Override
+    public String getComponentPackage() {
+        return StringUtils.EMPTY;
+    }
+
+    @Override
+    public Stage setComponentType(String componentName) {
+        return this;
+    }
+
+    @Override
+    public String getComponentType() {
+        return StringUtils.EMPTY;
     }
 }

@@ -33,9 +33,6 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
     @Override
     public void process(Stage initialStage, AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine, PluginConfiguration configuration) {
         final Map<String, ProcessingUnit> controllerIndex = new HashMap<>();
-        // TODO: remove both
-        final Map<String, ProcessingUnit> configurationIndex = new HashMap<>();
-        final Map<String, ProcessingUnit> modelIndex = new HashMap<>();
         final List<Name> availableModelNames = new ArrayList<>();
 
         try {
@@ -44,7 +41,6 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
             final List<CompilationUnit> models = scanner.scanModel();
             for (CompilationUnit unit : models) {
                 final ProcessingUnit processingUnit = ProcessingUnit.convert(unit);
-                modelIndex.put(processingUnit.getId(), processingUnit);
                 ProjectUnitsRegistry.register(processingUnit);
             }
 
@@ -58,23 +54,8 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
 
             for (CompilationUnit unit : scanner.scanConfiguration()) {
                 final ProcessingUnit processingUnit = ProcessingUnit.convert(unit);
-                configurationIndex.put(processingUnit.getId(), processingUnit);
                 ProjectUnitsRegistry.register(processingUnit);
             }
-
-            // Create folders for components
-            Files.createDirectory(
-                    FileUtils.createDirPath(
-                            configuration.getProjectOutputDirectory().toString(),
-                            configuration.getSourcesLocation().toString(),
-                            configuration.getBasePackage(),
-                            "repository"));
-            Files.createDirectories(
-                    FileUtils.createDirPath(
-                            configuration.getProjectOutputDirectory().toString(),
-                            configuration.getSourcesLocation().toString(),
-                            configuration.getBasePackage(),
-                            "service.impl"));
         } catch (IOException | MojoFailureException ex) {
             LOG.error("Error: cannot prepare components", ex);
         }

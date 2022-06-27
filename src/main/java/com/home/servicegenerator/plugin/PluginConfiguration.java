@@ -6,29 +6,37 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class PluginConfiguration {
-    private Path sourcesLocation;
-    private Path projectOutputDirectory;
+    private String inputSpec;
+    private String sourcesLocation;
+    private String projectOutputDirectory;
     private String basePackage;
-    private String projectBaseDirectory;
     private String configurationPackage;
     private String modelPackage;
     private String controllerPackage;
     private Storage.DbType dbType;
     private List<Transformation> transformations;
 
-    public Path getSourcesLocation() {
+    public String getInputSpec() {
+        return inputSpec;
+    }
+
+    public void setInputSpec(String inputSpec) {
+        this.inputSpec = inputSpec;
+    }
+
+    public String getSourcesLocation() {
         return sourcesLocation;
     }
 
-    public void setSourcesLocation(Path sourcesLocation) {
+    public void setSourcesLocation(String sourcesLocation) {
         this.sourcesLocation = sourcesLocation;
     }
 
-    public Path getProjectOutputDirectory() {
+    public String getProjectOutputDirectory() {
         return projectOutputDirectory;
     }
 
-    public void setProjectOutputDirectory(Path projectOutputDirectory) {
+    public void setProjectOutputDirectory(String projectOutputDirectory) {
         this.projectOutputDirectory = projectOutputDirectory;
     }
 
@@ -38,14 +46,6 @@ public class PluginConfiguration {
 
     public void setBasePackage(String basePackage) {
         this.basePackage = basePackage;
-    }
-
-    public String getProjectBaseDirectory() {
-        return projectBaseDirectory;
-    }
-
-    public void setProjectBaseDirectory(String projectBaseDirectory) {
-        this.projectBaseDirectory = projectBaseDirectory;
     }
 
     public String getConfigurationPackage() {
