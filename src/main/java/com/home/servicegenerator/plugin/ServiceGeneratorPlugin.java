@@ -5,7 +5,6 @@ import com.github.javaparser.ast.expr.Name;
 import com.home.servicegenerator.api.ASTProcessingSchema;
 import com.home.servicegenerator.plugin.processing.configuration.DefaultProcessingConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
-import com.home.servicegenerator.plugin.processing.configuration.context.properties.ComponentPackage;
 import com.home.servicegenerator.plugin.processing.configuration.stages.ProcessingPlan;
 import com.home.servicegenerator.plugin.processing.configuration.stages.ProcessingStage;
 import com.home.servicegenerator.plugin.processing.configuration.strategy.processing.SequentialProcessingStrategy;
@@ -18,11 +17,8 @@ import com.home.servicegenerator.plugin.processing.configuration.strategy.matchm
 import com.home.servicegenerator.plugin.processing.configuration.strategy.naming.PipelineIdBasedNamingStrategy;
 import com.home.servicegenerator.plugin.processing.configuration.strategy.processing.PipelineIdBasedProcessingStrategy;
 import com.home.servicegenerator.plugin.processing.container.ProcessingUnit;
-import com.home.servicegenerator.plugin.utils.FileUtils;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
-import io.swagger.codegen.v3.DefaultGenerator;
 import io.swagger.codegen.v3.cli.cmd.Generate;
-import io.swagger.codegen.v3.config.CodegenConfigurator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -71,11 +67,7 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     private static final String POM_XML = "pom.xml";
     private static final String POM_XML_BACKUP = "pom.xml.bak";
 
-    private final CodegenConfigurator codegenConfigurator = new CodegenConfigurator();
-    private final DefaultGenerator codeGenerator = new DefaultGenerator();
-
     private ProcessingPlan processingPlan() {
-        //TODO: InnerStages -> ProcessingStages with predefined conditions etc
         return ProcessingPlan
                 .processingPlan()
                 .stage(
@@ -97,18 +89,6 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
                                                         getBasePackage() + ".repository"),
                                                 Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME.name(),
                                                         Long.class.getSimpleName())))
-                                //default
-                                /*.setExecutingStageCondition(
-                                        ctx -> {
-                                            var unitId =
-                                                    createFilePath(
-                                                            getProjectOutputDirectory(),
-                                                            getSourcesDirectory(),
-                                                            getBasePackage(),
-                                                            "repository",
-                                                            ctx.get(PIPELINE_ID.name(), Name.class).getIdentifier() + "Repository").toString();
-                                            return ProjectUnitsRegistry.notRegistered(unitId);
-                                        })*/
                                 .postProcessingAction(
                                         ctx ->
                                                 ctx.getProperties()
@@ -392,26 +372,6 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
         generate.run();
     }
 
-    private void createDirs() throws MojoFailureException {
-        // Create folders for components
-        try {
-            Files.createDirectory(
-                    FileUtils.createDirPath(
-                            getProjectOutputDirectory(),
-                            getSourcesDirectory(),
-                            getBasePackage(),
-                            ComponentPackage.REPOSITORY.toString()));
-            Files.createDirectories(
-                    FileUtils.createDirPath(
-                            getProjectOutputDirectory(),
-                            getSourcesDirectory(),
-                            getBasePackage(),
-                            ComponentPackage.SERVICE_IMPLEMENTATION.toString()));
-        } catch (IOException ioe) {
-            throw new MojoFailureException("Cannot create directories", ioe);
-        }
-    }
-
     private Optional<MethodDeclaration> getMethodMatchedWithPipeline(
             final MethodDeclaration pipeline,
             final List<MethodDeclaration> checkedMethods,
@@ -430,7 +390,6 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
     @Override
     public void execute() throws MojoFailureException {
         generateStub();
-        createDirs();
 
         new ProcessingContainer(internalProcessingConfiguration(), externalProcessingConfiguration())
                 .prepare(this)

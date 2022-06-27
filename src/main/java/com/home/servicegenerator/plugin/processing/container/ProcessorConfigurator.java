@@ -8,27 +8,22 @@ import org.squirrelframework.foundation.fsm.Condition;
 import org.squirrelframework.foundation.fsm.StateMachineBuilderFactory;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ProcessorConfigurator {
-    private final Map<ProcessingConfiguration, Processor> prepared = new HashMap<>();
+    private final List<ProcessingConfiguration> processingConfigurations;
 
-    public ProcessorConfigurator(ProcessingConfiguration[] processingConfigurations) {
-        for (var config : processingConfigurations) {
-            if (config == null || config.getProcessingPlan() == null || config.getProcessingPlan().getProcessingStages().isEmpty()) {
-                continue;
-            }
-            prepared.put(config, new Processor(config, prepareStateMachine(config)));
-        }
+    public ProcessorConfigurator(List<ProcessingConfiguration> processingConfigurations) {
+        this.processingConfigurations = processingConfigurations;
     }
 
     public List<Processor> configure() {
-        return prepared.values().stream().collect(Collectors.toUnmodifiableList());
+        return processingConfigurations
+                .stream()
+                .map(config -> new Processor(config, prepareStateMachine(config)))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> prepareStateMachine(
