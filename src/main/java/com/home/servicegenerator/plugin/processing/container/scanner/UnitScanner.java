@@ -73,16 +73,16 @@ public class UnitScanner implements Scanner {
     private static SourceRoot prepareSourceRoot(final PluginConfiguration configuration) throws IOException {
         return new SourceRoot(
                         FileUtils.createDirPath(
-                                configuration.getProjectOutputDirectory().toString(),
-                                configuration.getSourcesLocation().toString(),
+                                configuration.getProjectOutputDirectory(),
+                                configuration.getSourcesLocation(),
                                 configuration.getBasePackage(),
                                 ""),
                         new ParserConfiguration()
                                 .setSymbolResolver(
                                         createJavaSymbolSolver(
                                                 FileUtils.createDirPath(
-                                                        configuration.getProjectOutputDirectory().toString(),
-                                                        configuration.getSourcesLocation().toString(),
+                                                        configuration.getProjectOutputDirectory(),
+                                                        configuration.getSourcesLocation(),
                                                         configuration.getBasePackage(),
                                                         ""))));
     }

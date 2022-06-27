@@ -17,25 +17,22 @@ import java.util.function.Consumer;
 
 public class ProcessingStateMachine extends AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingStateMachine.class);
-    private final Consumer<CompilationUnit> savingAction;
-
-    {
-        savingAction = (unit) -> {
-            try {
-                if (unit.getStorage().isEmpty() || Objects.isNull(unit.getStorage().get().getPath())) {
-                    throw new MojoFailureException("Cannot save generated class " + unit + ". There is no target path.");
+    private final Consumer<CompilationUnit> savingAction =
+            (unit) -> {
+                try {
+                    if (unit.getStorage().isEmpty() || Objects.isNull(unit.getStorage().get().getPath())) {
+                        throw new MojoFailureException("Cannot save generated class " + unit + ". There is no target path.");
+                    }
+                    if (unit.getPackageDeclaration().isPresent() && unit.getPrimaryType().isPresent()) {
+                        unit
+                                .getStorage()
+                                .orElseThrow(() -> new MojoFailureException("Cannot write generated class " + unit))
+                                .save();
+                    }
+                } catch (MojoFailureException e) {
+                    LOG.error("Error: cannot save unit", e);
                 }
-                if (unit.getPackageDeclaration().isPresent() && unit.getPrimaryType().isPresent()) {
-                    unit
-                            .getStorage()
-                            .orElseThrow(() -> new MojoFailureException("Cannot write generated class " + unit))
-                            .save();
-                }
-            } catch (MojoFailureException e) {
-                LOG.error("Error: cannot save unit", e);
-            }
-        };
-    }
+            };
 
     void generate(Stage fromState, Stage toState, String event, Context context) {
         try {
