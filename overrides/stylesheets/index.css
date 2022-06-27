@@ -1,5 +1,5 @@
 body {
-    background-image: url(images/animation.gif);
+    background-image: url(/images/animation.gif);
     background-position: center;
     background-size: 200%;
 }
