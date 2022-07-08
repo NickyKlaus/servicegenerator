@@ -8,11 +8,11 @@ graph LR
   A[<b>Node</b> v1] --> |<i>preProcess</i><b>NodeType</b>| B[<b>Node</b> v2];
   B --> |<i>postProcess</i><b>NodeType</b>| C[<b>Node</b> v3];
 ```
-As you can see we can deal with up to 3 different versions of one node during processing the source code but only the last one will be saved to the target `.class` file.
+As you can see we can deal with up to 3 different versions of one node during processing the source code and the resulted version of node will be saved to the target `.class` file.
 
 Of course, you can add any operations to your schema action (e.g. logging) or even keep the node's state effectively immutable.
 
-Let's take a look to the *Processing schema* declaration:
+Let's take a look to the example of *Processing schema* declaration:
 
 ```java linenums="1"
 public class SomeProcessingSchema implements ASTProcessingSchema {
@@ -33,7 +33,7 @@ public class SomeProcessingSchema implements ASTProcessingSchema {
     }
 
     @Override
-    public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
+    public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> postProcessClassOrInterfaceDeclaration() {
         return (ClassOrInterfaceDeclaration n, Context context) -> {
             // some code
             return n;
@@ -42,6 +42,6 @@ public class SomeProcessingSchema implements ASTProcessingSchema {
 }
 ```
 
-All the operations with the node `n` must be declare in corresponding `BiFunction` body. Plugin expects that you will return the same node object that you got as a result of every processing action.
+All the operations with the node `n` must be declared in corresponding `BiFunction` body. Plugin expects that you will return the same node object that you got as a result of every processing action.
 
 According to the *"Convention over configuration"* principle you should declare only the actions you really need to do during the scheme processing. 
