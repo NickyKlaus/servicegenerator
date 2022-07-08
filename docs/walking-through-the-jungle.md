@@ -26,7 +26,7 @@ public class SomeProcessingSchema implements ASTProcessingSchema {
 
     @Override
     public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessClassOrInterfaceDeclaration() {
-        return (CompilationUnit n, Context context) -> {
+        return (ClassOrInterfaceDeclaration n, Context context) -> {
             // some code
             return n;
         };
