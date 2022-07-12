@@ -4,7 +4,7 @@ import com.home.servicegenerator.api.context.Context;
 import com.home.servicegenerator.plugin.PluginConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.context.ProcessingContext;
 import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
-import com.home.servicegenerator.plugin.processing.processor.statemachine.ProcessingStateMachine;
+import com.home.servicegenerator.plugin.processing.statemachine.ProcessingStateMachine;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
 public class SequentialProcessingStrategy implements ProcessingStrategy {

@@ -15,14 +15,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.home.servicegenerator.plugin.schema.InternalProcessingSchema.AddControllerMethodImplementation;
-import static com.home.servicegenerator.plugin.schema.InternalProcessingSchema.AddServiceAbstractMethod;
-import static com.home.servicegenerator.plugin.schema.InternalProcessingSchema.AddServiceMethodImplementation;
-import static com.home.servicegenerator.plugin.schema.InternalProcessingSchema.CreateAbstractService;
-import static com.home.servicegenerator.plugin.schema.InternalProcessingSchema.CreateRepository;
-import static com.home.servicegenerator.plugin.schema.InternalProcessingSchema.CreateServiceImplementation;
-import static com.home.servicegenerator.plugin.schema.InternalProcessingSchema.EditConfiguration;
-import static com.home.servicegenerator.plugin.schema.InternalProcessingSchema.InjectServiceIntoController;
+import static com.home.servicegenerator.plugin.processing.configuration.schema.InternalProcessingSchema.AddControllerMethodImplementation;
+import static com.home.servicegenerator.plugin.processing.configuration.schema.InternalProcessingSchema.AddServiceAbstractMethod;
+import static com.home.servicegenerator.plugin.processing.configuration.schema.InternalProcessingSchema.AddServiceMethodImplementation;
+import static com.home.servicegenerator.plugin.processing.configuration.schema.InternalProcessingSchema.CreateAbstractService;
+import static com.home.servicegenerator.plugin.processing.configuration.schema.InternalProcessingSchema.CreateRepository;
+import static com.home.servicegenerator.plugin.processing.configuration.schema.InternalProcessingSchema.CreateServiceImplementation;
+import static com.home.servicegenerator.plugin.processing.configuration.schema.InternalProcessingSchema.EditConfiguration;
+import static com.home.servicegenerator.plugin.processing.configuration.schema.InternalProcessingSchema.InjectServiceIntoController;
 
 public enum InternalProcessingStage implements Stage {
 

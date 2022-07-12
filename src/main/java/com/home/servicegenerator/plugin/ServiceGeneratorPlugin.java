@@ -16,7 +16,7 @@ import com.home.servicegenerator.plugin.processing.configuration.strategy.matchm
 import com.home.servicegenerator.plugin.processing.configuration.strategy.matchmethod.MatchingMethodStrategy;
 import com.home.servicegenerator.plugin.processing.configuration.strategy.naming.PipelineIdBasedNamingStrategy;
 import com.home.servicegenerator.plugin.processing.configuration.strategy.processing.PipelineIdBasedProcessingStrategy;
-import com.home.servicegenerator.plugin.processing.container.ProcessingUnit;
+import com.home.servicegenerator.plugin.processing.ProcessingUnit;
 import com.home.servicegenerator.plugin.utils.MethodNormalizer;
 import io.swagger.codegen.v3.cli.cmd.Generate;
 import org.apache.commons.lang3.StringUtils;
