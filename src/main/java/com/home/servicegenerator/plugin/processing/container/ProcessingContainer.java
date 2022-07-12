@@ -4,6 +4,9 @@ import com.home.servicegenerator.plugin.AbstractServiceGeneratorMojo;
 import com.home.servicegenerator.plugin.PluginConfiguration;
 import com.home.servicegenerator.plugin.processing.configuration.ProcessingConfiguration;
 import com.home.servicegenerator.plugin.PluginConfigurationMapper;
+import com.home.servicegenerator.plugin.processing.processor.Processor;
+import com.home.servicegenerator.plugin.processing.processor.ProcessorConfigurator;
+import com.home.servicegenerator.plugin.processing.registry.Registry;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +43,9 @@ public class ProcessingContainer {
         }
 
         public void start() {
-            processors.forEach(processor -> processor.process(pluginConfiguration));
+            try (Registry.INSTANCE) {
+                processors.forEach(processor -> processor.process(pluginConfiguration));
+            }
         }
     }
 }

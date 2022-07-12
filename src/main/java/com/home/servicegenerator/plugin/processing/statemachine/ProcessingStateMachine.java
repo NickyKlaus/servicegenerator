@@ -1,0 +1,65 @@
+package com.home.servicegenerator.plugin.processing.statemachine;
+
+import com.github.javaparser.ast.CompilationUnit;
+import com.home.servicegenerator.api.context.Context;
+import com.home.servicegenerator.plugin.processing.configuration.stages.Stage;
+import com.home.servicegenerator.plugin.processing.engine.generator.DefaultGenerator;
+import com.home.servicegenerator.plugin.processing.ProcessingUnit;
+import com.home.servicegenerator.plugin.processing.registry.Registry;
+import org.apache.maven.plugin.MojoFailureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
+
+import java.util.function.Consumer;
+
+public class ProcessingStateMachine extends AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> {
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessingStateMachine.class);
+    private final Consumer<ProcessingUnit> savingAction =
+            (unit) -> {
+                try {
+                    var compilationUnit = unit.getCompilationUnit();
+                    if (compilationUnit.getPackageDeclaration().isPresent() && compilationUnit.getPrimaryType().isPresent()) {
+                        compilationUnit
+                                .getStorage()
+                                .orElseThrow(() -> new MojoFailureException("Cannot write generated class " + unit))
+                                .save();
+                    }
+                } catch (MojoFailureException e) {
+                    LOG.error("Error: cannot save unit", e);
+                }
+            };
+
+    void generate(Stage fromState, Stage toState, String event, Context context) {
+        try {
+            var generatedUnit = (CompilationUnit) DefaultGenerator.builder()
+                    .processingSchema(fromState.getSchema())
+                    .build()
+                    .generate(Registry.getOrDefault(fromState.getSourceLocation()).getCompilationUnit(), context);
+
+            Registry.save(ProcessingUnit.convert(generatedUnit));
+
+            if (toState != null) {
+                if (fromState == toState) {
+                    return;
+                }
+                context.getProperties().putAll(toState.getProcessingData());
+                fire("GENERATE_" + toState.getName(), context);
+            }
+        } catch (MojoFailureException e) {
+            LOG.error("Error: cannot generate unit", e);
+        }
+    }
+
+    @Override
+    public void afterTransitionCompleted(Stage fromState, Stage toState, String event, Context context) {
+        super.afterTransitionCompleted(fromState, toState, event, context);
+        fromState.getPostProcessingAction().accept(context);
+    }
+
+    @Override
+    public void terminate() {
+        super.terminate();
+        Registry.getAll().forEach(savingAction);
+    }
+}
