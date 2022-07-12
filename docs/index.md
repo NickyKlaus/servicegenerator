@@ -4,4 +4,4 @@
 
 !!! tip "Attention"
     
-    This plugin is experimental and should not be used in production code.
+    This plugin is experimental and should not be used in production.
