@@ -1,14 +1,14 @@
 # All you need is POM
 
-Another part of generation microservices with **servicegenerator** is plugin configuration. All the configuration preferences must be described in plugin configuration section in the project descriptor <code>pom.xml</code>.
+Another part of generation microservices with **Origami** is plugin configuration. All the configuration preferences must be described in plugin configuration section in the project descriptor <code>pom.xml</code>.
 
-Let's add **servicegenerator** plugin to <code>plugins</code> section in our project <code>pom.xml</code>:
+Let's add **Origami** plugin to <code>plugins</code> section in our project <code>pom.xml</code>:
 
 ```xml linenums="1"
 <plugin>
     <groupId>com.home</groupId>
-    <artifactId>service-generator-maven-plugin</artifactId>
-    <version>${service-generator-plugin.version}</version>
+    <artifactId>origami-maven-plugin</artifactId>
+    <version>${origami-plugin.version}</version>
     <executions>
         <execution>
             <phase>generate-sources</phase>

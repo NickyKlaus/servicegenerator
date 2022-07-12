@@ -1,6 +1,6 @@
 # Context is for Kings
 
-*Processing Schemas* can use any data contained in [*Context*](https://github.com/NickyKlaus/service-generator-api/blob/master/src/main/java/com/home/servicegenerator/api/context/Context.java) in a type-safe way:
+*Processing Schemas* can use any data contained in [*Context*](https://github.com/NickyKlaus/origami-api/blob/master/src/main/java/com/home/origami/api/context/Context.java) in a type-safe way:
 ```
 context.get([property_name], [value_class])
 ```
@@ -22,7 +22,7 @@ public class SomeProcessingSchema implements ASTProcessingSchema {
 }
 ```
 Of course, the schema must know about the type of the data contained in context.
-It means that you should add such classes as `Name.class`, `Storage.class` to classpath of **servicegenerator** to process `SomeProcessingSchema`. 
+It means that you should add such classes as `Name.class`, `Storage.class` to classpath of **Origami** to process `SomeProcessingSchema`. 
 
 Note that property `varFromTransformation` was initialized in `<transformationProperty>` section in `pom.xml`:
 ```xml hl_lines="9 10" linenums="1"

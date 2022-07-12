@@ -1,12 +1,12 @@
 # Project information
-site_name: servicegenerator
-site_url: https://nickyklaus.github.io/servicegenerator/
+site_name: Origami
+site_url: https://nickyklaus.github.io/origami/
 site_author: Nikolai Beloglazov
 site_description: Maven plugin for generating Java microservices based on AST of the sources
 
 # Repository
-repo_name: nickyklaus/servicegenerator
-repo_url: https://github.com/nickyklaus/servicegenerator
+repo_name: nickyklaus/origami
+repo_url: https://github.com/nickyklaus/origami
 
 # Copyright
 copyright: Copyright &copy; 2022 Nikolai Beloglazov
@@ -86,7 +86,7 @@ nav:
       - Walking through the jungle: walking-through-the-jungle.md
       - Context is for Kings: context-is-for-kings.md
       - All you need is POM: all-you-need-is-pom.md
-      - servicegenerator. Inside out: inside-out.md
+      - Origami. Inside out: inside-out.md
 
 extra_css:
   - stylesheets/extra.css

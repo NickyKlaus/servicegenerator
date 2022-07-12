@@ -1,6 +1,6 @@
-# servicegenerator. Inside out
+# Origami. Inside out
 
-**servicegenerator** contains a *Finite-state mashine* under the hood. It considers all the registered *Processing stages* (of both types *internal* and *external*) as the set of available states and moves from one the another according to the order they were registered.
+**Origami** contains a *Finite-state mashine* under the hood. It considers all the registered *Processing stages* (of both types *internal* and *external*) as the set of available states and moves from one the another according to the order they were registered.
 
 Basically, you cannot affect to the internal stages' order itself but you allow to change any line of code produced by interal schemas' processing.
 
