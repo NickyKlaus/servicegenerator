@@ -1,34 +1,35 @@
-package com.home.origami.plugin.processing.registry.meta;
+package com.home.origami.plugin.processing.registry;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.home.origami.plugin.db.DBClient;
 import com.home.origami.plugin.processing.ProcessingUnit;
-import com.home.origami.plugin.processing.registry.Registry;
-import com.home.origami.plugin.processing.registry.meta.filter.MetadataFilter;
-import com.home.origami.plugin.processing.registry.meta.model.ProcessingUnitMetaModel;
-import com.home.origami.plugin.processing.registry.meta.filter.Filter;
-import com.home.origami.plugin.processing.registry.meta.filter.StringFilterExpression;
+import com.home.origami.plugin.processing.registry.ProcessingUnitRegistry;
+import com.home.origami.plugin.processing.registry.metadata.filter.MetadataFilter;
+import com.home.origami.plugin.processing.registry.metadata.model.ProcessingUnitMetadataModel;
+import com.home.origami.plugin.db.filter.Filter;
+import com.home.origami.plugin.db.filter.StringFilterExpression;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class DbTest {
+public class ProcessingUnitRegistryTest {
     private static final String TEST_PATH = "/test/path";
     private static final CompilationUnit TEST_UNIT = new CompilationUnit();
     private static final ProcessingUnit TEST_PROCESSING_UNIT = new ProcessingUnit(TEST_PATH, TEST_UNIT);
-    private static final ProcessingUnitMetaModel TEST_META = new ProcessingUnitMetaModel(TEST_PATH);
+    private static final ProcessingUnitMetadataModel TEST_META = new ProcessingUnitMetadataModel(TEST_PATH);
     private static final Filter REGISTRY_FILTER = new MetadataFilter(new StringFilterExpression(String.format("{ \"path\": \"%s\" }", TEST_PATH)));
 
     @BeforeAll
     static void prepareEnv() {
         TEST_META.setPath(TEST_PATH);
-        Registry.save(TEST_PROCESSING_UNIT, TEST_META);
+        ProcessingUnitRegistry.save(TEST_PROCESSING_UNIT, TEST_META);
     }
 
     @AfterAll
     static void destroyEnv() {
-        Registry.INSTANCE.close();
+        DBClient.INSTANCE.close();
     }
 
     @Test
@@ -37,13 +38,13 @@ public class DbTest {
         var compilationUnit = new CompilationUnit();
         var processingUnit = new ProcessingUnit(path, compilationUnit);
 
-        Registry.save(processingUnit);
+        ProcessingUnitRegistry.save(processingUnit);
 
-        var readProcessingUnit = Registry.get(path);
+        var readProcessingUnit = ProcessingUnitRegistry.get(path);
 
         Assertions.assertNotNull(
                 processingUnit,
-                "Value from Registry cannot be null");
+                "Value from ProcessingUnitRegistry cannot be null");
         Assertions.assertEquals(
                 path,
                 readProcessingUnit.getId(),
@@ -51,16 +52,16 @@ public class DbTest {
         Assertions.assertEquals(
                 processingUnit,
                 readProcessingUnit,
-                "Value from Registry is not equal to the written one");
+                "Value from ProcessingUnitRegistry is not equal to the written one");
     }
 
     @Test
     void testReadOneFromRegistry() {
-        var processingUnit = Registry.get(TEST_PATH);
+        var processingUnit = ProcessingUnitRegistry.get(TEST_PATH);
 
         Assertions.assertNotNull(
                 processingUnit,
-                "Value from Registry cannot be null");
+                "Value from ProcessingUnitRegistry cannot be null");
         Assertions.assertEquals(
                 TEST_PATH,
                 processingUnit.getId(),
@@ -68,42 +69,42 @@ public class DbTest {
         Assertions.assertEquals(
                 TEST_PROCESSING_UNIT,
                 processingUnit,
-                "Value from Registry is not equal to the written one");
+                "Value from ProcessingUnitRegistry is not equal to the written one");
     }
 
     @Test
     void testReadAllFromRegistry() {
-        var processingUnits = Registry.getAll();
+        var processingUnits = ProcessingUnitRegistry.getAll();
 
         Assertions.assertNotNull(
                 processingUnits,
-                "Values from Registry cannot be null");
+                "Values from ProcessingUnitRegistry cannot be null");
         Assertions.assertFalse(
                 processingUnits.isEmpty(),
-                "Registry cannot be empty");
+                "ProcessingUnitRegistry cannot be empty");
         Assertions.assertEquals(
                 TEST_PROCESSING_UNIT,
                 processingUnits.get(0),
-                "Value from Registry is not equal to the written one");
+                "Value from ProcessingUnitRegistry is not equal to the written one");
     }
 
     @Test
     void testFindFromRegistry() {
-        var processingUnits = Registry.find(REGISTRY_FILTER);
+        var processingUnits = ProcessingUnitRegistry.find(REGISTRY_FILTER);
 
         Assertions.assertNotNull(
                 processingUnits,
-                "Values from Registry cannot be null");
+                "Values from ProcessingUnitRegistry cannot be null");
         Assertions.assertFalse(
                 processingUnits.isEmpty(),
-                "Registry cannot be empty");
+                "ProcessingUnitRegistry cannot be empty");
         Assertions.assertEquals(
                 processingUnits.size(),
                 1,
-                "Registry contains more than one value");
+                "ProcessingUnitRegistry contains more than one value");
         Assertions.assertEquals(
                 TEST_PROCESSING_UNIT,
                 processingUnits.get(0),
-                "Value from Registry is not equal to the written one");
+                "Value from ProcessingUnitRegistry is not equal to the written one");
     }
 }

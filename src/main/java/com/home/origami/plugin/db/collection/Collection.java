@@ -1,9 +1,9 @@
-package com.home.origami.plugin.processing.registry.meta.collection;
+package com.home.origami.plugin.db.collection;
 
-import com.home.origami.plugin.processing.registry.meta.Db;
-import com.home.origami.plugin.processing.registry.meta.filter.ObjectFilterMapper;
-import com.home.origami.plugin.processing.registry.meta.model.MetaModel;
-import com.home.origami.plugin.processing.registry.meta.filter.Filter;
+import com.home.origami.plugin.db.DBClient;
+import com.home.origami.plugin.db.filter.ObjectFilterMapper;
+import com.home.origami.plugin.db.model.Model;
+import com.home.origami.plugin.db.filter.Filter;
 
 import org.dizitart.no2.WriteResult;
 import org.dizitart.no2.objects.filters.ObjectFilters;
@@ -11,7 +11,7 @@ import org.dizitart.no2.objects.filters.ObjectFilters;
 import java.util.List;
 import java.util.Optional;
 
-public interface Collection<T extends MetaModel> {
+public interface Collection<T extends Model> {
     String getCollectionName();
 
     Class<T> getType();
@@ -19,18 +19,18 @@ public interface Collection<T extends MetaModel> {
     ObjectFilterMapper getFilterMapper();
 
     default List<T> getAll() {
-        return Db.getRepository(getCollectionName(), getType()).find().toList();
+        return DBClient.getRepository(getCollectionName(), getType()).find().toList();
     }
 
     default List<T> find(String fieldName, Object fieldValue) {
-        return Db
+        return DBClient
                 .getRepository(getCollectionName(), getType())
                 .find(ObjectFilters.eq(fieldName, fieldValue))
                 .toList();
     }
 
     default List<T> find(Filter filter) {
-        return Db
+        return DBClient
                 .getRepository(getCollectionName(), getType())
                 .find(getFilterMapper().map(filter))
                 .toList();
@@ -38,19 +38,19 @@ public interface Collection<T extends MetaModel> {
 
     default Optional<T> getByField(String fieldName, Object fieldValue) {
         return Optional.ofNullable(
-                Db.getRepository(getCollectionName(), getType())
+                DBClient.getRepository(getCollectionName(), getType())
                         .find(ObjectFilters.eq(fieldName, fieldValue))
                         .firstOrDefault());
     }
 
     default WriteResult save(T item) {
-        return Db
+        return DBClient
                 .getRepository(getCollectionName(), getType())
                 .update(item, true);
     }
 
     default WriteResult save(T[] items) {
-        return Db
+        return DBClient
                 .getRepository(getCollectionName(), getType())
                 .insert(items);
     }

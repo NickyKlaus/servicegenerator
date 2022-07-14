@@ -1,4 +1,4 @@
-package com.home.origami.plugin.processing.registry.meta.json;
+package com.home.origami.plugin.db.json;
 
 import com.fasterxml.jackson.core.json.PackageVersion;
 import com.fasterxml.jackson.databind.module.SimpleModule;

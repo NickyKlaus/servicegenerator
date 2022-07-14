@@ -1,4 +1,4 @@
-package com.home.origami.plugin.processing.registry.meta.json;
+package com.home.origami.plugin.db.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -10,7 +10,7 @@ public class NodeSerializer extends JsonSerializer<Node> {
     public static final NodeSerializer INSTANCE = new NodeSerializer();
     private static final ASTNodeConverter astNodeConverter = new ASTNodeConverter();
 
-    protected NodeSerializer() {
+    public NodeSerializer() {
     }
 
     @Override

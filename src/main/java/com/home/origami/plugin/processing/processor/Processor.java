@@ -8,9 +8,9 @@ import com.home.origami.plugin.processing.configuration.ProcessingConfiguration;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
 import com.home.origami.plugin.processing.container.scanner.Scanner;
 import com.home.origami.plugin.processing.container.scanner.UnitScanner;
-import com.home.origami.plugin.processing.registry.Registry;
-import com.home.origami.plugin.processing.registry.meta.model.ComponentType;
-import com.home.origami.plugin.processing.registry.meta.model.ProcessingUnitMetaModel;
+import com.home.origami.plugin.processing.registry.ProcessingUnitRegistry;
+import com.home.origami.plugin.processing.registry.metadata.model.ComponentType;
+import com.home.origami.plugin.processing.registry.metadata.model.ProcessingUnitMetadataModel;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.stages.Stage;
 import com.home.origami.plugin.processing.statemachine.ProcessingStateMachine;
@@ -62,35 +62,35 @@ public class Processor {
             final List<CompilationUnit> models = scanner.scanModel();
             for (var unit : models) {
                 var processingUnit = ProcessingUnit.convert(unit);
-                var metadata = new ProcessingUnitMetaModel();
+                var metadata = new ProcessingUnitMetadataModel();
                 metadata.setPath(processingUnit.getId());
                 CompilationUnitUtils.getPrimaryTypeName(unit).ifPresent(metadata::setName);
                 metadata.setType(ComponentType.MODEL.toString());
                 unit.getPackageDeclaration().map(NodeWithName::getNameAsString).ifPresent(metadata::setPkg);
 
-                Registry.save(processingUnit, metadata);
+                ProcessingUnitRegistry.save(processingUnit, metadata);
             }
 
             for (var unit : scanner.scanController()) {
                 final ProcessingUnit processingUnit = ProcessingUnit.convert(unit);
-                var metadata = new ProcessingUnitMetaModel();
+                var metadata = new ProcessingUnitMetadataModel();
                 metadata.setPath(processingUnit.getId());
                 CompilationUnitUtils.getPrimaryTypeName(processingUnit.getCompilationUnit()).ifPresent(metadata::setName);
                 metadata.setType(ComponentType.CONTROLLER.toString());
                 processingUnit.getCompilationUnit().getPackageDeclaration().map(NodeWithName::getNameAsString).ifPresent(metadata::setPkg);
 
-                Registry.save(processingUnit, metadata);
+                ProcessingUnitRegistry.save(processingUnit, metadata);
             }
 
             for (var unit : scanner.scanConfiguration()) {
                 final ProcessingUnit processingUnit = ProcessingUnit.convert(unit);
-                var metadata = new ProcessingUnitMetaModel();
+                var metadata = new ProcessingUnitMetadataModel();
                 metadata.setPath(processingUnit.getId());
                 CompilationUnitUtils.getPrimaryTypeName(unit).ifPresent(metadata::setName);
                 metadata.setType(ComponentType.CONFIGURATION.toString());
                 unit.getPackageDeclaration().map(NodeWithName::getNameAsString).ifPresent(metadata::setPkg);
 
-                Registry.save(processingUnit, metadata);
+                ProcessingUnitRegistry.save(processingUnit, metadata);
             }
         } catch (IOException | MojoFailureException ex) {
             LOG.error("Error: cannot register generated components", ex);

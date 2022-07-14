@@ -1,6 +1,7 @@
-package com.home.origami.plugin.processing.registry.meta.model;
+package com.home.origami.plugin.processing.registry.metadata.model;
 
 import com.github.javaparser.ast.expr.Name;
+import com.home.origami.plugin.db.model.Model;
 import com.home.origami.plugin.utils.ASTNodeConverter;
 
 import org.dizitart.no2.Document;
@@ -14,7 +15,7 @@ import org.dizitart.no2.objects.Indices;
 @Indices({
         @Index(value = "path", type = IndexType.Unique)
 })
-public class ProcessingUnitMetaModel implements Mappable, MetaModel {
+public class ProcessingUnitMetadataModel implements Mappable, Model {
     private static final ASTNodeConverter nodeConverter = new ASTNodeConverter();
 
     @Id
@@ -23,10 +24,10 @@ public class ProcessingUnitMetaModel implements Mappable, MetaModel {
     private String pkg;
     private Name name; // AST name expr as String
 
-    public ProcessingUnitMetaModel() {
+    public ProcessingUnitMetadataModel() {
     }
 
-    public ProcessingUnitMetaModel(String path) {
+    public ProcessingUnitMetadataModel(String path) {
         this.path = path;
     }
 

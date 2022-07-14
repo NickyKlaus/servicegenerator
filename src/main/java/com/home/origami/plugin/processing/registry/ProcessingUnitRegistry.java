@@ -2,12 +2,12 @@ package com.home.origami.plugin.processing.registry;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.home.origami.plugin.processing.ProcessingUnit;
-import com.home.origami.plugin.processing.registry.meta.Db;
-import com.home.origami.plugin.processing.registry.meta.model.ProcessingUnitMetaModel;
-import com.home.origami.plugin.processing.registry.meta.collection.Collection;
-import com.home.origami.plugin.processing.registry.meta.collection.MetadataCollection;
-import com.home.origami.plugin.processing.registry.meta.filter.Filter;
-import com.home.origami.plugin.processing.registry.meta.filter.MetadataToObjectFilterMapper;
+import com.home.origami.plugin.db.DBClient;
+import com.home.origami.plugin.processing.registry.metadata.model.ProcessingUnitMetadataModel;
+import com.home.origami.plugin.db.collection.Collection;
+import com.home.origami.plugin.processing.registry.metadata.collection.MetadataCollection;
+import com.home.origami.plugin.db.filter.Filter;
+import com.home.origami.plugin.processing.registry.metadata.filter.MetadataToObjectFilterMapper;
 
 import org.dizitart.no2.WriteResult;
 
@@ -22,27 +22,20 @@ import java.util.stream.Collectors;
 /**
  * Processing units registry
  */
-public class Registry implements AutoCloseable {
-    public static final Registry INSTANCE = new Registry();
-    private static final Collection<ProcessingUnitMetaModel> metadata = new MetadataCollection(new MetadataToObjectFilterMapper());
+public class ProcessingUnitRegistry {
+    private static final Collection<ProcessingUnitMetadataModel> metadata = new MetadataCollection(new MetadataToObjectFilterMapper());
     private static final Map<String, ProcessingUnit> cache = Collections.synchronizedMap(new HashMap<>());
 
-    private Registry() {
+    private ProcessingUnitRegistry() {
     }
 
-    public void close() {
+    public static void save(ProcessingUnit unit, ProcessingUnitMetadataModel metadata) {
         synchronized (cache) {
-            Db.close();
-        }
-    }
-
-    public static void save(ProcessingUnit unit, ProcessingUnitMetaModel metadata) {
-        synchronized (cache) {
-            WriteResult result = Registry.metadata.save(metadata);
+            WriteResult result = ProcessingUnitRegistry.metadata.save(metadata);
             if (result.getAffectedCount() > 0) {
                 cache.put(unit.getId(), unit);
             }
-            Db.commit();
+            DBClient.commit();
         }
     }
 
@@ -75,20 +68,20 @@ public class Registry implements AutoCloseable {
             return metadata
                     .find(filter)
                     .stream()
-                    .map(ProcessingUnitMetaModel::getPath)
+                    .map(ProcessingUnitMetadataModel::getPath)
                     .filter(cache::containsKey)
                     .map(cache::get)
                     .collect(Collectors.toUnmodifiableList());
         }
     }
 
-    public static List<ProcessingUnitMetaModel> findMetadata(Filter filter) {
+    public static List<ProcessingUnitMetadataModel> findMetadata(Filter filter) {
         synchronized (cache) {
             return metadata.find(filter);
         }
     }
 
-    public static Optional<ProcessingUnitMetaModel> getMetadata(String id) {
+    public static Optional<ProcessingUnitMetadataModel> getMetadata(String id) {
         synchronized (cache) {
             return metadata.getByField("path", id);
         }

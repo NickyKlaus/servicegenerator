@@ -4,7 +4,6 @@ import com.home.origami.plugin.AbstractServiceGeneratorMojo;
 import com.home.origami.plugin.PluginConfiguration;
 import com.home.origami.plugin.PluginConfigurationMapper;
 import com.home.origami.plugin.processing.configuration.ProcessingConfiguration;
-import com.home.origami.plugin.processing.registry.Registry;
 import com.home.origami.plugin.processing.processor.Processor;
 import com.home.origami.plugin.processing.processor.ProcessorConfigurator;
 
@@ -43,9 +42,7 @@ public class ProcessingContainer {
         }
 
         public void start() {
-            try (Registry.INSTANCE) {
-                processors.forEach(processor -> processor.process(pluginConfiguration));
-            }
+            processors.forEach(processor -> processor.process(pluginConfiguration));
         }
     }
 }

@@ -1,8 +1,10 @@
-package com.home.origami.plugin.processing.registry.meta.filter;
+package com.home.origami.plugin.processing.registry.metadata.filter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.home.origami.plugin.db.filter.Filter;
+import com.home.origami.plugin.db.filter.ObjectFilterMapper;
 import org.dizitart.no2.objects.ObjectFilter;
 import org.dizitart.no2.objects.filters.ObjectFilters;
 

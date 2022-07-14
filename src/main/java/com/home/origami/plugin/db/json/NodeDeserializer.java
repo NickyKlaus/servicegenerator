@@ -1,4 +1,4 @@
-package com.home.origami.plugin.processing.registry.meta.json;
+package com.home.origami.plugin.db.json;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -12,7 +12,7 @@ public class NodeDeserializer extends JsonDeserializer<Node> {
     public static final NodeDeserializer INSTANCE = new NodeDeserializer();
     private static final ASTNodeConverter astNodeConverter = new ASTNodeConverter();
 
-    protected NodeDeserializer() {
+    public NodeDeserializer() {
     }
 
     @Override
