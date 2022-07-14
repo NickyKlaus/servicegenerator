@@ -3,7 +3,7 @@ package com.home.origami.plugin.processing.statemachine;
 import com.github.javaparser.ast.CompilationUnit;
 import com.home.origami.plugin.processing.ProcessingUnit;
 import com.home.origami.plugin.processing.engine.generator.DefaultGenerator;
-import com.home.origami.plugin.processing.registry.Registry;
+import com.home.origami.plugin.processing.registry.ProcessingUnitRegistry;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.stages.Stage;
 
@@ -36,9 +36,9 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
             var generatedUnit = (CompilationUnit) DefaultGenerator.builder()
                     .processingSchema(fromState.getSchema())
                     .build()
-                    .generate(Registry.getOrDefault(fromState.getSourceLocation()).getCompilationUnit(), context);
+                    .generate(ProcessingUnitRegistry.getOrDefault(fromState.getSourceLocation()).getCompilationUnit(), context);
 
-            Registry.save(ProcessingUnit.convert(generatedUnit));
+            ProcessingUnitRegistry.save(ProcessingUnit.convert(generatedUnit));
 
             if (toState != null) {
                 if (fromState == toState) {
@@ -61,6 +61,6 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
     @Override
     public void terminate() {
         super.terminate();
-        Registry.getAll().forEach(savingAction);
+        ProcessingUnitRegistry.getAll().forEach(savingAction);
     }
 }

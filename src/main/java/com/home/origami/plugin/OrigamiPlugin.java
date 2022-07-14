@@ -2,6 +2,7 @@ package com.home.origami.plugin;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
+import com.home.origami.plugin.db.DBClient;
 import com.home.origami.plugin.processing.ProcessingUnit;
 import com.home.origami.plugin.processing.configuration.DefaultProcessingConfiguration;
 import com.home.origami.plugin.processing.configuration.ProcessingConfiguration;
@@ -63,7 +64,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * Goal which generates microservice based on declared logic.
  */
 @Mojo(name = "generate-service", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
-public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
+public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
     private static final String CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE = "%s is not set";
     private static final String POM_XML = "pom.xml";
     private static final String POM_XML_BACKUP = "pom.xml.bak";
@@ -390,12 +391,14 @@ public class ServiceGeneratorPlugin extends AbstractServiceGeneratorMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        generateStub();
+        try (DBClient.INSTANCE) {
+            generateStub();
 
-        new ProcessingContainer(internalProcessingConfiguration(), externalProcessingConfiguration())
-                .prepare(this)
-                .start();
+            new ProcessingContainer(internalProcessingConfiguration(), externalProcessingConfiguration())
+                    .prepare(this)
+                    .start();
 
-        prepareProjectDescriptor();
+            prepareProjectDescriptor();
+        }
     }
 }

@@ -2,10 +2,10 @@ package com.home.origami.plugin.processing.configuration.strategy.processing;
 
 import com.home.origami.plugin.PluginConfiguration;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
-import com.home.origami.plugin.processing.registry.Registry;
-import com.home.origami.plugin.processing.registry.meta.filter.MetadataFilter;
-import com.home.origami.plugin.processing.registry.meta.model.ComponentType;
-import com.home.origami.plugin.processing.registry.meta.model.ProcessingUnitMetaModel;
+import com.home.origami.plugin.processing.registry.ProcessingUnitRegistry;
+import com.home.origami.plugin.processing.registry.metadata.filter.MetadataFilter;
+import com.home.origami.plugin.processing.registry.metadata.model.ComponentType;
+import com.home.origami.plugin.processing.registry.metadata.model.ProcessingUnitMetadataModel;
 import com.home.origami.plugin.utils.ResolverUtils;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
@@ -26,12 +26,12 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
     @Override
     public void process(Stage initialStage, AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine, PluginConfiguration configuration) {
         // Process stages
-        for (var controllerUnit : Registry.find(MetadataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.CONTROLLER)))) {
+        for (var controllerUnit : ProcessingUnitRegistry.find(MetadataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.CONTROLLER)))) {
             for (var pipeline : PipelineStriping.makeStriping(controllerUnit.getCompilationUnit())) {
                 var modelNames =
-                        Registry.findMetadata(MetadataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.MODEL)))
+                        ProcessingUnitRegistry.findMetadata(MetadataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.MODEL)))
                                 .stream()
-                                .map(ProcessingUnitMetaModel::getName)
+                                .map(ProcessingUnitMetadataModel::getName)
                                 .collect(Collectors.toUnmodifiableList());
 
                 //TODO change lookupPipelineId method to use String instead of Name!

@@ -1,4 +1,4 @@
-package com.home.origami.plugin.processing.registry.meta.filter;
+package com.home.origami.plugin.db.filter;
 
 import org.dizitart.no2.objects.ObjectFilter;
 

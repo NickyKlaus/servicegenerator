@@ -1,4 +1,4 @@
-package com.home.origami.plugin.processing.registry.meta.filter;
+package com.home.origami.plugin.db.filter;
 
 public class StringFilterExpression implements FilterExpression {
     private final String rawValue;
