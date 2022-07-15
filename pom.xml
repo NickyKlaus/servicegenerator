@@ -12,7 +12,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <origami-api.version>0.0.2</origami-api.version>
+        <origami-api.version>0.0.3</origami-api.version>
         <log4j-bom.version>2.17.0</log4j-bom.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <guava.version>31.1-jre</guava.version>
@@ -37,6 +37,19 @@
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -58,7 +71,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.home</groupId>
+            <groupId>com.github.NickyKlaus</groupId>
             <artifactId>origami-api</artifactId>
             <version>${origami-api.version}</version>
             <exclusions>
@@ -179,6 +192,11 @@
                     <artifactId>maven-artifact</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>3.3.0</version>
         </dependency>
 
         <!-- Common tools -->
