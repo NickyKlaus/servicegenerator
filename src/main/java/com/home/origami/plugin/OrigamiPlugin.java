@@ -3,7 +3,6 @@ package com.home.origami.plugin;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.home.origami.plugin.db.DBClient;
-import com.home.origami.plugin.metadata.model.Dependency;
 import com.home.origami.plugin.processing.ProcessingUnit;
 import com.home.origami.plugin.processing.configuration.DefaultProcessingConfiguration;
 import com.home.origami.plugin.processing.configuration.ProcessingConfiguration;
@@ -28,38 +27,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.home.origami.plugin.processing.configuration.context.properties.PropertyName.*;
 import static java.lang.String.format;
-import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Goal which generates microservice based on declared logic.
@@ -67,8 +45,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 @Mojo(name = "generate-service", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
     private static final String CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE = "%s is not set";
-    private static final String POM_XML = "pom.xml";
-    private static final String POM_XML_BACKUP = "pom.xml.bak";
 
     private ProcessingPlan processingPlan() {
         return ProcessingPlan
@@ -292,66 +268,6 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
                 .namingStrategy(new PipelineIdBasedNamingStrategy());
     }
 
-    private void prepareProjectDescriptor() throws MojoFailureException {
-        var DEP_SPRING_BOOT_STARTER_WEB = "org.springframework.boot:spring-boot-starter-web:2.6.7";
-        var DEP_GUAVA = "com.google.guava:guava:31.1-jre";
-
-        var dependenciesToAdd =
-                getTransformations()
-                        .stream()
-                        .flatMap(t -> t.getDependencies().stream())
-                        .map(d -> Dependency.of(d.getGroupId(), d.getArtifactId(), d.getVersion()))
-                        .collect(Collectors.toSet());
-        dependenciesToAdd.add(Dependency.of(DEP_SPRING_BOOT_STARTER_WEB));
-        dependenciesToAdd.add(Dependency.of(DEP_GUAVA));
-        dependenciesToAdd.add(Dependency.of(getDbType().dependencyDescriptor()));
-
-        var projectDescriptor =
-                new File(getProjectOutputDirectory() + File.separator + POM_XML);
-        var projectDescriptorBackup =
-                new File(getProjectOutputDirectory() + File.separator + System.currentTimeMillis() + POM_XML_BACKUP);
-
-        Document document;
-
-        try {
-            Files.copy(projectDescriptor.toPath(), projectDescriptorBackup.toPath(), COPY_ATTRIBUTES, REPLACE_EXISTING);
-            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(projectDescriptor);
-
-            var xpath = XPathFactory.newInstance().newXPath();
-            var dependenciesNode = (Node)xpath
-                    .compile("/project/dependencies")
-                    .evaluate(document, XPathConstants.NODE);
-
-            for (var dep : dependenciesToAdd) {
-                var dependencyFilterExpression =
-                        format("/project/dependencies/dependency[./groupId[contains(.,\"%s\")] and ./artifactId[contains(.,\"%s\")]]",
-                                dep.getGroupId(),
-                                dep.getArtifactId());
-                if (((NodeList)xpath
-                        .compile(dependencyFilterExpression)
-                        .evaluate(document, XPathConstants.NODESET))
-                        .getLength() == 0) {
-                    dependenciesNode.appendChild(Dependency.createDependencyNode(dep, document));
-                }
-            }
-        } catch (IOException | SAXException | ParserConfigurationException | XPathExpressionException e) {
-            getLog().error("Cannot edit project descriptor: " + projectDescriptor, e);
-            throw new MojoFailureException("Cannot edit project descriptor: " + projectDescriptor, e);
-        }
-
-        try (var outputStream = new FileOutputStream(projectDescriptor)) {
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            transformerFactory.setAttribute("indent-number", 4);
-            Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().toString());
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.transform(new DOMSource(document), new StreamResult(outputStream));
-        } catch (ClassCastException | IOException | TransformerException e) {
-            getLog().error("Cannot edit project descriptor: " + getProject().getFile(), e);
-            throw new MojoFailureException("Cannot edit project descriptor: " + getProject().getFile(), e);
-        }
-    }
-
     private void generateStub() {
         Generate generate = new Generate();
         generate.setSpec(getInputSpec());
@@ -372,10 +288,6 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
         props.add("jackson=true");
         generate.setAdditionalProperties(props);
         generate.run();
-    }
-
-    private void t() {
-
     }
 
     private Optional<MethodDeclaration> getMethodMatchedWithPipeline(
@@ -401,8 +313,6 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
             new ProcessingContainer(internalProcessingConfiguration(), externalProcessingConfiguration())
                     .prepare(this)
                     .start();
-
-            prepareProjectDescriptor();
         }
     }
 }

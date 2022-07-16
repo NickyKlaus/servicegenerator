@@ -1,4 +1,7 @@
-package com.home.origami.plugin.db.filter;
+package com.home.origami.plugin.metadata.filter;
+
+import com.home.origami.plugin.db.filter.Filter;
+import com.home.origami.plugin.db.filter.StringFilterExpression;
 
 public class MetaDataFilter implements Filter {
     private final StringFilterExpression filterExpression;

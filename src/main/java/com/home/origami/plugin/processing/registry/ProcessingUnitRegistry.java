@@ -7,7 +7,7 @@ import com.home.origami.plugin.metadata.model.ProcessingUnitMetaDataModel;
 import com.home.origami.plugin.db.collection.Collection;
 import com.home.origami.plugin.metadata.collection.ProcessingUnitMetaDataCollection;
 import com.home.origami.plugin.db.filter.Filter;
-import com.home.origami.plugin.db.filter.MetaDataFilterMapper;
+import com.home.origami.plugin.db.filter.ObjectFilterMapper;
 
 import org.dizitart.no2.common.WriteResult;
 
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Processing units registry
  */
 public class ProcessingUnitRegistry {
-    private static final Collection<ProcessingUnitMetaDataModel> metadata = new ProcessingUnitMetaDataCollection(new MetaDataFilterMapper());
+    private static final Collection<ProcessingUnitMetaDataModel> metadata = new ProcessingUnitMetaDataCollection(new ObjectFilterMapper());
     private static final Map<String, ProcessingUnit> cache = Collections.synchronizedMap(new HashMap<>());
 
     private ProcessingUnitRegistry() {

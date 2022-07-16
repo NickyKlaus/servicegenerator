@@ -3,7 +3,7 @@ package com.home.origami.plugin.processing.registry;
 import com.github.javaparser.ast.CompilationUnit;
 import com.home.origami.plugin.db.DBClient;
 import com.home.origami.plugin.processing.ProcessingUnit;
-import com.home.origami.plugin.db.filter.MetaDataFilter;
+import com.home.origami.plugin.metadata.filter.MetaDataFilter;
 import com.home.origami.plugin.metadata.model.ProcessingUnitMetaDataModel;
 import com.home.origami.plugin.db.filter.Filter;
 import com.home.origami.plugin.db.filter.StringFilterExpression;
