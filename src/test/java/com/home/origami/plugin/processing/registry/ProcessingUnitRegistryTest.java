@@ -3,9 +3,8 @@ package com.home.origami.plugin.processing.registry;
 import com.github.javaparser.ast.CompilationUnit;
 import com.home.origami.plugin.db.DBClient;
 import com.home.origami.plugin.processing.ProcessingUnit;
-import com.home.origami.plugin.processing.registry.ProcessingUnitRegistry;
-import com.home.origami.plugin.processing.registry.metadata.filter.MetadataFilter;
-import com.home.origami.plugin.processing.registry.metadata.model.ProcessingUnitMetadataModel;
+import com.home.origami.plugin.db.filter.MetaDataFilter;
+import com.home.origami.plugin.metadata.model.ProcessingUnitMetaDataModel;
 import com.home.origami.plugin.db.filter.Filter;
 import com.home.origami.plugin.db.filter.StringFilterExpression;
 
@@ -18,8 +17,8 @@ public class ProcessingUnitRegistryTest {
     private static final String TEST_PATH = "/test/path";
     private static final CompilationUnit TEST_UNIT = new CompilationUnit();
     private static final ProcessingUnit TEST_PROCESSING_UNIT = new ProcessingUnit(TEST_PATH, TEST_UNIT);
-    private static final ProcessingUnitMetadataModel TEST_META = new ProcessingUnitMetadataModel(TEST_PATH);
-    private static final Filter REGISTRY_FILTER = new MetadataFilter(new StringFilterExpression(String.format("{ \"path\": \"%s\" }", TEST_PATH)));
+    private static final ProcessingUnitMetaDataModel TEST_META = new ProcessingUnitMetaDataModel(TEST_PATH);
+    private static final Filter REGISTRY_FILTER = new MetaDataFilter(new StringFilterExpression(String.format("{ \"path\": \"%s\" }", TEST_PATH)));
 
     @BeforeAll
     static void prepareEnv() {

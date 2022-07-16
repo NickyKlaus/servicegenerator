@@ -1,20 +1,19 @@
 package com.home.origami.plugin.db;
 
-import com.home.origami.plugin.db.json.NodeModule;
 import com.home.origami.plugin.db.model.Model;
 
 import org.dizitart.no2.Nitrite;
-import org.dizitart.no2.mapper.JacksonMapper;
-import org.dizitart.no2.objects.ObjectRepository;
+import org.dizitart.no2.repository.ObjectRepository;
+import org.dizitart.no2.store.memory.InMemoryStoreModule;
 
 public class DBClient implements AutoCloseable {
     public static final DBClient INSTANCE = new DBClient();
     private static final Nitrite _db =
             Nitrite.builder()
-                    .registerModule(new NodeModule())
-                    .nitriteMapper(new JacksonMapper())
-                    .compressed()
-                    .enableOffHeapStorage()
+                    .loadModule(
+                            InMemoryStoreModule
+                                    .withConfig()
+                                    .build())
                     .openOrCreate();
 
     private DBClient() {
@@ -29,6 +28,6 @@ public class DBClient implements AutoCloseable {
     }
 
     public static <T extends Model> ObjectRepository<T> getRepository(String collectionName, Class<T> cls) {
-        return _db.getRepository(collectionName, cls);
+        return _db.getRepository(cls, collectionName);
     }
 }

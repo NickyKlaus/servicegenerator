@@ -3,6 +3,7 @@ package com.home.origami.plugin;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.home.origami.plugin.db.DBClient;
+import com.home.origami.plugin.metadata.model.Dependency;
 import com.home.origami.plugin.processing.ProcessingUnit;
 import com.home.origami.plugin.processing.configuration.DefaultProcessingConfiguration;
 import com.home.origami.plugin.processing.configuration.ProcessingConfiguration;
@@ -299,7 +300,7 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
                 getTransformations()
                         .stream()
                         .flatMap(t -> t.getDependencies().stream())
-                        .map(d -> new Dependency(d.getGroupId(), d.getArtifactId(), d.getVersion()))
+                        .map(d -> Dependency.of(d.getGroupId(), d.getArtifactId(), d.getVersion()))
                         .collect(Collectors.toSet());
         dependenciesToAdd.add(Dependency.of(DEP_SPRING_BOOT_STARTER_WEB));
         dependenciesToAdd.add(Dependency.of(DEP_GUAVA));
@@ -323,8 +324,7 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
 
             for (var dep : dependenciesToAdd) {
                 var dependencyFilterExpression =
-                        format(
-                                "/project/dependencies/dependency[./groupId[contains(.,\"%s\")] and ./artifactId[contains(.,\"%s\")]]",
+                        format("/project/dependencies/dependency[./groupId[contains(.,\"%s\")] and ./artifactId[contains(.,\"%s\")]]",
                                 dep.getGroupId(),
                                 dep.getArtifactId());
                 if (((NodeList)xpath
@@ -372,6 +372,10 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
         props.add("jackson=true");
         generate.setAdditionalProperties(props);
         generate.run();
+    }
+
+    private void t() {
+
     }
 
     private Optional<MethodDeclaration> getMethodMatchedWithPipeline(

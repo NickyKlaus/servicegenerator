@@ -1,5 +1,7 @@
 package com.home.origami.plugin;
 
+import com.home.origami.plugin.metadata.model.Dependency;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugins.annotations.Parameter;
 

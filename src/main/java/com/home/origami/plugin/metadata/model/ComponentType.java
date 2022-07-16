@@ -1,4 +1,4 @@
-package com.home.origami.plugin.processing.registry.metadata.model;
+package com.home.origami.plugin.metadata.model;
 
 public enum ComponentType {
     REPOSITORY, SERVICE, SERVICE_IMPL, CONTROLLER, CONFIGURATION, MAPPER, MODEL, UNKNOWN

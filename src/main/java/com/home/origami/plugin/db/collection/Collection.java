@@ -1,22 +1,23 @@
 package com.home.origami.plugin.db.collection;
 
 import com.home.origami.plugin.db.DBClient;
-import com.home.origami.plugin.db.filter.ObjectFilterMapper;
+import com.home.origami.plugin.db.filter.FilterMapper;
 import com.home.origami.plugin.db.model.Model;
 import com.home.origami.plugin.db.filter.Filter;
 
-import org.dizitart.no2.WriteResult;
-import org.dizitart.no2.objects.filters.ObjectFilters;
+import org.dizitart.no2.common.WriteResult;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.dizitart.no2.filters.FluentFilter.where;
 
 public interface Collection<T extends Model> {
     String getCollectionName();
 
     Class<T> getType();
 
-    ObjectFilterMapper getFilterMapper();
+    FilterMapper getFilterMapper();
 
     default List<T> getAll() {
         return DBClient.getRepository(getCollectionName(), getType()).find().toList();
@@ -25,7 +26,7 @@ public interface Collection<T extends Model> {
     default List<T> find(String fieldName, Object fieldValue) {
         return DBClient
                 .getRepository(getCollectionName(), getType())
-                .find(ObjectFilters.eq(fieldName, fieldValue))
+                .find(where(fieldName).eq(fieldValue))
                 .toList();
     }
 
@@ -39,8 +40,8 @@ public interface Collection<T extends Model> {
     default Optional<T> getByField(String fieldName, Object fieldValue) {
         return Optional.ofNullable(
                 DBClient.getRepository(getCollectionName(), getType())
-                        .find(ObjectFilters.eq(fieldName, fieldValue))
-                        .firstOrDefault());
+                        .find(where(fieldName).eq(fieldValue))
+                        .firstOrNull());
     }
 
     default WriteResult save(T item) {

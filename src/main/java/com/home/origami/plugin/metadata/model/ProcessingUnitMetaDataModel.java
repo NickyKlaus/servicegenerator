@@ -1,21 +1,15 @@
-package com.home.origami.plugin.processing.registry.metadata.model;
+package com.home.origami.plugin.metadata.model;
 
 import com.github.javaparser.ast.expr.Name;
 import com.home.origami.plugin.db.model.Model;
 import com.home.origami.plugin.utils.ASTNodeConverter;
 
-import org.dizitart.no2.Document;
-import org.dizitart.no2.IndexType;
-import org.dizitart.no2.mapper.Mappable;
-import org.dizitart.no2.mapper.NitriteMapper;
-import org.dizitart.no2.objects.Id;
-import org.dizitart.no2.objects.Index;
-import org.dizitart.no2.objects.Indices;
+import org.dizitart.no2.collection.Document;
+import org.dizitart.no2.common.mapper.Mappable;
+import org.dizitart.no2.common.mapper.NitriteMapper;
+import org.dizitart.no2.repository.annotations.Id;
 
-@Indices({
-        @Index(value = "path", type = IndexType.Unique)
-})
-public class ProcessingUnitMetadataModel implements Mappable, Model {
+public class ProcessingUnitMetaDataModel implements Mappable, Model {
     private static final ASTNodeConverter nodeConverter = new ASTNodeConverter();
 
     @Id
@@ -24,16 +18,16 @@ public class ProcessingUnitMetadataModel implements Mappable, Model {
     private String pkg;
     private Name name; // AST name expr as String
 
-    public ProcessingUnitMetadataModel() {
+    public ProcessingUnitMetaDataModel() {
     }
 
-    public ProcessingUnitMetadataModel(String path) {
+    public ProcessingUnitMetaDataModel(String path) {
         this.path = path;
     }
 
     @Override
     public Document write(NitriteMapper mapper) {
-        var document = new Document();
+        var document = Document.createDocument();
         document.put("path", getPath());
         document.put("type", getType());
         document.put("pkg", getPkg());

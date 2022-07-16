@@ -9,8 +9,8 @@ import com.home.origami.plugin.processing.configuration.context.ProcessingContex
 import com.home.origami.plugin.processing.container.scanner.Scanner;
 import com.home.origami.plugin.processing.container.scanner.UnitScanner;
 import com.home.origami.plugin.processing.registry.ProcessingUnitRegistry;
-import com.home.origami.plugin.processing.registry.metadata.model.ComponentType;
-import com.home.origami.plugin.processing.registry.metadata.model.ProcessingUnitMetadataModel;
+import com.home.origami.plugin.metadata.model.ComponentType;
+import com.home.origami.plugin.metadata.model.ProcessingUnitMetaDataModel;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.stages.Stage;
 import com.home.origami.plugin.processing.statemachine.ProcessingStateMachine;
@@ -62,7 +62,7 @@ public class Processor {
             final List<CompilationUnit> models = scanner.scanModel();
             for (var unit : models) {
                 var processingUnit = ProcessingUnit.convert(unit);
-                var metadata = new ProcessingUnitMetadataModel();
+                var metadata = new ProcessingUnitMetaDataModel();
                 metadata.setPath(processingUnit.getId());
                 CompilationUnitUtils.getPrimaryTypeName(unit).ifPresent(metadata::setName);
                 metadata.setType(ComponentType.MODEL.toString());
@@ -73,7 +73,7 @@ public class Processor {
 
             for (var unit : scanner.scanController()) {
                 final ProcessingUnit processingUnit = ProcessingUnit.convert(unit);
-                var metadata = new ProcessingUnitMetadataModel();
+                var metadata = new ProcessingUnitMetaDataModel();
                 metadata.setPath(processingUnit.getId());
                 CompilationUnitUtils.getPrimaryTypeName(processingUnit.getCompilationUnit()).ifPresent(metadata::setName);
                 metadata.setType(ComponentType.CONTROLLER.toString());
@@ -84,7 +84,7 @@ public class Processor {
 
             for (var unit : scanner.scanConfiguration()) {
                 final ProcessingUnit processingUnit = ProcessingUnit.convert(unit);
-                var metadata = new ProcessingUnitMetadataModel();
+                var metadata = new ProcessingUnitMetaDataModel();
                 metadata.setPath(processingUnit.getId());
                 CompilationUnitUtils.getPrimaryTypeName(unit).ifPresent(metadata::setName);
                 metadata.setType(ComponentType.CONFIGURATION.toString());
