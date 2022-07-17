@@ -53,6 +53,14 @@ jobs:
         java-version: '11'
         cache: 'maven'
         
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v3.0.0
+      with:
+        # Artifact name
+        name: origami-api-0.0.3.jar
+        # Destination path
+        path: ~/.m2/repository/com/home/origami-api/0.0.3/
+        
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
