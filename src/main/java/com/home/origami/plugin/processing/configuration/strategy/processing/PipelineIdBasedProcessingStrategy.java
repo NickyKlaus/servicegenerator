@@ -3,7 +3,7 @@ package com.home.origami.plugin.processing.configuration.strategy.processing;
 import com.home.origami.plugin.PluginConfiguration;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
 import com.home.origami.plugin.processing.registry.ProcessingUnitRegistry;
-import com.home.origami.plugin.db.filter.MetaDataFilter;
+import com.home.origami.plugin.metadata.filter.MetaDataFilter;
 import com.home.origami.plugin.metadata.model.ComponentType;
 import com.home.origami.plugin.metadata.model.ProcessingUnitMetaDataModel;
 import com.home.origami.plugin.utils.ResolverUtils;

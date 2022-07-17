@@ -1,7 +1,5 @@
 package com.home.origami.plugin;
 
-import com.home.origami.plugin.metadata.model.Dependency;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugins.annotations.Parameter;
 
@@ -10,7 +8,6 @@ import java.util.Collections;
 import java.util.Set;
 
 public class Transformation {
-
     @Parameter(name = "sourceClassPackage", defaultValue = "${basePackage}")
     private String sourceClassPackage;
 
@@ -34,9 +31,6 @@ public class Transformation {
 
     @Parameter(name = "processingSchemaClass")
     private String processingSchemaClass;
-
-    @Parameter(name = "dependencies")
-    private Set<Dependency> dependencies = Set.of();
 
     @Parameter(name = "transformationProperties")
     private Set<TransformationProperty> transformationProperties = Set.of();
@@ -71,13 +65,6 @@ public class Transformation {
 
     public String getProcessingSchemaClass() {
         return processingSchemaClass;
-    }
-
-    /*public Set<org.apache.maven.model.Dependency> getDependencies() {
-        return dependencies;
-    }*/
-    public Set<Dependency> getDependencies() {
-        return dependencies;
     }
 
     public Set<TransformationProperty> getTransformationProperties() {
