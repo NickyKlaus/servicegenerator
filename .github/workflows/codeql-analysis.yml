@@ -53,16 +53,6 @@ jobs:
         java-version: '11'
         cache: 'maven'
         
-    - name: Download a Build Artifact
-      uses: actions/download-artifact@v3.0.0
-      with:
-        # Artifact name
-        name: origami-api-artifact
-        # Destination path
-        path: public
-      env:
-        GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
-        
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
