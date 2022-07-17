@@ -57,9 +57,9 @@ jobs:
       uses: actions/download-artifact@v3.0.0
       with:
         # Artifact name
-        name: com.home:origami-api:0.0.3:jar
+        name: origami-api-artifact
         # Destination path
-        path: ~/.m2/repository/com/home/origami-api/0.0.3/
+        path: public
         
     - name: Build with Maven
       run: mvn -B package --file pom.xml
