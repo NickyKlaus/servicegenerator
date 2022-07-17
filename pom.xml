@@ -17,35 +17,29 @@
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <squirrel-foundation.version>0.3.9</squirrel-foundation.version>
         <apache-commons-io.version>2.11.0</apache-commons-io.version>
-        <apache-commons-lang3.version>3.12.0</apache-commons-lang3.version>
+        <maven-core.version>3.8.6</maven-core.version>
         <maven-plugin-api.version>3.8.5</maven-plugin-api.version>
         <maven-plugin-annotations.version>3.6.4</maven-plugin-annotations.version>
-        <maven-dependency-tree.version>3.1.0</maven-dependency-tree.version>
         <maven-plugin-plugin.version>3.6.0</maven-plugin-plugin.version>
-        <maven-dependency-plugin.version>3.3.0</maven-dependency-plugin.version>
         <javaparser.version>3.24.2</javaparser.version>
         <asm.version>9.3</asm.version>
         <swagger-codegen-cli.version>3.0.34</swagger-codegen-cli.version>
         <swagger-codegen.version>3.0.34</swagger-codegen.version>
         <swagger-codegen-generators.version>1.0.34</swagger-codegen-generators.version>
         <javax.json.version>1.1.4</javax.json.version>
-        <aspectj.version>1.9.9.1</aspectj.version>
         <nitrite-bom.version>4.0.1-SNAPSHOT</nitrite-bom.version>
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
         <junit-bom.version>5.8.1</junit-bom.version>
         <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 
-        <log4j-bom.version>2.17.0</log4j-bom.version>
         <guava.version>31.1-jre</guava.version>
-        <spring-boot.version>2.5.3</spring-boot.version>
+        <spring-boot.version>2.7.0</spring-boot.version>
         <spring-plugin-core.version>2.0.0.RELEASE</spring-plugin-core.version>
-        <swagger-annotations.version>2.1.10</swagger-annotations.version>
+        <swagger-annotations.version>2.2.0</swagger-annotations.version>
         <springfox.version>3.0.0</springfox.version>
-        <jackson-datatype-threetenbp.version>2.12.5</jackson-datatype-threetenbp.version>
         <javax.validation.version>2.0.1.Final</javax.validation.version>
         <javax.xml.bind.version>2.4.0-b180830.0359</javax.xml.bind.version>
-        <jackson-datatype-jsr310.version>2.12.4</jackson-datatype-jsr310.version>
     </properties>
 
     <profiles>
@@ -215,6 +209,11 @@
         <!-- Maven Tools -->
         <dependency>
             <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+            <version>${maven-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
             <version>${maven-plugin-api.version}</version>
             <optional>true</optional>
@@ -231,24 +230,6 @@
                     <artifactId>maven-artifact</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.shared</groupId>
-            <artifactId>maven-dependency-tree</artifactId>
-            <version>${maven-dependency-tree.version}</version>
-            <optional>true</optional>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.maven</groupId>
-                    <artifactId>maven-artifact</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>${maven-dependency-plugin.version}</version>
-            <optional>true</optional>
         </dependency>
 
         <!-- Common tools -->
