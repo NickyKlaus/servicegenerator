@@ -15,7 +15,7 @@ import com.home.origami.plugin.processing.configuration.context.ProcessingContex
 import com.home.origami.api.Generator;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
-import com.home.origami.plugin.processing.engine.generator.DefaultGenerator;
+import com.home.origami.plugin.processing.engine.DefaultGenerator;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

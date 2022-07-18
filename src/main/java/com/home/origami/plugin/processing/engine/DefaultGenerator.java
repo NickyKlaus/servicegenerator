@@ -1,11 +1,10 @@
-package com.home.origami.plugin.processing.engine.generator;
+package com.home.origami.plugin.processing.engine;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.home.origami.api.ASTProcessingSchema;
 import com.home.origami.api.Generator;
 import com.home.origami.api.context.Context;
-import com.home.origami.plugin.processing.engine.visitor.DefaultVisitor;
 
 /**
  * Generates special representation of all Abstract Syntax Tree nodes of implementation class using the base class as

@@ -16,7 +16,7 @@ import com.home.origami.plugin.processing.configuration.context.properties.Stora
 import com.home.origami.api.Generator;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
-import com.home.origami.plugin.processing.engine.generator.DefaultGenerator;
+import com.home.origami.plugin.processing.engine.DefaultGenerator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;

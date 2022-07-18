@@ -1,4 +1,4 @@
-package com.home.origami.plugin.processing.engine.visitor;
+package com.home.origami.plugin.processing.engine;
 
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.CompilationUnit;
@@ -114,7 +114,7 @@ import com.home.origami.api.context.Context;
  *
  * @see ASTProcessingSchema
  */
-public class DefaultVisitor implements GenericVisitor<Visitable, Context> {
+class DefaultVisitor implements GenericVisitor<Visitable, Context> {
     private final ModifierVisitor<Context> visitor;
     private ASTProcessingSchema processingSchema;
 

@@ -2,7 +2,7 @@ package com.home.origami.plugin.processing.statemachine;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.home.origami.plugin.processing.ProcessingUnit;
-import com.home.origami.plugin.processing.engine.generator.DefaultGenerator;
+import com.home.origami.plugin.processing.engine.DefaultGenerator;
 import com.home.origami.plugin.processing.registry.ProcessingUnitRegistry;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.stages.Stage;
