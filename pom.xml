@@ -36,6 +36,8 @@
         <guava.version>31.1-jre</guava.version>
         <spring-boot.version>2.7.0</spring-boot.version>
         <spring-plugin-core.version>2.0.0.RELEASE</spring-plugin-core.version>
+        <spring-boot-starter-data-mongodb>2.7.0</spring-boot-starter-data-mongodb>
+        <spring-boot-starter-data-cassandra.version>2.6.7</spring-boot-starter-data-cassandra.version>
         <swagger-annotations.version>2.2.0</swagger-annotations.version>
         <springfox.version>3.0.0</springfox.version>
         <javax.validation.version>2.0.1.Final</javax.validation.version>
@@ -261,7 +263,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
-            <version>${spring-boot.version}</version>
+            <version>${spring-boot-starter-data-mongodb}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-cassandra</artifactId>
+            <version>${spring-boot-starter-data-cassandra.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.plugin</groupId>
