@@ -11,12 +11,12 @@ import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.home.origami.generator.DefaultGenerator;
+import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
 import com.home.origami.plugin.processing.configuration.context.properties.Storage;
-import com.home.origami.api.Generator;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
-import com.home.origami.plugin.processing.engine.DefaultGenerator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;

@@ -7,12 +7,12 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.home.origami.generator.DefaultGenerator;
+import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
 import com.home.origami.plugin.processing.configuration.context.properties.Storage;
-import com.home.origami.api.Generator;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
-import com.home.origami.plugin.processing.engine.DefaultGenerator;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

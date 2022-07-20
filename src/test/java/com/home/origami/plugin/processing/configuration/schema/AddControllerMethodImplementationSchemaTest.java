@@ -14,11 +14,11 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.home.origami.generator.DefaultGenerator;
+import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
-import com.home.origami.api.Generator;
 import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
-import com.home.origami.plugin.processing.engine.DefaultGenerator;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
