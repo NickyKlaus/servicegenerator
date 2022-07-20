@@ -1,7 +1,6 @@
 package com.home.origami.plugin.processing.configuration.schema;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -12,10 +11,8 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.home.origami.generator.DefaultGenerator;
-import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
 import com.home.origami.plugin.processing.configuration.context.properties.Storage;
-import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
 
 import org.apache.commons.lang3.StringUtils;
@@ -88,8 +85,8 @@ public class EditConfigurationSchemaTest {
 
     @BeforeAll
     static void initGenerator() throws Exception {
-        final JavaParser configurationParser = new JavaParser();
-        final ParseResult<CompilationUnit> parsingConfigurationUnitResult =
+        var configurationParser = new JavaParser();
+        var parsingConfigurationUnitResult =
                 configurationParser.parse(CONFIGURATION_DECLARATION);
         if (parsingConfigurationUnitResult.isSuccessful() &&
                 parsingConfigurationUnitResult.getResult().isPresent()) {
@@ -105,7 +102,7 @@ public class EditConfigurationSchemaTest {
     }
 
     private CompilationUnit generate(Storage.DbType storageType) {
-        final Context context =
+        var context =
                 ProcessingContext.of(
                         Map.ofEntries(
                                 Map.entry(PropertyName.BASE_PACKAGE.name(), BASE_PACKAGE),
@@ -114,7 +111,7 @@ public class EditConfigurationSchemaTest {
                                 Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(), REPOSITORY_PACKAGE_NAME)
                         ));
 
-        final Generator generator =
+        var generator =
                 DefaultGenerator
                         .builder()
                         .processingSchema(InternalProcessingSchema.EditConfiguration)

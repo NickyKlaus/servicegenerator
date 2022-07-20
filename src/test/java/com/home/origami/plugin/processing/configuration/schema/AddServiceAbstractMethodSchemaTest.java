@@ -1,15 +1,11 @@
 package com.home.origami.plugin.processing.configuration.schema;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.home.origami.generator.DefaultGenerator;
-import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
-import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
 
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +13,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -38,8 +33,8 @@ public class AddServiceAbstractMethodSchemaTest {
 
     @BeforeAll
     static void initGenerator() throws Exception{
-        final JavaParser parser = new JavaParser();
-        final ParseResult<MethodDeclaration> parsingServiceMethodDeclarationResult =
+        var parser = new JavaParser();
+        var parsingServiceMethodDeclarationResult =
                 parser.parseMethodDeclaration(ABSTRACT_SERVICE_METHOD_DECLARATION);
 
         if (parsingServiceMethodDeclarationResult.isSuccessful() &&
@@ -50,11 +45,11 @@ public class AddServiceAbstractMethodSchemaTest {
                     parsingServiceMethodDeclarationResult.getProblems());
         }
 
-        final ParseResult<TypeDeclaration<?>> parsingServiceDeclarationResult =
+        var parsingServiceDeclarationResult =
                 parser.parseTypeDeclaration(ABSTRACT_SERVICE_DECLARATION);
 
         if (parsingServiceDeclarationResult.isSuccessful() && parsingServiceDeclarationResult.getResult().isPresent()) {
-            final Context context =
+            var context =
                     ProcessingContext.of(
                             Map.ofEntries(
                                     Map.entry(PropertyName.PIPELINE.name(), abstractServiceMethodDeclaration),
@@ -62,7 +57,7 @@ public class AddServiceAbstractMethodSchemaTest {
                                     Map.entry(
                                             PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION.name(),
                                             abstractServiceMethodDeclaration)));
-            final Generator generator =
+            var generator =
                     DefaultGenerator
                             .builder()
                             .processingSchema(InternalProcessingSchema.AddServiceAbstractMethod)
@@ -89,7 +84,7 @@ public class AddServiceAbstractMethodSchemaTest {
                 1,
                 abstractServiceDeclaration.getMethods().size(),
                 "There is more than 1 generated methods in TestService interface");
-        final List<MethodDeclaration> methodDeclarations =
+        var methodDeclarations =
                 abstractServiceDeclaration.getMethodsBySignature(
                         ABSTRACT_SERVICE_METHOD_DECLARATION_METHOD_NAME,
                         abstractServiceMethodDeclaration
@@ -122,7 +117,7 @@ public class AddServiceAbstractMethodSchemaTest {
                 "Generated method in TestService interface has not expected return type: " +
                         ABSTRACT_SERVICE_METHOD_DECLARATION_RETURN_TYPE);
 
-        final List<MethodDeclaration> methodDeclarationsWithExpectedSignature =
+        var methodDeclarationsWithExpectedSignature =
                 abstractServiceDeclaration.getMethodsBySignature(
                         ABSTRACT_SERVICE_METHOD_DECLARATION_METHOD_NAME,
                         abstractServiceMethodDeclaration

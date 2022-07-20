@@ -1,20 +1,16 @@
 package com.home.origami.plugin.processing.configuration.schema;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.home.origami.generator.DefaultGenerator;
-import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
-import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
 
 import org.junit.jupiter.api.Assertions;
@@ -50,8 +46,8 @@ public class InjectServiceIntoControllerSchemaTest {
 
     @BeforeAll
     static void initGenerator() throws Exception {
-        final JavaParser parser = new JavaParser();
-        final ParseResult<TypeDeclaration<?>> parsingControllerDeclarationResult = parser.parseTypeDeclaration(CONTROLLER_CLASS_DECLARATION);
+        var parser = new JavaParser();
+        var parsingControllerDeclarationResult = parser.parseTypeDeclaration(CONTROLLER_CLASS_DECLARATION);
         ClassOrInterfaceDeclaration controllerDeclarationBeforeInjectionService;
 
         if (parsingControllerDeclarationResult.isSuccessful() && parsingControllerDeclarationResult.getResult().isPresent()) {
@@ -61,7 +57,7 @@ public class InjectServiceIntoControllerSchemaTest {
             throw new Exception("Cannot parse code: " + CONTROLLER_CLASS_DECLARATION + "\n" + parsingControllerDeclarationResult.getProblems());
         }
 
-        final Context context =
+        var context =
                 ProcessingContext.of(
                         Map.ofEntries(
                                 Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
@@ -70,7 +66,7 @@ public class InjectServiceIntoControllerSchemaTest {
                                 Map.entry(PropertyName.ABSTRACT_SERVICE_NAME.name(),
                                         ABSTRACT_SERVICE_NAME)*/
                         ));
-        final Generator generator =
+        var generator =
                 DefaultGenerator
                         .builder()
                         .processingSchema(InternalProcessingSchema.InjectServiceIntoController)

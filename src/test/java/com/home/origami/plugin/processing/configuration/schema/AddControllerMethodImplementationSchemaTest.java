@@ -1,12 +1,10 @@
 package com.home.origami.plugin.processing.configuration.schema;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -15,9 +13,7 @@ import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.home.origami.generator.DefaultGenerator;
-import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
-import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
 
 import org.junit.jupiter.api.Assertions;
@@ -25,7 +21,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 
 public class AddControllerMethodImplementationSchemaTest {
@@ -56,8 +51,8 @@ public class AddControllerMethodImplementationSchemaTest {
 
     @BeforeAll
     static void initGenerator() throws Exception {
-        final JavaParser controllerParser = new JavaParser();
-        final ParseResult<TypeDeclaration<?>> parsingControllerDeclarationResult =
+        var controllerParser = new JavaParser();
+        var parsingControllerDeclarationResult =
                 controllerParser.parseTypeDeclaration(CONTROLLER_DECLARATION);
         ClassOrInterfaceDeclaration controllerDeclarationBeforeAdditionMethod;
 
@@ -70,8 +65,8 @@ public class AddControllerMethodImplementationSchemaTest {
                     parsingControllerDeclarationResult.getProblems());
         }
 
-        final JavaParser controllerMethodParser = new JavaParser();
-        final ParseResult<MethodDeclaration> parsingControllerMethodDeclarationResult =
+        var controllerMethodParser = new JavaParser();
+        var parsingControllerMethodDeclarationResult =
                 controllerMethodParser.parseMethodDeclaration(CONTROLLER_METHOD_DECLARATION);
 
         if (parsingControllerMethodDeclarationResult.isSuccessful() &&
@@ -82,8 +77,8 @@ public class AddControllerMethodImplementationSchemaTest {
                     parsingControllerMethodDeclarationResult.getProblems());
         }
 
-        final JavaParser serviceMethodParser = new JavaParser();
-        final ParseResult<MethodDeclaration> parsingServiceMethodDeclarationResult =
+        var serviceMethodParser = new JavaParser();
+        var parsingServiceMethodDeclarationResult =
                 serviceMethodParser.parseMethodDeclaration(ABSTRACT_SERVICE_METHOD_DECLARATION);
         MethodDeclaration serviceMethodDeclaration;
 
@@ -95,14 +90,14 @@ public class AddControllerMethodImplementationSchemaTest {
                     parsingServiceMethodDeclarationResult.getProblems());
         }
 
-        final Context context =
+        var context =
                 ProcessingContext.of(
                         Map.ofEntries(
                                 Map.entry(PropertyName.PIPELINE.name(), controllerMethodDeclaration),
                                 Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
                                 Map.entry(PropertyName.ABSTRACT_SERVICE_NAME.name(), ABSTRACT_SERVICE_NAME),
                                 Map.entry(PropertyName.ABSTRACT_SERVICE_METHOD_DECLARATION.name(), serviceMethodDeclaration)));
-        final Generator generator =
+        var generator =
                 DefaultGenerator.builder()
                         .processingSchema(InternalProcessingSchema.AddControllerMethodImplementation)
                         .build();
@@ -133,7 +128,7 @@ public class AddControllerMethodImplementationSchemaTest {
     @Test
     @DisplayName("😎")
     void testControllerMethodImplementation() {
-        final List<MethodDeclaration> generatedMethods = controllerDeclarationAfterAdditionMethod
+        var generatedMethods = controllerDeclarationAfterAdditionMethod
                 .getMethodsBySignature(
                         controllerMethodDeclaration.getSignature().getName(),
                         controllerMethodDeclaration
@@ -148,7 +143,7 @@ public class AddControllerMethodImplementationSchemaTest {
                 generatedMethods.size(),
                 "Generated controller method does not exist");
 
-        final MethodDeclaration generatedMethod = generatedMethods.get(0);
+        var generatedMethod = generatedMethods.get(0);
         Assertions.assertTrue(
                 generatedMethod.isPublic(),
                 "Generated controller method is not public");

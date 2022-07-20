@@ -1,17 +1,14 @@
 package com.home.origami.plugin.processing.configuration.schema;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.home.origami.generator.DefaultGenerator;
-import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
 import com.home.origami.plugin.processing.configuration.context.properties.Storage;
-import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
 
 import org.junit.jupiter.api.Assertions;
@@ -41,13 +38,13 @@ public class CreateServiceImplementationSchemaTest {
 
     @BeforeAll
     static void initGenerator() {
-        final Generator generator =
+        var generator =
                 DefaultGenerator
                         .builder()
                         .processingSchema(InternalProcessingSchema.CreateServiceImplementation)
                         .build();
 
-        final Context context =
+        var context =
                 ProcessingContext.of(
                         Map.ofEntries(
                                 Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
@@ -89,7 +86,7 @@ public class CreateServiceImplementationSchemaTest {
                 serviceImplementationClassUnit.getClassByName(GENERATED_SERVICE_NAME).isPresent(),
                 "Generated service implementation unit has not name " + ABSTRACT_SERVICE_NAME + "Impl");
 
-        final ClassOrInterfaceDeclaration serviceDeclaration = serviceImplementationClassUnit
+        var serviceDeclaration = serviceImplementationClassUnit
                 .getClassByName(GENERATED_SERVICE_NAME)
                 .get();
 

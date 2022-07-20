@@ -1,16 +1,11 @@
 package com.home.origami.plugin.processing.configuration.schema;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.Name;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.home.origami.generator.DefaultGenerator;
-import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
-import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
 
 import org.junit.jupiter.api.Assertions;
@@ -18,7 +13,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -43,8 +37,8 @@ public class AddServiceMethodImplementationSchemaTest {
 
     @BeforeAll
     static void initGenerator() throws Exception {
-        final JavaParser parser = new JavaParser();
-        final ParseResult<TypeDeclaration<?>> parsingServiceDeclarationResult =
+        var parser = new JavaParser();
+        var parsingServiceDeclarationResult =
                 parser.parseTypeDeclaration(SERVICE_IMPLEMENTATION_DECLARATION);
         ClassOrInterfaceDeclaration serviceImplementationDeclarationBeforeAdditionMethod;
 
@@ -56,7 +50,7 @@ public class AddServiceMethodImplementationSchemaTest {
                     parsingServiceDeclarationResult.getProblems());
         }
 
-        final ParseResult<MethodDeclaration> parsingServiceMethodDeclarationResult =
+        var parsingServiceMethodDeclarationResult =
                 parser.parseMethodDeclaration(ABSTRACT_SERVICE_METHOD_DECLARATION);
 
         if (parsingServiceMethodDeclarationResult.isSuccessful() &&
@@ -67,7 +61,7 @@ public class AddServiceMethodImplementationSchemaTest {
                     parsingServiceMethodDeclarationResult.getProblems());
         }
 
-        final ParseResult<MethodDeclaration> parsingRepositoryMethodDeclarationResult =
+        var parsingRepositoryMethodDeclarationResult =
                 parser.parseMethodDeclaration(REPOSITORY_METHOD_DECLARATION);
 
         MethodDeclaration repositoryMethodDeclaration;
@@ -79,7 +73,7 @@ public class AddServiceMethodImplementationSchemaTest {
                     parsingRepositoryMethodDeclarationResult.getProblems());
         }
 
-        final Context context =
+        var context =
                 ProcessingContext.of(
                         Map.ofEntries(
                                 Map.entry(PropertyName.PIPELINE.name(), abstractServiceMethodDeclaration),
@@ -92,7 +86,7 @@ public class AddServiceMethodImplementationSchemaTest {
                                         abstractServiceMethodDeclaration)
                         ));
 
-        final Generator generator =
+        var generator =
                 DefaultGenerator
                         .builder()
                         .processingSchema(InternalProcessingSchema.AddServiceMethodImplementation)
@@ -115,7 +109,7 @@ public class AddServiceMethodImplementationSchemaTest {
                 1,
                 serviceImplementationDeclarationAfterAdditionMethod.getMethods().size(),
                 "There is more than 1 generated methods in service implementation class");
-        final List<MethodDeclaration> methodDeclarations =
+        var methodDeclarations =
                 serviceImplementationDeclarationAfterAdditionMethod.getMethodsBySignature(
                         ABSTRACT_SERVICE_METHOD_DECLARATION_METHOD_NAME,
                         abstractServiceMethodDeclaration
@@ -139,7 +133,7 @@ public class AddServiceMethodImplementationSchemaTest {
                 methodDeclarations.get(0).isAbstract(),
                 "Generated method in service implementation class is abstract");
 
-        final ClassOrInterfaceType generatedMethodReturnType = methodDeclarations
+        var generatedMethodReturnType = methodDeclarations
                 .get(0)
                 .getType()
                 .asClassOrInterfaceType();

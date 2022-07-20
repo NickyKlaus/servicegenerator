@@ -4,10 +4,8 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.home.origami.generator.DefaultGenerator;
-import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
 import com.home.origami.plugin.processing.configuration.context.properties.Storage;
-import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
 
 import org.junit.jupiter.api.Assertions;
@@ -29,13 +27,13 @@ public class CreateAbstractServiceSchemaTest {
 
     @BeforeAll
     static void initGenerator() {
-        final Generator generator =
+        var generator =
                 DefaultGenerator
                         .builder()
                         .processingSchema(InternalProcessingSchema.CreateAbstractService)
                         .build();
-        final MethodDeclaration controllerMethodDeclaration = new MethodDeclaration();
-        final Context context =
+        var controllerMethodDeclaration = new MethodDeclaration();
+        var context =
                 ProcessingContext.of(
                         Map.ofEntries(
                                 Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),

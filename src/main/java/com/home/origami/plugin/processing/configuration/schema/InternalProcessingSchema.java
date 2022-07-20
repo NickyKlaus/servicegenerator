@@ -15,8 +15,6 @@ import com.home.origami.api.ASTProcessingSchema;
 import com.home.origami.api.context.Context;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -29,11 +27,11 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = context.get(PIPELINE_ID.name(), Name.class);
-                final Storage.DbType dbType = context.get(DB_TYPE.name(), Storage.DbType.class);
-                final String repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
-                final String repositoryName = model.getIdentifier() + "Repository";
-                final String repositoryIdClass = context.get(REPOSITORY_ID_CLASS_NAME.name(), String.class);
+                var model = context.get(PIPELINE_ID.name(), Name.class);
+                var dbType = context.get(DB_TYPE.name(), Storage.DbType.class);
+                var repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
+                var repositoryName = model.getIdentifier() + "Repository";
+                var repositoryIdClass = context.get(REPOSITORY_ID_CLASS_NAME.name(), String.class);
 
                 // Create public interface extended Spring Data CrudRepository and mark it as Spring Repository bean.
                 n.setPackageDeclaration(repositoryPackageName)
@@ -58,10 +56,10 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = context.get(PIPELINE_ID.name(), Name.class);
-                final String servicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
-                final String serviceName = model.getIdentifier() + "Service";
-                final Storage.DbType storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
+                var model = context.get(PIPELINE_ID.name(), Name.class);
+                var servicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
+                var serviceName = model.getIdentifier() + "Service";
+                var storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
 
                 ClassOrInterfaceDeclaration abstractServiceInterface =
                         new ClassOrInterfaceDeclaration()
@@ -81,8 +79,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
-                final MethodDeclaration methodDeclaration =
-                        context.get(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), MethodDeclaration.class);
+                var methodDeclaration = context.get(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), MethodDeclaration.class);
 
                 n.addMethod(methodDeclaration.getNameAsString(), Modifier.Keyword.PUBLIC, Modifier.Keyword.ABSTRACT)
                         .setType(methodDeclaration.getType())
@@ -97,20 +94,20 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = context.get(PIPELINE_ID.name(), Name.class);
-                final String abstractServicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
-                final String abstractServiceName = model.getIdentifier() + "Service";
-                final String servicePackageName = abstractServicePackageName + ".impl";
-                final String serviceName = abstractServiceName + "Impl";
-                final String repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
-                final String repositoryName = model.getIdentifier() + "Repository";
-                final Storage.DbType storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
-                final String fullyQualifiedRepositoryName = repositoryPackageName + "." + repositoryName;
-                final String fullyQualifiedAbstractServiceName = abstractServicePackageName + "." + abstractServiceName;
-                final String repositoryFieldName = repositoryName.toLowerCase();
+                var model = context.get(PIPELINE_ID.name(), Name.class);
+                var abstractServicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
+                var abstractServiceName = model.getIdentifier() + "Service";
+                var servicePackageName = abstractServicePackageName + ".impl";
+                var serviceName = abstractServiceName + "Impl";
+                var repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
+                var repositoryName = model.getIdentifier() + "Repository";
+                var storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
+                var fullyQualifiedRepositoryName = repositoryPackageName + "." + repositoryName;
+                var fullyQualifiedAbstractServiceName = abstractServicePackageName + "." + abstractServiceName;
+                var repositoryFieldName = repositoryName.toLowerCase();
 
                 // Constructor body with injected repository
-                final BlockStmt constructorBody = new BlockStmt()
+                var constructorBody = new BlockStmt()
                         .setStatements(NodeList.nodeList(
                                 new ExpressionStmt()
                                         .setExpression(
@@ -123,7 +120,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
 
                 // Add package, private final field for repository and public non-default constructor.
                 // Mark class as Spring service bean.
-                final ClassOrInterfaceDeclaration classOrInterfaceDeclaration =
+                var classOrInterfaceDeclaration =
                         n.setPackageDeclaration(servicePackageName)
                                 .addImport(model.toString())
                                 .addImport("org.springframework.stereotype.Service")
@@ -156,7 +153,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<TypeParameter, Context, TypeParameter> postProcessTypeParameter() {
             return (TypeParameter n, Context context) -> {
-                final Name model = context.get(PIPELINE_ID.name(), Name.class);
+                var model = context.get(PIPELINE_ID.name(), Name.class);
 
                 if (n.getNameAsString().length() == 1) {
                     n.setName(model.getIdentifier());
@@ -168,12 +165,12 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
-                final Name model = context.get(PIPELINE_ID.name(), Name.class);
-                final String repositoryName = model.getIdentifier() + "Repository";
-                final MethodDeclaration abstractServiceMethod = context.get(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), MethodDeclaration.class);
-                final String repositoryFieldName = repositoryName.toLowerCase();
+                var model = context.get(PIPELINE_ID.name(), Name.class);
+                var repositoryName = model.getIdentifier() + "Repository";
+                var abstractServiceMethod = context.get(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), MethodDeclaration.class);
+                var repositoryFieldName = repositoryName.toLowerCase();
 
-                final BlockStmt methodBody = new BlockStmt()
+                var methodBody = new BlockStmt()
                         .setStatements(NodeList.nodeList(
                                 new ReturnStmt()
                                         .setExpression(
@@ -187,7 +184,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
                                                                         .map(Parameter::getNameAsExpression)
                                                                         .collect(NodeList.toNodeList())))));
 
-                final MethodDeclaration method = n.addMethod(abstractServiceMethod.getNameAsString(), Modifier.Keyword.PUBLIC)
+                var method = n.addMethod(abstractServiceMethod.getNameAsString(), Modifier.Keyword.PUBLIC)
                         .setParameters(abstractServiceMethod.getParameters())
                         .setBody(methodBody);
                 method.setType(abstractServiceMethod.getType());
@@ -200,10 +197,10 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = context.get(PIPELINE_ID.name(), Name.class);
-                final String abstractServicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
-                final String abstractServiceName = model.getIdentifier() + "Service";
-                final String fullyQualifiedAbstractServiceTypeName = abstractServicePackageName + "." + abstractServiceName;
+                var model = context.get(PIPELINE_ID.name(), Name.class);
+                var abstractServicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
+                var abstractServiceName = model.getIdentifier() + "Service";
+                var fullyQualifiedAbstractServiceTypeName = abstractServicePackageName + "." + abstractServiceName;
                 n.addImport(fullyQualifiedAbstractServiceTypeName);
 
                 return n;
@@ -215,11 +212,9 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
                 final Predicate<ConstructorDeclaration> isNotDefaultConstructor =
                         (ConstructorDeclaration constructor) -> constructor.getParameters().isNonEmpty();
-                final Name model = context.get(PIPELINE_ID.name(), Name.class);
-                final String abstractServicePackageName = context.get(ABSTRACT_SERVICE_PACKAGE_NAME.name(), String.class);
-                final String abstractServiceName = model.getIdentifier() + "Service";
-                final String fullyQualifiedAbstractServiceTypeName = abstractServicePackageName + "." + abstractServiceName;
-                final String serviceFieldName = abstractServiceName.toLowerCase();
+                var model = context.get(PIPELINE_ID.name(), Name.class);
+                var abstractServiceName = model.getIdentifier() + "Service";
+                var serviceFieldName = abstractServiceName.toLowerCase();
 
                 // Add field for service
                 n.addField(
@@ -259,7 +254,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> postProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Name model = context.get(PIPELINE_ID.name(), Name.class);
+                var model = context.get(PIPELINE_ID.name(), Name.class);
 
                 n.getImports().removeIf(importDeclaration -> importDeclaration.getName().getQualifier().isPresent() &&
                         importDeclaration.getName().getQualifier().get().toString().equals("java.util"));
@@ -278,14 +273,14 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
-                final Name model = context.get(PIPELINE_ID.name(), Name.class);
-                final String abstractServiceName = model.getIdentifier() + "Service";
-                final String serviceFieldName = abstractServiceName.toLowerCase();
-                final MethodDeclaration controllerMethodDeclaration = context.get(PIPELINE.name(), MethodDeclaration.class);
-                final MethodDeclaration abstractServiceMethodDeclaration = context.get(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), MethodDeclaration.class);
+                var model = context.get(PIPELINE_ID.name(), Name.class);
+                var abstractServiceName = model.getIdentifier() + "Service";
+                var serviceFieldName = abstractServiceName.toLowerCase();
+                var controllerMethodDeclaration = context.get(PIPELINE.name(), MethodDeclaration.class);
+                var abstractServiceMethodDeclaration = context.get(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), MethodDeclaration.class);
 
                 // Controller method implementation (body)
-                final BlockStmt methodBody = new BlockStmt()
+                var methodBody = new BlockStmt()
                         .setStatements(NodeList.nodeList(
                                 new ReturnStmt()
                                         .setExpression(
@@ -323,7 +318,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
             return (CompilationUnit n, Context context) -> {
-                final Storage.DbType storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
+                var storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
 
                 n.addImport(storageType.dbRepositoryConfigAnnotationClass());
                 return n;
@@ -333,12 +328,12 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         @Override
         public BiFunction<ClassOrInterfaceDeclaration, Context, ClassOrInterfaceDeclaration> preProcessClassOrInterfaceDeclaration() {
             return (ClassOrInterfaceDeclaration n, Context context) -> {
-                final String SPRING_BOOT_APPLICATION_FULL = "org.springframework.boot.autoconfigure.SpringBootApplication";
-                final String SPRING_BOOT_APPLICATION_SHORT = "SpringBootApplication";
-                final String basePackage = context.get(BASE_PACKAGE.name(), String.class) + ".*";
+                var SPRING_BOOT_APPLICATION_FULL = "org.springframework.boot.autoconfigure.SpringBootApplication";
+                var SPRING_BOOT_APPLICATION_SHORT = "SpringBootApplication";
+                var basePackage = context.get(BASE_PACKAGE.name(), String.class) + ".*";
                 // Register repository into Spring application class
-                final Storage.DbType storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
-                final String repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
+                var storageType = context.get(DB_TYPE.name(), Storage.DbType.class);
+                var repositoryPackageName = context.get(REPOSITORY_PACKAGE_NAME.name(), String.class);
 
                 if (n.getAnnotationByName(SPRING_BOOT_APPLICATION_FULL).isPresent() ||
                         n.getAnnotationByName(SPRING_BOOT_APPLICATION_SHORT).isPresent()) {
@@ -377,7 +372,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
     public static AnnotationExpr prepareDbRepositoryConfigAnnotation(
             List<String> repositoriesBasePackageNames, Storage.DbType dbType
     ) {
-        final String[] _name = StringUtils.split(dbType.dbRepositoryConfigAnnotationClass(), ".");
+        var _name = StringUtils.split(dbType.dbRepositoryConfigAnnotationClass(), ".");
         return prepareSpringDataDbConfigAnnotation(
                 _name[_name.length-1],
                 NodeList.nodeList(
@@ -400,5 +395,4 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
     private static final String SPRING_SERVICE = "Service";
     private static final String SPRING_HTTP_STATUS_200 = "org.springframework.http.HttpStatus.OK";
     private static final String OVERRIDE = "Override";
-    private static final Logger LOG = LoggerFactory.getLogger(InternalProcessingSchema.class);
 }

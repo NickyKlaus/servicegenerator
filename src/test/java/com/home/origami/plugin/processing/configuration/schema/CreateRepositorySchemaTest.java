@@ -6,10 +6,8 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.home.origami.generator.DefaultGenerator;
-import com.home.origami.generator.Generator;
 import com.home.origami.plugin.processing.configuration.context.ProcessingContext;
 import com.home.origami.plugin.processing.configuration.context.properties.Storage;
-import com.home.origami.api.context.Context;
 import com.home.origami.plugin.processing.configuration.context.properties.PropertyName;
 
 import org.junit.jupiter.api.Assertions;
@@ -37,15 +35,13 @@ public class CreateRepositorySchemaTest {
 
     @BeforeAll
     static void initGenerator() {
-        final Generator generator =
+        var generator =
                 DefaultGenerator
                         .builder()
                         .processingSchema(InternalProcessingSchema.CreateRepository)
                         .build();
-
-        final MethodDeclaration controllerMethodDeclaration = new MethodDeclaration();
-
-        final Context context =
+        var controllerMethodDeclaration = new MethodDeclaration();
+        var context =
                 new ProcessingContext(
                         Map.ofEntries(
                                 Map.entry(PropertyName.PIPELINE.name(), controllerMethodDeclaration),
@@ -110,8 +106,8 @@ public class CreateRepositorySchemaTest {
                 "Generated repository interface does not extend one " + SPRING_DATA_CRUD_REPOSITORY
         );
 
-        final AtomicInteger indexCounter = new AtomicInteger(0);
-        final Map<Integer, String> repositorySupertypeParameterIndexToNameMap = repositoryClassUnit
+        var indexCounter = new AtomicInteger(0);
+        var repositorySupertypeParameterIndexToNameMap = repositoryClassUnit
                 .getInterfaceByName(REPOSITORY_NAME)
                 .get()
                 .getExtendedTypes()
