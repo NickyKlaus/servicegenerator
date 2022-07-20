@@ -1,8 +1,8 @@
 # Origami. Inside out
 
-**Origami** contains a *Finite-state mashine* under the hood. It considers all the registered *Processing stages* (of both types *internal* and *external*) as the set of available states and moves from one the another according to the order they were registered.
+**Origami** contains a *Finite-state machine* under the hood. It considers all the registered *Processing stages* (of both types *internal* and *external*) as the set of available states and moves from one the another according to the order they were registered.
 
-Basically, you cannot affect to the internal stages' order itself but you allow to change any line of code produced by interal schemas' processing.
+Basically, you cannot affect to the internal stages' order itself, but you allow to change any line of code produced by internal schemas' processing.
 
 !!! tip ""
 

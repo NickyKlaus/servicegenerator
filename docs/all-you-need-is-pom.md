@@ -23,8 +23,8 @@ Let's add **Origami** plugin to <code>plugins</code> section in our project <cod
 </plugin>
 ```
 
-There are two main parts of the plugin configuration: *common preferencies* and *transformations*.
-*Common preferencies* section has not its own XML tag and includes following configuration items:
+There are two main parts of the plugin configuration: *common preferences* and *transformations*.
+*Common preferences* section has not its own XML tag and includes following configuration items:
 
 ```xml linenums="1"
 <configuration>

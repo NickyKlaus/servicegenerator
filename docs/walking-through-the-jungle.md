@@ -1,6 +1,6 @@
 # Walking through the jungle
 
-Every *Processing schema* class we made can be imagined as a set of actions with the AST nodes. We can walk from one source code file to another, look through its AST structure and change the nodes according to the "algorithm" we get from predefined *processing schema*.
+Every *Processing schema* class we made can be imagined as a set of actions with the AST nodes. We can walk from one source code file to another, look through its AST structure and change the nodes according to the 'algorithm' we get from predefined *processing schema*.
 
 There are *pre-* and *post-* process actions which can be applied to the currently processed node one-by-one:
 ``` mermaid
