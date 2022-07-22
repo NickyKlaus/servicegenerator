@@ -1,6 +1,6 @@
-package com.home.origami.plugin.processing.configuration.strategy.naming;
+package com.github.origami.plugin.processing.configuration.strategy.naming;
 
-import com.home.origami.api.context.Context;
+import com.github.origami.api.context.Context;
 
 import java.util.function.Function;
 
