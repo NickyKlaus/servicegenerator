@@ -225,3 +225,9 @@ with following default values (might be ignored):
 | `dependencies`             | N/A                                                                |
 
 `transformationProperties` contains key and value pairs that can be used in schema (you can get a property value by its name using Context object).
+
+## Special thanks
+
+- [JavaParser](https://javaparser.org) for their excellent [javaparser](https://github.com/javaparser/javaparser) library
+- [Dizitart](https://www.dizitart.org/) for lightweight [Nitrite Database](https://github.com/nitrite/nitrite-java)
+- [hekailiang](https://github.com/hekailiang) for so powerful [Squirrel State Machine](http://hekailiang.github.io/squirrel) library 
