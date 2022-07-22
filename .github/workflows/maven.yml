@@ -1,9 +1,9 @@
 name: Publish package
 on:
   push:
-    branches: [ master ]
+    branches: [ "plugin-dev" ]
   pull_request:
-    branches: [ master ]
+    branches: [ "plugin-dev" ]
   schedule:
     - cron: '0 19 * * 0'
   
