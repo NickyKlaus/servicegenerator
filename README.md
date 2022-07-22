@@ -1,4 +1,7 @@
 # origami
+
+[![Publish package](https://github.com/NickyKlaus/origami/actions/workflows/maven.yml/badge.svg?branch=plugin-dev&event=push)](https://github.com/NickyKlaus/origami/actions/workflows/maven.yml)
+
 Experimental Maven plugin for generating Java microservices by OpenAPI/Swagger Specification
 
 See https://nickyklaus.github.io/origami/
