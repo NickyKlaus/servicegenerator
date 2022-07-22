@@ -6,7 +6,7 @@ Let's add **Origami** plugin to <code>plugins</code> section in our project <cod
 
 ```xml linenums="1"
 <plugin>
-    <groupId>com.home</groupId>
+    <groupId>com.github</groupId>
     <artifactId>origami-maven-plugin</artifactId>
     <version>${origami-plugin.version}</version>
     <executions>
