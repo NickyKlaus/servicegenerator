@@ -1,6 +1,6 @@
 # Context is for Kings
 
-*Processing Schemas* can use any data contained in [*Context*](https://github.com/NickyKlaus/origami-api/blob/master/src/main/java/com/home/origami/api/context/Context.java) in a type-safe way:
+*Processing Schemas* can use any data contained in [*Context*](https://github.com/NickyKlaus/origami-api/blob/master/src/main/java/com/github/origami/api/context/Context.java) in a type-safe way:
 ```
 context.get([property_name], [value_class])
 ```
