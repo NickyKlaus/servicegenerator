@@ -5,7 +5,8 @@ import com.github.origami.plugin.Transformation;
 import com.github.origami.plugin.TransformationProperty;
 import com.github.origami.plugin.processing.configuration.context.properties.ComponentType;
 
-import org.apache.maven.plugin.MojoFailureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -14,8 +15,13 @@ import java.net.URLClassLoader;
 import java.util.stream.Collectors;
 
 public class TransformationToProcessingStageMapper {
-    public Stage toStage(Transformation transformation) throws MojoFailureException {
-        try (var classLoader = URLClassLoader.newInstance(new URL[]{transformation.getProcessingSchemaLocation().toURI().toURL()}, getClass().getClassLoader())) {
+    private static final Logger LOG = LoggerFactory.getLogger(TransformationToProcessingStageMapper.class);
+
+    public Stage toStage(Transformation transformation) {
+        try (var classLoader =
+                     URLClassLoader.newInstance(
+                             new URL[]{transformation.getProcessingSchemaLocation().toURI().toURL()},
+                             getClass().getClassLoader())) {
             var processingSchemaInstance =
                     classLoader
                             .loadClass(transformation.getProcessingSchemaClass())
@@ -40,11 +46,12 @@ public class TransformationToProcessingStageMapper {
                                                 (s, a) -> s)))
                         .build();
             } else {
-                throw new MojoFailureException("Invalid processing schema found: " + processingSchemaInstance);
+                LOG.error("Invalid processing schema found: " + transformation.getProcessingSchemaLocation());
             }
-        } catch (IOException | ClassNotFoundException | ClassCastException | NoSuchMethodException | InstantiationException |
-                 IllegalAccessException | InvocationTargetException e) {
-            throw new MojoFailureException("Cannot map transformation to processing stage", e);
+        } catch (IOException | ClassNotFoundException | ClassCastException | NoSuchMethodException |
+                 InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            LOG.error("Cannot map transformation to processing stage", e);
         }
+        return null;
     }
 }
