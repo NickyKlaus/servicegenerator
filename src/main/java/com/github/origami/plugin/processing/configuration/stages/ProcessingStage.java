@@ -3,115 +3,203 @@ package com.github.origami.plugin.processing.configuration.stages;
 import com.github.origami.plugin.processing.configuration.context.ProcessingContext;
 import com.github.origami.api.ASTProcessingSchema;
 import com.github.origami.api.context.Context;
+import com.github.origami.plugin.processing.configuration.strategy.naming.NamingStrategy;
+import com.github.origami.plugin.processing.configuration.strategy.naming.SchemaClassBasedNamingStrategy;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ProcessingStage implements Stage {
-    private final ASTProcessingSchema schema;
-    private final Context context = new ProcessingContext();
-    private String sourceLocation;
-    private Function<Context, String> sourceLocationProvider;
+    private ASTProcessingSchema schema;
+    private Context context = new ProcessingContext();
+    private NamingStrategy namingStrategy = new SchemaClassBasedNamingStrategy();
+    private String name = StringUtils.EMPTY;
+    private Consumer<Context> postProcessingAction = ctx -> {};
     private Predicate<Context> executionCondition = ctx -> true;
-    private Consumer<Context> afterProcessedAction = ctx -> {};
+    private String processingUnitType = StringUtils.EMPTY;
+    private String processingUnitName = "Component";
+    private String processingUnitLocation;
+    private String processingUnitBasePackage = StringUtils.EMPTY;
 
-    private ProcessingStage(ASTProcessingSchema schema) {
+    private ProcessingStage processingSchema(ASTProcessingSchema schema) {
         this.schema = schema;
-    }
-
-    public static Stage of(ASTProcessingSchema schema) {
-        return new ProcessingStage(schema);
-    }
-
-    @Override
-    public Stage setSourceLocation(String unitLocation) {
-        this.sourceLocationProvider = null;
-        this.sourceLocation = unitLocation;
         return this;
     }
-
-    @Override
-    public Stage setSourceLocation(Function<Context, String> locationProvider) {
-        this.sourceLocation = null;
-        this.sourceLocationProvider = locationProvider;
+    private ProcessingStage context(Map<String, Object> processingData) {
+        this.context.getProperties().putAll(processingData);
         return this;
     }
-
-    @Override
-    public Stage setSchema(ASTProcessingSchema schema) {
-        // method does not change the object state (schema must be predefined in constructor)
+    private ProcessingStage context(Context context) {
+        this.context.getProperties().putAll(context.getProperties());
         return this;
     }
-
-    @Override
-    public ASTProcessingSchema getSchema() {
+    private ProcessingStage processingUnitLocation(String location) {
+        this.processingUnitLocation = location;
+        return this;
+    }
+    private ProcessingStage name(String name) {
+        this.name = name;
+        return this;
+    }
+    private ProcessingStage postProcessingAction(Consumer<Context> action) {
+        this.postProcessingAction = action;
+        return this;
+    }
+    private ProcessingStage executingCondition(Predicate<Context> condition) {
+        this.executionCondition = condition;
+        return this;
+    }
+    private ProcessingStage processingUnitType(String processingUnitType) {
+        this.processingUnitType = processingUnitType;
+        return this;
+    }
+    private ProcessingStage namingStrategy(NamingStrategy namingStrategy) {
+        this.namingStrategy = namingStrategy;
+        return this;
+    }
+    private ProcessingStage processingUnitName(String processingUnitName) {
+        this.processingUnitName = processingUnitName;
+        return this;
+    }
+    private ProcessingStage processingUnitBasePackage(String processingUnitBasePackage) {
+        this.processingUnitBasePackage = processingUnitBasePackage;
+        return this;
+    }
+        @Override
+    public ASTProcessingSchema getProcessingSchema() {
         return schema;
     }
 
     @Override
-    public Map<String, Object> getProcessingData() {
-        return context.getProperties();
+    public Context getContext() {
+        return context;
     }
 
     @Override
-    public Stage setProcessingData(Map<String, Object> processingData) {
-        this.context.getProperties().putAll(processingData);
-        return this;
-    }
-
-    @Override
-    public String getSourceLocation() {
-        return sourceLocationProvider == null ? sourceLocation : sourceLocationProvider.apply(context);
+    public String getProcessingUnitLocation() {
+        return processingUnitLocation;
     }
 
     @Override
     public String getName() {
-        return getSourceLocation() + "_" + getSchema().hashCode();
-    }
-
-    @Override
-    public Predicate<Context> getExecutingStageCondition() {
-        return executionCondition;
-    }
-
-    @Override
-    public Stage setExecutingStageCondition(Predicate<Context> executionCondition) {
-        this.executionCondition = executionCondition;
-        return this;
-    }
-
-    @Override
-    public Stage postProcessingAction(Consumer<Context> action) {
-        this.afterProcessedAction = action;
-        return this;
+        return name;
     }
 
     @Override
     public Consumer<Context> getPostProcessingAction() {
-        return afterProcessedAction;
+        return postProcessingAction;
     }
 
     @Override
-    public Stage setComponentPackage(String packageName) {
-        return this;
+    public Predicate<Context> getExecutingCondition() {
+        return executionCondition;
     }
 
     @Override
-    public String getComponentPackage() {
-        return StringUtils.EMPTY;
+    public String getProcessingUnitType() {
+        return processingUnitType;
     }
 
     @Override
-    public Stage setComponentType(String componentName) {
-        return this;
+    public NamingStrategy getNamingStrategy() {
+        return namingStrategy;
     }
 
     @Override
-    public String getComponentType() {
-        return StringUtils.EMPTY;
+    public String getProcessingUnitName() {
+        return processingUnitName;
+    }
+
+    @Override
+    public String getProcessingUnitBasePackage() {
+        return processingUnitBasePackage;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private ASTProcessingSchema schema;
+        private Context context = new ProcessingContext();
+        private NamingStrategy namingStrategy = new SchemaClassBasedNamingStrategy();
+        private String name = StringUtils.EMPTY;
+        private Consumer<Context> postProcessingAction = ctx -> {};
+        private Predicate<Context> executionCondition = ctx -> true;
+        private String processingUnitType = StringUtils.EMPTY;
+        private String processingUnitName = "Component";
+        private String processingUnitLocation;
+        private String processingUnitBasePackage = StringUtils.EMPTY;
+
+        public Builder processingSchema(ASTProcessingSchema schema) {
+            this.schema = schema;
+            return this;
+        }
+
+        public Builder context(Map<String, Object> processingData) {
+            this.context.getProperties().putAll(processingData);
+            return this;
+        }
+
+        public Builder context(Context context) {
+            this.context.getProperties().putAll(context.getProperties());
+            return this;
+        }
+
+        public Builder processingUnitLocation(String location) {
+            this.processingUnitLocation = location;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder postProcessingAction(Consumer<Context> action) {
+            this.postProcessingAction = action;
+            return this;
+        }
+
+        public Builder executingCondition(Predicate<Context> condition) {
+            this.executionCondition = condition;
+            return this;
+        }
+
+        public Builder processingUnitType(String processingUnitType) {
+            this.processingUnitType = processingUnitType;
+            return this;
+        }
+
+        public Builder namingStrategy(NamingStrategy namingStrategy) {
+            this.namingStrategy = namingStrategy;
+            return this;
+        }
+
+        public Builder processingUnitName(String processingUnitName) {
+            this.processingUnitName = processingUnitName;
+            return this;
+        }
+
+        public Builder processingUnitBasePackage(String processingUnitBasePackage) {
+            this.processingUnitBasePackage = processingUnitBasePackage;
+            return this;
+        }
+        public Stage build() {
+            return new ProcessingStage()
+                    .name(name)
+                    .processingSchema(schema)
+                    .context(context)
+                    .postProcessingAction(postProcessingAction)
+                    .executingCondition(executionCondition)
+                    .namingStrategy(namingStrategy)
+                    .processingUnitType(processingUnitType)
+                    .processingUnitName(processingUnitName)
+                    .processingUnitLocation(processingUnitLocation)
+                    .processingUnitBasePackage(processingUnitBasePackage);
+        }
     }
 }

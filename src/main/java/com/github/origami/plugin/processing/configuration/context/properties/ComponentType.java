@@ -4,6 +4,11 @@ public enum ComponentType {
     REPOSITORY("Repository"),
     SERVICE("Service"),
     SERVICE_IMPLEMENTATION("ServiceImpl"),
+    CONTROLLER("Controller"),
+    CONFIGURATION("Configuration"),
+    MAPPER("Mapper"),
+    MODEL("Model"),
+    UNKNOWN("")
     ;
 
     ComponentType(String componentType) {
