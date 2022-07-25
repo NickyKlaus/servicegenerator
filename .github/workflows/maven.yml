@@ -4,8 +4,6 @@ on:
     branches: [ "plugin-dev" ]
   pull_request:
     branches: [ "plugin-dev" ]
-  schedule:
-    - cron: '0 19 * * 0'
   
 jobs:
   publish:
