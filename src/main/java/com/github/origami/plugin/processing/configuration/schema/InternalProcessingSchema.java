@@ -13,6 +13,7 @@ import com.github.javaparser.ast.type.TypeParameter;
 import com.github.origami.plugin.processing.configuration.context.properties.Storage;
 import com.github.origami.api.ASTProcessingSchema;
 import com.github.origami.api.context.Context;
+import com.github.origami.plugin.processing.configuration.strategy.matchmethod.MatchWithRestEndpointMethodStrategy;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,8 +22,14 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import static com.github.origami.plugin.processing.configuration.context.properties.PropertyName.*;
+import static com.github.origami.plugin.utils.CompilationUnitUtils.getMethodMatchedWithPipeline;
+import static java.lang.String.format;
 
 public enum InternalProcessingSchema implements ASTProcessingSchema {
+    InitializeProcessingContext {
+        // Initialize processing
+    },
+
     CreateRepository {
         @Override
         public BiFunction<CompilationUnit, Context, CompilationUnit> preProcessCompilationUnit() {
@@ -47,8 +54,24 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
                                                         NodeList.nodeList(
                                                                 new ClassOrInterfaceType().setName(model.getIdentifier()),
                                                                 new ClassOrInterfaceType().setName(repositoryIdClass)))));
+                addResolvedRepositoryMethodToContext(context);
                 return n;
             };
+        }
+
+        private void addResolvedRepositoryMethodToContext(Context context) {
+            var serviceMethod =
+                    getMethodMatchedWithPipeline(
+                            context.get(PIPELINE.name(), MethodDeclaration.class),
+                            context.get(DB_TYPE.name(), Storage.DbType.class).getRepositoryImplementationMethodDeclarations(),
+                            context.get(PIPELINE_ID.name(), Name.class),
+                            new MatchWithRestEndpointMethodStrategy()
+                    ).orElseThrow(
+                            () -> new IllegalArgumentException(
+                                    format(
+                                            CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE,
+                                            ABSTRACT_SERVICE_METHOD_DECLARATION.name())));
+            context.getProperties().put(ABSTRACT_SERVICE_METHOD_DECLARATION.name(), serviceMethod);
         }
     },
 
@@ -391,6 +414,7 @@ public enum InternalProcessingSchema implements ASTProcessingSchema {
         return new NormalAnnotationExpr(new com.github.javaparser.ast.expr.Name(enableAnnotationName), annotationMembers);
     }
 
+    private static final String CONTEXT_PREFERENCE_IS_NOT_SET_ERROR_MESSAGE = "%s is not set";
     private static final String SPRING_REPOSITORY = "Repository";
     private static final String SPRING_SERVICE = "Service";
     private static final String SPRING_HTTP_STATUS_200 = "org.springframework.http.HttpStatus.OK";

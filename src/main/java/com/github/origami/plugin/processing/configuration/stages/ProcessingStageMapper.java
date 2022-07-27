@@ -3,21 +3,27 @@ package com.github.origami.plugin.processing.configuration.stages;
 import com.github.origami.api.ASTProcessingSchema;
 import com.github.origami.plugin.Transformation;
 import com.github.origami.plugin.TransformationProperty;
+import com.github.origami.plugin.processing.configuration.ProcessingConfiguration;
 import com.github.origami.plugin.processing.configuration.context.properties.ComponentType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 
-public class TransformationToProcessingStageMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(TransformationToProcessingStageMapper.class);
+import static org.apache.commons.lang3.StringUtils.getIfEmpty;
 
-    public Stage toStage(Transformation transformation) {
+public class ProcessingStageMapper {
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessingStageMapper.class);
+
+    public Stage fromTransformation(Transformation transformation) {
         try (var classLoader =
                      URLClassLoader.newInstance(
                              new URL[]{transformation.getProcessingSchemaLocation().toURI().toURL()},
@@ -31,10 +37,14 @@ public class TransformationToProcessingStageMapper {
             if (processingSchemaInstance instanceof ASTProcessingSchema) {
                 return ProcessingStage.builder()
                         .name(transformation.getProcessingSchemaClass())
-                        .processingUnitName(transformation.getTargetClassName())
+                        .processingUnitName(st -> transformation.getTargetClassName())
                         .processingUnitType(ComponentType.UNKNOWN.toString())
                         .processingUnitBasePackage(transformation.getTargetClassPackage())
-                        .processingUnitLocation(transformation.getTargetDirectory())
+                        .processingUnitLocation(
+                                ctx -> Path.of(
+                                        transformation.getTargetDirectory(),
+                                        StringUtils.replaceChars(transformation.getTargetClassPackage(), ".", File.separator),
+                                        transformation.getSourceClassName()).toString())
                         .processingSchema((ASTProcessingSchema) processingSchemaInstance)
                         .context(
                                 transformation
@@ -53,5 +63,22 @@ public class TransformationToProcessingStageMapper {
             LOG.error("Cannot map transformation to processing stage", e);
         }
         return null;
+    }
+
+    public Stage fromStage(Stage stage, ProcessingConfiguration configuration) {
+        var _stage = ProcessingStage.builder()
+                .name(stage.getName())
+                .processingSchema(stage.getProcessingSchema())
+                .context(stage.getContext())
+                .processingUnitBasePackage(StringUtils.replaceChars(configuration.getBaseLocation(), ".", "/"))
+                .processingUnitLocation(stage.getProcessingUnitLocation())
+                //.processingUnitName(stage.getProcessingUnitName())
+                .processingUnitType(stage.getProcessingUnitType())
+                .postProcessingAction(stage.getPostProcessingAction())
+                .namingStrategy(stage.getNamingStrategy())
+                .executingCondition(stage.getExecutingCondition())
+                .build();
+        LOG.info("!!!STAGE:"+_stage.getProcessingUnitBasePackage());
+        return _stage;
     }
 }

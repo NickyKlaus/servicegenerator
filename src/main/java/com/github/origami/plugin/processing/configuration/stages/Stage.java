@@ -5,17 +5,22 @@ import com.github.origami.api.ASTProcessingSchema;
 import com.github.origami.api.context.Context;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface Stage {
+    default boolean preventGeneration() {
+        return false;
+    }
+    Stage processingUnitBasePackage(String processingUnitBasePackage);
     ASTProcessingSchema getProcessingSchema();
     Context getContext();
-    String getProcessingUnitLocation();
+    Function<Context, String> getProcessingUnitLocation();
     String getName();
     Consumer<Context> getPostProcessingAction();
     Predicate<Context> getExecutingCondition();
     String getProcessingUnitType();
     NamingStrategy getNamingStrategy();
-    String getProcessingUnitName();
+    Function<Context, String> getProcessingUnitName();
     String getProcessingUnitBasePackage();
 }

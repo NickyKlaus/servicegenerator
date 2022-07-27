@@ -9,7 +9,7 @@ import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
 public interface ProcessingStrategy {
     void process(
-            Stage initialStage,
+            /*Stage initialStage,*/
             AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine,
             PluginConfiguration configuration
     );

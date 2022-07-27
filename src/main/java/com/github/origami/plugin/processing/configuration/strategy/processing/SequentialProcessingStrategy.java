@@ -11,14 +11,14 @@ import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 public class SequentialProcessingStrategy implements ProcessingStrategy {
     @Override
     public void process(
-            Stage initialStage,
+            /*Stage initialStage,*/
             AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine,
             PluginConfiguration configuration
     ) {
         // Process stages
         stateMachine
                 .fire(
-                        "GENERATE_" + initialStage.getName(),
-                        ProcessingContext.of(initialStage.getProcessingData()));
+                        "GENERATE_" + stateMachine.getInitialState().getName(),
+                        stateMachine.getInitialState().getContext());
     }
 }

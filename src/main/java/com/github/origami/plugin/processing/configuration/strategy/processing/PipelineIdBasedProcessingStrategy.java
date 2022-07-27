@@ -24,7 +24,7 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(PipelineIdBasedProcessingStrategy.class);
 
     @Override
-    public void process(Stage initialStage, AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine, PluginConfiguration configuration) {
+    public void process(/*Stage initialStage,*/ AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine, PluginConfiguration configuration) {
         // Process stages
         for (var controllerUnit : ProcessingUnitRegistry.find(MetaDataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.CONTROLLER)))) {
             for (var pipeline : PipelineStriping.makeStriping(controllerUnit.getCompilationUnit())) {
@@ -43,7 +43,7 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
                 stateMachine
                         .getAllStates()
                         .forEach(stage ->
-                            stage.getProcessingData()
+                            stage.getContext().getProperties()
                                     .putAll(
                                             Map.of(
                                                     PropertyName.PIPELINE.name(), pipeline,
@@ -52,8 +52,8 @@ public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
 
                 stateMachine
                         .fire(
-                                "GENERATE_" + initialStage.getName(),
-                                ProcessingContext.of(initialStage.getProcessingData()));
+                                "GENERATE_" + stateMachine.getInitialState().getName(),
+                                stateMachine.getInitialState().getContext());
             }
         }
     }

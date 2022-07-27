@@ -2,6 +2,7 @@ package com.github.origami.plugin.processing.processor;
 
 import com.github.origami.plugin.processing.configuration.ProcessingConfiguration;
 import com.github.origami.api.context.Context;
+import com.github.origami.plugin.processing.configuration.stages.ProcessingStageMapper;
 import com.github.origami.plugin.processing.configuration.stages.Stage;
 import com.github.origami.plugin.processing.statemachine.ProcessingStateMachine;
 
@@ -14,10 +15,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ProcessorConfigurator {
+    private final ProcessingStageMapper stageMapper;
     private final List<ProcessingConfiguration> processingConfigurations;
 
     public ProcessorConfigurator(List<ProcessingConfiguration> processingConfigurations) {
         this.processingConfigurations = processingConfigurations;
+        this.stageMapper = new ProcessingStageMapper();
     }
 
     public List<Processor> configure() {
@@ -34,13 +37,16 @@ public class ProcessorConfigurator {
             return null;
         }
 
+        var stages = processingConfiguration
+                .getProcessingPlan()
+                .getProcessingStages()
+                .stream()
+                .map(stage -> stageMapper.fromStage(stage, processingConfiguration))
+                .collect(Collectors.toUnmodifiableList());
+
         var stateMachineBuilder =
                 StateMachineBuilderFactory.create(ProcessingStateMachine.class, Stage.class, String.class, Context.class);
-        var _globalInitialStage = processingConfiguration.getProcessingPlan().getProcessingStages().get(0);
-
-        var stages = processingConfiguration.getProcessingPlan().getProcessingStages();
-
-        if (stages.isEmpty()) return null;
+        var _globalInitialStage = stages.get(0);
 
         IntStream.range(1, stages.size())
                 .mapToObj(i -> List.of(stages.get(i-1), stages.get(i)))
@@ -57,7 +63,7 @@ public class ProcessorConfigurator {
                                             new Condition<>() {
                                                 @Override
                                                 public boolean isSatisfied(Context context) {
-                                                    return fromStage.getExecutingStageCondition().test(context);
+                                                    return fromStage.getExecutingCondition().test(context);
                                                 }
 
                                                 @Override
@@ -79,7 +85,7 @@ public class ProcessorConfigurator {
                         new Condition<>() {
                             @Override
                             public boolean isSatisfied(Context context) {
-                                return lastStage.getExecutingStageCondition().test(context);
+                                return lastStage.getExecutingCondition().test(context);
                             }
 
                             @Override

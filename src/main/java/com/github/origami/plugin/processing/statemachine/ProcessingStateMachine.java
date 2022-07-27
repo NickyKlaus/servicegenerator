@@ -33,18 +33,21 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
 
     void generate(Stage fromState, Stage toState, String event, Context context) {
         try {
-            var generatedUnit = (CompilationUnit) DefaultGenerator.builder()
-                    .processingSchema(fromState.getSchema())
-                    .build()
-                    .generate(ProcessingUnitRegistry.getOrDefault(fromState.getSourceLocation()).getCompilationUnit(), context);
+            if (!fromState.preventGeneration()) {
+                LOG.info("!!!GENERATED:"+fromState.getProcessingUnitLocation().apply(fromState.getContext()));
+                var generatedUnit = (CompilationUnit) DefaultGenerator.builder()
+                        .processingSchema(fromState.getProcessingSchema())
+                        .build()
+                        .generate(ProcessingUnitRegistry.getOrDefault(fromState.getProcessingUnitLocation().apply(fromState.getContext())).getCompilationUnit(), context);
 
-            ProcessingUnitRegistry.save(ProcessingUnit.convert(generatedUnit));
+                ProcessingUnitRegistry.save(ProcessingUnit.convert(generatedUnit));
+            }
 
             if (toState != null) {
                 if (fromState == toState) {
                     return;
                 }
-                context.getProperties().putAll(toState.getProcessingData());
+                context.getProperties().putAll(toState.getContext().getProperties());
                 fire("GENERATE_" + toState.getName(), context);
             }
         } catch (MojoFailureException e) {

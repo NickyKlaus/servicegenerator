@@ -9,7 +9,9 @@ import com.github.origami.plugin.processing.configuration.strategy.naming.Schema
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ProcessingStage implements Stage {
@@ -20,55 +22,67 @@ public class ProcessingStage implements Stage {
     private Consumer<Context> postProcessingAction = ctx -> {};
     private Predicate<Context> executionCondition = ctx -> true;
     private String processingUnitType = StringUtils.EMPTY;
-    private String processingUnitName = "Component";
-    private String processingUnitLocation;
+    private Function<Context, String> processingUnitName;
+    private Function<Context, String> processingUnitLocation;
     private String processingUnitBasePackage = StringUtils.EMPTY;
 
     private ProcessingStage processingSchema(ASTProcessingSchema schema) {
         this.schema = schema;
         return this;
     }
+
     private ProcessingStage context(Map<String, Object> processingData) {
         this.context.getProperties().putAll(processingData);
         return this;
     }
+
     private ProcessingStage context(Context context) {
         this.context.getProperties().putAll(context.getProperties());
         return this;
     }
-    private ProcessingStage processingUnitLocation(String location) {
+
+    private ProcessingStage processingUnitLocation(Function<Context, String> location) {
         this.processingUnitLocation = location;
         return this;
     }
+
     private ProcessingStage name(String name) {
         this.name = name;
         return this;
     }
+
     private ProcessingStage postProcessingAction(Consumer<Context> action) {
         this.postProcessingAction = action;
         return this;
     }
+
     private ProcessingStage executingCondition(Predicate<Context> condition) {
         this.executionCondition = condition;
         return this;
     }
+
     private ProcessingStage processingUnitType(String processingUnitType) {
         this.processingUnitType = processingUnitType;
         return this;
     }
+
     private ProcessingStage namingStrategy(NamingStrategy namingStrategy) {
         this.namingStrategy = namingStrategy;
         return this;
     }
-    private ProcessingStage processingUnitName(String processingUnitName) {
+
+    private ProcessingStage processingUnitName(Function<Context, String> processingUnitName) {
         this.processingUnitName = processingUnitName;
         return this;
     }
-    private ProcessingStage processingUnitBasePackage(String processingUnitBasePackage) {
+
+    @Override
+    public ProcessingStage processingUnitBasePackage(String processingUnitBasePackage) {
         this.processingUnitBasePackage = processingUnitBasePackage;
         return this;
     }
-        @Override
+
+    @Override
     public ASTProcessingSchema getProcessingSchema() {
         return schema;
     }
@@ -79,7 +93,7 @@ public class ProcessingStage implements Stage {
     }
 
     @Override
-    public String getProcessingUnitLocation() {
+    public Function<Context, String> getProcessingUnitLocation() {
         return processingUnitLocation;
     }
 
@@ -109,7 +123,7 @@ public class ProcessingStage implements Stage {
     }
 
     @Override
-    public String getProcessingUnitName() {
+    public Function<Context, String> getProcessingUnitName() {
         return processingUnitName;
     }
 
@@ -130,8 +144,8 @@ public class ProcessingStage implements Stage {
         private Consumer<Context> postProcessingAction = ctx -> {};
         private Predicate<Context> executionCondition = ctx -> true;
         private String processingUnitType = StringUtils.EMPTY;
-        private String processingUnitName = "Component";
-        private String processingUnitLocation;
+        private Function<Context, String> processingUnitName;
+        private Function<Context, String> processingUnitLocation;
         private String processingUnitBasePackage = StringUtils.EMPTY;
 
         public Builder processingSchema(ASTProcessingSchema schema) {
@@ -149,7 +163,7 @@ public class ProcessingStage implements Stage {
             return this;
         }
 
-        public Builder processingUnitLocation(String location) {
+        public Builder processingUnitLocation(Function<Context, String> location) {
             this.processingUnitLocation = location;
             return this;
         }
@@ -179,7 +193,7 @@ public class ProcessingStage implements Stage {
             return this;
         }
 
-        public Builder processingUnitName(String processingUnitName) {
+        public Builder processingUnitName(Function<Context, String> processingUnitName) {
             this.processingUnitName = processingUnitName;
             return this;
         }

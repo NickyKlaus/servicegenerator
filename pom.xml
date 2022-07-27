@@ -190,6 +190,11 @@
 
         <!-- Swagger -->
         <dependency>
+            <groupId>io.swagger.parser.v3</groupId>
+            <artifactId>swagger-parser</artifactId>
+            <version>2.0.30</version>
+        </dependency>
+        <dependency>
             <groupId>io.swagger.codegen.v3</groupId>
             <artifactId>swagger-codegen-cli</artifactId>
             <version>${swagger-codegen-cli.version}</version>
@@ -249,14 +254,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${apache-commons-io.version}</version>
-            <optional>true</optional>
         </dependency>
 
         <!-- Testing -->

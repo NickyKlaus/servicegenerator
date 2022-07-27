@@ -38,16 +38,14 @@ public class Processor {
     }
 
     public void process(PluginConfiguration pluginConfiguration) {
-        stateMachine.start(
-                ProcessingContext.of(
-                        stateMachine.getInitialState().getProcessingData()));
+        stateMachine.start(stateMachine.getInitialState().getContext());
 
         registerGeneratedUnits(pluginConfiguration);
 
         processingConfiguration
                 .getProcessingStrategy()
                 .process(
-                        processingConfiguration.getProcessingPlan().getProcessingStages().get(0),
+                        //processingConfiguration.getProcessingPlan().getProcessingStages().get(0),
                         stateMachine,
                         pluginConfiguration);
 

@@ -6,16 +6,31 @@ import com.github.origami.plugin.processing.configuration.strategy.naming.Naming
 import com.github.origami.plugin.processing.configuration.strategy.naming.PipelineIdBasedNamingStrategy;
 import com.github.origami.api.ASTProcessingSchema;
 import com.github.origami.api.context.Context;
-import com.github.origami.plugin.processing.configuration.context.properties.ComponentPackage;
 import com.github.origami.plugin.processing.configuration.context.properties.ComponentType;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public enum InternalProcessingStage implements Stage {
+    INITIALIZE_PROCESSING_CONTEXT {
+        @Override
+        public boolean preventGeneration() {
+            return true;
+        }
+
+        @Override
+        public ASTProcessingSchema getProcessingSchema() {
+            return InternalProcessingSchema.InitializeProcessingContext;
+        }
+    },
+
     CREATE_REPOSITORY {
         @Override
         public ASTProcessingSchema getProcessingSchema() {
@@ -24,12 +39,12 @@ public enum InternalProcessingStage implements Stage {
 
         @Override
         public String getProcessingUnitType() {
-            return ComponentType.REPOSITORY.toString();
+            return ComponentType.REPOSITORY.getComponentType();
         }
 
         @Override
         public String getProcessingUnitBasePackage() {
-            return ComponentPackage.REPOSITORY.toString();
+            return ComponentType.REPOSITORY.getComponentPackage();
         }
     },
 
@@ -41,12 +56,12 @@ public enum InternalProcessingStage implements Stage {
 
         @Override
         public String getProcessingUnitType() {
-            return ComponentType.SERVICE.toString();
+            return ComponentType.SERVICE.getComponentType();
         }
 
         @Override
         public String getProcessingUnitBasePackage() {
-            return ComponentPackage.SERVICE.toString();
+            return ComponentType.SERVICE.getComponentPackage();
         }
     },
 
@@ -58,12 +73,12 @@ public enum InternalProcessingStage implements Stage {
 
         @Override
         public String getProcessingUnitType() {
-            return ComponentType.SERVICE_IMPLEMENTATION.toString();
+            return ComponentType.SERVICE_IMPLEMENTATION.getComponentType();
         }
 
         @Override
         public String getProcessingUnitBasePackage() {
-            return ComponentPackage.SERVICE_IMPLEMENTATION.toString();
+            return ComponentType.SERVICE_IMPLEMENTATION.getComponentPackage();
         }
     },
 
@@ -89,12 +104,12 @@ public enum InternalProcessingStage implements Stage {
 
         @Override
         public String getProcessingUnitType() {
-            return ComponentType.SERVICE.toString();
+            return ComponentType.SERVICE.getComponentType();
         }
 
         @Override
         public String getProcessingUnitBasePackage() {
-            return ComponentPackage.SERVICE.toString();
+            return ComponentType.SERVICE.getComponentPackage();
         }
     },
 
@@ -106,12 +121,12 @@ public enum InternalProcessingStage implements Stage {
 
         @Override
         public String getProcessingUnitType() {
-            return ComponentType.SERVICE_IMPLEMENTATION.toString();
+            return ComponentType.SERVICE_IMPLEMENTATION.getComponentType();
         }
 
         @Override
         public String getProcessingUnitBasePackage() {
-            return ComponentPackage.SERVICE_IMPLEMENTATION.toString();
+            return ComponentType.SERVICE_IMPLEMENTATION.getComponentPackage();
         }
     },
 
@@ -128,8 +143,8 @@ public enum InternalProcessingStage implements Stage {
     private Consumer<Context> postProcessingAction = ctx -> {};
     private Predicate<Context> executionCondition = ctx -> true;
     private String processingUnitType = StringUtils.EMPTY;
-    private String processingUnitName = "Component";
-    private String processingUnitLocation;
+    private Function<Context, String> processingUnitName = ctx -> "Component";
+    private Function<Context, String> processingUnitLocation;
     private String processingUnitBasePackage = StringUtils.EMPTY;
 
     public InternalProcessingStage processingSchema(ASTProcessingSchema schema) {
@@ -147,7 +162,7 @@ public enum InternalProcessingStage implements Stage {
         return this;
     }
 
-    public InternalProcessingStage processingUnitLocation(String location) {
+    public InternalProcessingStage processingUnitLocation(Function<Context, String> location) {
         this.processingUnitLocation = location;
         return this;
     }
@@ -176,7 +191,7 @@ public enum InternalProcessingStage implements Stage {
         return this;
     }
 
-    public InternalProcessingStage processingUnitName(String processingUnitName) {
+    public InternalProcessingStage processingUnitName(Function<Context, String> processingUnitName) {
         this.processingUnitName = processingUnitName;
         return this;
     }
@@ -197,8 +212,10 @@ public enum InternalProcessingStage implements Stage {
     }
 
     @Override
-    public String getProcessingUnitLocation() {
-        return processingUnitLocation;
+    public Function<Context, String> getProcessingUnitLocation() {
+        return ctx -> Path.of(
+                StringUtils.replaceChars(getProcessingUnitBasePackage(), ".", File.separator),
+                getProcessingUnitName().apply(ctx)).toString();
     }
 
     @Override
@@ -227,12 +244,13 @@ public enum InternalProcessingStage implements Stage {
     }
 
     @Override
-    public String getProcessingUnitName() {
-        return processingUnitName;
+    public Function<Context, String> getProcessingUnitName() {
+        return getNamingStrategy() == null ? processingUnitName : ctx -> getNamingStrategy().getName().apply(this, ctx);
+        //return getNamingStrategy() != null ? getNamingStrategy().getName().apply(this, getContext()) : processingUnitName;
     }
 
     @Override
     public String getProcessingUnitBasePackage() {
-        return processingUnitBasePackage;
+        return StringUtils.isEmpty(processingUnitBasePackage) ? getProcessingUnitType() : processingUnitBasePackage;
     }
 }
