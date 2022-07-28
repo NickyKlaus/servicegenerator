@@ -6,7 +6,7 @@
 
 **Origami** is a Maven plugin which allows of generation Java RESTful microservices using its definition in OpenAPI (Swagger) Specification format from standalone JSON file or being produced by any remote service description provider.
    
-**This plugin is experimental and should not be used in production.**
+⚠️**This plugin is experimental and should not be used in production.**
 
 For more information please see [documentation](https://nickyklaus.github.io/origami/).
 
