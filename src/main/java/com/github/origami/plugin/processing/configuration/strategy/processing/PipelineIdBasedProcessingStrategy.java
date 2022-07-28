@@ -1,6 +1,7 @@
 package com.github.origami.plugin.processing.configuration.strategy.processing;
 
 import com.github.origami.plugin.PluginConfiguration;
+import com.github.origami.plugin.db.filter.Filter;
 import com.github.origami.plugin.metadata.filter.MetaDataFilter;
 import com.github.origami.plugin.metadata.model.ComponentType;
 import com.github.origami.plugin.metadata.model.ProcessingUnitMetaDataModel;
@@ -22,38 +23,41 @@ import java.util.stream.Collectors;
 
 public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
     private static final Logger LOG = LoggerFactory.getLogger(PipelineIdBasedProcessingStrategy.class);
+    private static final Filter ALL_CONTROLLERS = MetaDataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.CONTROLLER));
+    private static final Filter ALL_MODELS = MetaDataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.MODEL));
 
     @Override
-    public void process(Stage initialStage, AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine, PluginConfiguration configuration) {
+    public void process(AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> stateMachine, PluginConfiguration configuration) {
         // Process stages
-        for (var controllerUnit : ProcessingUnitRegistry.find(MetaDataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.CONTROLLER)))) {
-            for (var pipeline : PipelineStriping.makeStriping(controllerUnit.getCompilationUnit())) {
+        for (var controllerUnitMeta : ProcessingUnitRegistry.findMetadata(ALL_CONTROLLERS)) {
+            for (var pipeline : PipelineStriping.makeStriping(ProcessingUnitRegistry.get(controllerUnitMeta.getPath()).getCompilationUnit())) {
                 var modelNames =
-                        ProcessingUnitRegistry.findMetadata(MetaDataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.MODEL)))
+                        ProcessingUnitRegistry.findMetadata(ALL_MODELS)
                                 .stream()
                                 .map(ProcessingUnitMetaDataModel::getName)
                                 .collect(Collectors.toUnmodifiableList());
 
-                //TODO change lookupPipelineId method to use String instead of Name!
                 var pipelineIdResolveResult = ResolverUtils.lookupPipelineId(pipeline, modelNames);
 
                 if (pipelineIdResolveResult.isEmpty()) continue;
 
-                //TODO refactor using Name in schema
-                stateMachine
-                        .getAllStates()
-                        .forEach(stage ->
-                            stage.getProcessingData()
-                                    .putAll(
-                                            Map.of(
-                                                    PropertyName.PIPELINE.name(), pipeline,
-                                                    PropertyName.PIPELINE_ID.name(), pipelineIdResolveResult.get(),
-                                                    PropertyName.CONTROLLER_UNIT.name(), controllerUnit)));
-
+                var initialContext =
+                        ProcessingContext.of(
+                                stateMachine
+                                        .getInitialState()
+                                        .getContext()
+                                        .getProperties());
+                initialContext
+                        .getProperties()
+                        .putAll(
+                                Map.of(
+                                        PropertyName.PIPELINE.name(), pipeline,
+                                        PropertyName.PIPELINE_ID.name(), pipelineIdResolveResult.get(),
+                                        PropertyName.CONTROLLER_UNIT_NAME.name(), controllerUnitMeta.getName()));
                 stateMachine
                         .fire(
-                                "GENERATE_" + initialStage.getName(),
-                                ProcessingContext.of(initialStage.getProcessingData()));
+                                "GENERATE_" + stateMachine.getInitialState().getName(),
+                                initialContext);
             }
         }
     }

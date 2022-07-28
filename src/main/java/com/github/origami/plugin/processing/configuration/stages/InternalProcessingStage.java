@@ -4,10 +4,8 @@ import com.github.origami.plugin.processing.configuration.context.ProcessingCont
 import com.github.origami.plugin.processing.configuration.schema.InternalProcessingSchema;
 import com.github.origami.plugin.processing.configuration.strategy.naming.NamingStrategy;
 import com.github.origami.plugin.processing.configuration.strategy.naming.PipelineIdBasedNamingStrategy;
-import com.github.origami.plugin.processing.configuration.strategy.naming.SimpleNamingStrategy;
 import com.github.origami.api.ASTProcessingSchema;
 import com.github.origami.api.context.Context;
-import com.github.origami.plugin.processing.configuration.context.properties.ComponentPackage;
 import com.github.origami.plugin.processing.configuration.context.properties.ComponentType;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,134 +16,120 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public enum InternalProcessingStage implements Stage {
+    INITIALIZE_PROCESSING_CONTEXT {
+        @Override
+        public boolean isNonGeneration() {
+            return true;
+        }
+
+        @Override
+        public ASTProcessingSchema getProcessingSchema() {
+            return InternalProcessingSchema.InitializeProcessingContext;
+        }
+    },
 
     CREATE_REPOSITORY {
         @Override
-        public ASTProcessingSchema getSchema() {
+        public ASTProcessingSchema getProcessingSchema() {
             return InternalProcessingSchema.CreateRepository;
         }
 
         @Override
-        public String getComponentPackage() {
-            return ComponentPackage.REPOSITORY.toString();
+        public String getProcessingUnitType() {
+            return ComponentType.REPOSITORY.getComponentType();
         }
 
         @Override
-        public String getComponentType() {
-            return ComponentType.REPOSITORY.toString();
-        }
-
-        @Override
-        public NamingStrategy getNamingStrategy() {
-            return new PipelineIdBasedNamingStrategy();
+        public String getProcessingUnitBasePackage() {
+            return ComponentType.REPOSITORY.getComponentPackage();
         }
     },
 
     CREATE_ABSTRACT_SERVICE {
         @Override
-        public ASTProcessingSchema getSchema() {
+        public ASTProcessingSchema getProcessingSchema() {
             return InternalProcessingSchema.CreateAbstractService;
         }
 
         @Override
-        public String getComponentPackage() {
-            return ComponentPackage.SERVICE.toString();
+        public String getProcessingUnitType() {
+            return ComponentType.SERVICE.getComponentType();
         }
 
         @Override
-        public String getComponentType() {
-            return ComponentType.SERVICE.toString();
-        }
-
-        @Override
-        public NamingStrategy getNamingStrategy() {
-            return new PipelineIdBasedNamingStrategy();
+        public String getProcessingUnitBasePackage() {
+            return ComponentType.SERVICE.getComponentPackage();
         }
     },
 
     CREATE_SERVICE_IMPLEMENTATION {
         @Override
-        public ASTProcessingSchema getSchema() {
+        public ASTProcessingSchema getProcessingSchema() {
             return InternalProcessingSchema.CreateServiceImplementation;
         }
 
         @Override
-        public String getComponentPackage() {
-            return ComponentPackage.SERVICE_IMPLEMENTATION.toString();
+        public String getProcessingUnitType() {
+            return ComponentType.SERVICE_IMPLEMENTATION.getComponentType();
         }
 
         @Override
-        public String getComponentType() {
-            return ComponentType.SERVICE_IMPLEMENTATION.toString();
-        }
-
-        @Override
-        public NamingStrategy getNamingStrategy() {
-            return new PipelineIdBasedNamingStrategy();
+        public String getProcessingUnitBasePackage() {
+            return ComponentType.SERVICE_IMPLEMENTATION.getComponentPackage();
         }
     },
 
     INJECT_SERVICE_INTO_CONTROLLER {
         @Override
-        public ASTProcessingSchema getSchema() {
+        public ASTProcessingSchema getProcessingSchema() {
             return InternalProcessingSchema.InjectServiceIntoController;
         }
     },
 
     EDIT_CONFIGURATION {
         @Override
-        public ASTProcessingSchema getSchema() {
+        public ASTProcessingSchema getProcessingSchema() {
             return InternalProcessingSchema.EditConfiguration;
         }
     },
 
     ADD_SERVICE_ABSTRACT_METHOD {
         @Override
-        public ASTProcessingSchema getSchema() {
+        public ASTProcessingSchema getProcessingSchema() {
             return InternalProcessingSchema.AddServiceAbstractMethod;
         }
 
         @Override
-        public String getComponentPackage() {
-            return ComponentPackage.SERVICE.toString();
+        public String getProcessingUnitType() {
+            return ComponentType.SERVICE.getComponentType();
         }
 
         @Override
-        public String getComponentType() {
-            return ComponentType.SERVICE.toString();
-        }
-
-        @Override
-        public NamingStrategy getNamingStrategy() {
-            return new PipelineIdBasedNamingStrategy();
+        public String getProcessingUnitBasePackage() {
+            return ComponentType.SERVICE.getComponentPackage();
         }
     },
 
     ADD_SERVICE_METHOD_IMPLEMENTATION {
         @Override
-        public ASTProcessingSchema getSchema() {
+        public ASTProcessingSchema getProcessingSchema() {
             return InternalProcessingSchema.AddServiceMethodImplementation;
         }
 
         @Override
-        public String getComponentPackage() {
-            return ComponentPackage.SERVICE_IMPLEMENTATION.toString();
+        public String getProcessingUnitType() {
+            return ComponentType.SERVICE_IMPLEMENTATION.getComponentType();
         }
 
         @Override
-        public String getComponentType() {
-            return ComponentType.SERVICE_IMPLEMENTATION.toString();
-        }
-
-        @Override
-        public NamingStrategy getNamingStrategy() {
-            return new PipelineIdBasedNamingStrategy();
+        public String getProcessingUnitBasePackage() {
+            return ComponentType.SERVICE_IMPLEMENTATION.getComponentPackage();
         }
     },
 
     ADD_CONTROLLER_METHOD_IMPLEMENTATION {
         @Override
-        public ASTProcessingSchema getSchema() {
+        public ASTProcessingSchema getProcessingSchema() {
             return InternalProcessingSchema.AddControllerMethodImplementation;
         }
     },
@@ -153,124 +137,121 @@ public enum InternalProcessingStage implements Stage {
 
     private ASTProcessingSchema schema;
     private final Context context = new ProcessingContext();
-    private String sourceLocation;
-    private Function<Context, String> sourceLocationProvider;
-    private Predicate<Context> executionCondition = ctx -> true;
     private Consumer<Context> postProcessingAction = ctx -> {};
-    private String componentPackage = StringUtils.EMPTY;
-    private String componentType = StringUtils.EMPTY;
-    private NamingStrategy namingStrategy = new SimpleNamingStrategy();
-    private String componentName = "Component";
+    private Predicate<Context> executionCondition = ctx -> true;
+    private String processingUnitType = StringUtils.EMPTY;
+    private Function<Context, String> processingUnitName;
+    private Function<Context, String> processingUnitLocation;
+    private String processingUnitBasePackage;
 
-    @Override
-    public Stage setComponentName(String componentName) {
-        this.componentName = componentName;
-        return this;
-    }
-
-    @Override
-    public String getComponentName() {
-        return this.componentName;
-    }
-    @Override
-    public NamingStrategy getNamingStrategy() {
-        return namingStrategy;
-    }
-
-    @Override
-    public Stage setNamingStrategy(NamingStrategy namingStrategy) {
-        this.namingStrategy = namingStrategy;
-        return this;
-    }
-
-    @Override
-    public Stage setComponentPackage(String packageName) {
-        this.componentPackage = packageName;
-        return this;
-    }
-
-    @Override
-    public String getComponentPackage() {
-        return this.componentPackage;
-    }
-
-    @Override
-    public Stage setComponentType(String componentType) {
-        this.componentType = componentType;
-        return this;
-    }
-
-    @Override
-    public String getComponentType() {
-        return this.componentType;
-    }
-
-
-    @Override
-    public Stage setSourceLocation(String sourceLocation) {
-        this.sourceLocationProvider = null;
-        this.sourceLocation = sourceLocation;
-        return this;
-    }
-
-    @Override
-    public Stage setSourceLocation(Function<Context, String> locationProvider) {
-        this.sourceLocation = null;
-        this.sourceLocationProvider = locationProvider;
-        return this;
-    }
-
-    @Override
-    public Stage setSchema(ASTProcessingSchema schema) {
+    public InternalProcessingStage processingSchema(ASTProcessingSchema schema) {
         this.schema = schema;
         return this;
     }
 
-    @Override
-    public ASTProcessingSchema getSchema() {
-        return schema;
-    }
-
-    @Override
-    public Map<String, Object> getProcessingData() {
-        return context.getProperties();
-    }
-
-    @Override
-    public Stage setProcessingData(Map<String, Object> processingData) {
+    public InternalProcessingStage context(Map<String, Object> processingData) {
         this.context.getProperties().putAll(processingData);
         return this;
     }
 
+    public InternalProcessingStage context(Context context) {
+        this.context.getProperties().putAll(context.getProperties());
+        return this;
+    }
+
+    public InternalProcessingStage processingUnitLocation(Function<Context, String> location) {
+        this.processingUnitLocation = location;
+        return this;
+    }
+
+    public InternalProcessingStage name(String name) {
+        // Use name() method of Enum
+        return this;
+    }
+
+    public InternalProcessingStage postProcessingAction(Consumer<Context> action) {
+        this.postProcessingAction = action;
+        return this;
+    }
+
+    public InternalProcessingStage executingCondition(Predicate<Context> condition) {
+        this.executionCondition = condition;
+        return this;
+    }
+
+    public InternalProcessingStage processingUnitType(String processingUnitType) {
+        this.processingUnitType = processingUnitType;
+        return this;
+    }
+
+    public InternalProcessingStage namingStrategy(NamingStrategy namingStrategy) {
+        return this;
+    }
+
+    public InternalProcessingStage processingUnitName(Function<Context, String> processingUnitName) {
+        this.processingUnitName = processingUnitName;
+        return this;
+    }
+
+    public InternalProcessingStage processingUnitBasePackage(String processingUnitBasePackage) {
+        this.processingUnitBasePackage = processingUnitBasePackage;
+        return this;
+    }
+
     @Override
-    public String getSourceLocation() {
-        return sourceLocationProvider == null ? sourceLocation : sourceLocationProvider.apply(context);
+    public boolean isNonGeneration() {
+        return false;
+    }
+
+    @Override
+    public ASTProcessingSchema getProcessingSchema() {
+        return schema;
+    }
+
+    @Override
+    public Context getContext() {
+        return context;
+    }
+
+    @Override
+    public Function<Context, String> getProcessingUnitLocation() {
+        return processingUnitLocation;
     }
 
     @Override
     public String getName() {
-        return this.name();
-    }
-
-    @Override
-    public Predicate<Context> getExecutingStageCondition() {
-        return executionCondition;
-    }
-
-    @Override
-    public Stage setExecutingStageCondition(Predicate<Context> executionCondition) {
-        this.executionCondition = executionCondition;
-        return this;
-    }
-
-    @Override
-    public Stage postProcessingAction(Consumer<Context> action) {
-        this.postProcessingAction = action;
-        return this;
+        return name();
     }
 
     @Override
     public Consumer<Context> getPostProcessingAction() {
         return postProcessingAction;
+    }
+
+    @Override
+    public Predicate<Context> getExecutingCondition() {
+        return executionCondition;
+    }
+
+    @Override
+    public String getProcessingUnitType() {
+        return processingUnitType;
+    }
+
+    @Override
+    public NamingStrategy getNamingStrategy() {
+        return new PipelineIdBasedNamingStrategy();
+    }
+
+    @Override
+    public Function<Context, String> getProcessingUnitName() {
+        return processingUnitName == null ?
+                ctx -> getNamingStrategy().getName().apply(this, ctx) :
+                processingUnitName;
+    }
+
+    @Override
+    public String getProcessingUnitBasePackage() {
+        return processingUnitBasePackage;
     }
 }

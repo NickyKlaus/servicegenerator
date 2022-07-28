@@ -1,8 +1,11 @@
 package com.github.origami.plugin.utils;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
+import com.github.origami.plugin.processing.configuration.strategy.matchmethod.MatchingMethodStrategy;
 
+import java.util.List;
 import java.util.Optional;
 
 public class CompilationUnitUtils {
@@ -19,5 +22,20 @@ public class CompilationUnitUtils {
                             .setIdentifier(unit.getPrimaryTypeName().get()));
         }
         return Optional.empty();
+    }
+
+    public static Optional<MethodDeclaration> getMethodMatchedWithPipeline(
+            final MethodDeclaration pipeline,
+            final List<MethodDeclaration> checkedMethods,
+            final Name pipelineId,
+            final MatchingMethodStrategy matchMethodStrategy
+    ) {
+        return checkedMethods
+                .stream()
+                .filter(checkedMethod -> matchMethodStrategy
+                        .matchMethods(pipelineId.getIdentifier())
+                        .test(pipeline, checkedMethod))
+                .map(m -> MethodNormalizer.denormalize(m, pipelineId.getIdentifier(), NormalizerUtils.REPLACING_MODEL_TYPE_SYMBOL))
+                .findFirst();
     }
 }

@@ -5,6 +5,7 @@ import com.github.origami.plugin.processing.configuration.strategy.naming.Naming
 import com.github.origami.plugin.processing.configuration.strategy.processing.ProcessingStrategy;
 
 public class DefaultProcessingConfiguration implements ProcessingConfiguration {
+    private String baseLocation;
     private ProcessingPlan processingPlan;
     private ProcessingStrategy processingStrategy;
     private NamingStrategy namingStrategy;
@@ -14,6 +15,12 @@ public class DefaultProcessingConfiguration implements ProcessingConfiguration {
 
     public static ProcessingConfiguration configuration() {
         return new DefaultProcessingConfiguration();
+    }
+
+    @Override
+    public ProcessingConfiguration baseLocation(String baseLocation) {
+        this.baseLocation = baseLocation;
+        return this;
     }
 
     @Override
@@ -32,6 +39,11 @@ public class DefaultProcessingConfiguration implements ProcessingConfiguration {
     public ProcessingConfiguration namingStrategy(final NamingStrategy strategy) {
         this.namingStrategy = strategy;
         return this;
+    }
+
+    @Override
+    public String getBaseLocation() {
+        return baseLocation;
     }
 
     @Override

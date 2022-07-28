@@ -6,12 +6,13 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.utils.SourceRoot;
 import com.github.origami.plugin.PluginConfiguration;
-import com.github.origami.plugin.utils.FileUtils;
 import com.github.origami.plugin.utils.ResolverUtils;
 import com.github.origami.plugin.processing.configuration.schema.InternalProcessingSchema;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoFailureException;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -78,20 +79,11 @@ public class UnitScanner implements Scanner {
     }
 
     private static SourceRoot prepareSourceRoot(final PluginConfiguration configuration) throws IOException {
-        return new SourceRoot(
-                        FileUtils.createDirPath(
-                                configuration.getProjectOutputDirectory(),
-                                configuration.getSourcesLocation(),
-                                configuration.getBasePackage(),
-                                ""),
-                        new ParserConfiguration()
-                                .setSymbolResolver(
-                                        ResolverUtils.createJavaSymbolSolver(
-                                                FileUtils.createDirPath(
-                                                        configuration.getProjectOutputDirectory(),
-                                                        configuration.getSourcesLocation(),
-                                                        configuration.getBasePackage(),
-                                                        ""))));
+        var path = Path.of(
+                configuration.getProjectOutputDirectory(),
+                configuration.getSourcesLocation(),
+                StringUtils.replace(configuration.getBasePackage(), ".", File.separator));
+        return new SourceRoot(path, new ParserConfiguration().setSymbolResolver(ResolverUtils.createJavaSymbolSolver(path)));
     }
 
     @Override

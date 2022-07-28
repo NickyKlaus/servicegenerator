@@ -1,57 +1,24 @@
 package com.github.origami.plugin.processing.configuration.stages;
 
 import com.github.origami.plugin.processing.configuration.strategy.naming.NamingStrategy;
-import com.github.origami.plugin.processing.configuration.strategy.naming.SimpleNamingStrategy;
 import com.github.origami.api.ASTProcessingSchema;
 import com.github.origami.api.context.Context;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface Stage {
-    default Stage setSchema(ASTProcessingSchema schema) {
-        // method does not change the object state (schema must be predefined in constructor)
-        return this;
-    }
-    ASTProcessingSchema getSchema();
-    Map<String, Object> getProcessingData();
-    Stage setProcessingData(Map<String, Object> processingData);
-    String getSourceLocation();
-    Stage setSourceLocation(String sourceLocation);
+    Stage processingUnitBasePackage(String processingUnitBasePackage);
+    boolean isNonGeneration();
+    ASTProcessingSchema getProcessingSchema();
+    Context getContext();
+    Function<Context, String> getProcessingUnitLocation();
     String getName();
-    Stage postProcessingAction(Consumer<Context> action);
-    default Consumer<Context> getPostProcessingAction() {
-        return ctx -> {};
-    }
-    Stage setSourceLocation(Function<Context, String> locationProvider);
-    default Predicate<Context> getExecutingStageCondition() {
-        return ctx -> true;
-    }
-    Stage setExecutingStageCondition(Predicate<Context> condition);
-    Stage setComponentPackage(String packageName);
-    default String getComponentPackage() {
-        return StringUtils.EMPTY;
-    }
-    default Stage setComponentType(String componentType) {
-        return this;
-    }
-    default String getComponentType() {
-        return StringUtils.EMPTY;
-    }
-    default NamingStrategy getNamingStrategy() {
-        return new SimpleNamingStrategy();
-    }
-    default Stage setNamingStrategy(NamingStrategy namingStrategy) {
-        return this;
-    }
-    default Stage setComponentName(String componentName) {
-        return this;
-    }
-    default String getComponentName() {
-        return "Component";
-    }
+    Consumer<Context> getPostProcessingAction();
+    Predicate<Context> getExecutingCondition();
+    String getProcessingUnitType();
+    NamingStrategy getNamingStrategy();
+    Function<Context, String> getProcessingUnitName();
+    String getProcessingUnitBasePackage();
 }

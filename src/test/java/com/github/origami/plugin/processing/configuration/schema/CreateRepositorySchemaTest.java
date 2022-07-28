@@ -1,7 +1,7 @@
 package com.github.origami.plugin.processing.configuration.schema;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
@@ -31,27 +31,32 @@ public class CreateRepositorySchemaTest {
             new Name()
                     .setQualifier(new Name("com.github.origami.plugin.schemas"))
                     .setIdentifier(TestModel.class.getSimpleName());
+    private static final String CONTROLLER_METHOD_DECLARATION = "public List<TestModel> getTestModels();";
     private static CompilationUnit repositoryClassUnit;
 
     @BeforeAll
     static void initGenerator() {
-        var generator =
-                DefaultGenerator
-                        .builder()
-                        .processingSchema(InternalProcessingSchema.CreateRepository)
-                        .build();
-        var controllerMethodDeclaration = new MethodDeclaration();
-        var context =
-                new ProcessingContext(
-                        Map.ofEntries(
-                                Map.entry(PropertyName.PIPELINE.name(), controllerMethodDeclaration),
-                                Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
-                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(), REPOSITORY_PACKAGE_NAME),
-                                Map.entry(PropertyName.REPOSITORY_NAME.name(), REPOSITORY_NAME),
-                                Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME.name(), REPOSITORY_ID_CLASS),
-                                Map.entry(PropertyName.DB_TYPE.name(), DB_NAME)
-                        ));
-        repositoryClassUnit = (CompilationUnit) generator.generate(new CompilationUnit(), context);
+        var parsingMethodResult =
+                new JavaParser().parseMethodDeclaration(CONTROLLER_METHOD_DECLARATION);
+        if (parsingMethodResult.isSuccessful() && parsingMethodResult.getResult().isPresent()) {
+            var generator =
+                    DefaultGenerator
+                            .builder()
+                            .processingSchema(InternalProcessingSchema.CreateRepository)
+                            .build();
+            var controllerMethodDeclaration = parsingMethodResult.getResult().get();
+            var context =
+                    new ProcessingContext(
+                            Map.ofEntries(
+                                    Map.entry(PropertyName.PIPELINE.name(), controllerMethodDeclaration),
+                                    Map.entry(PropertyName.PIPELINE_ID.name(), modelClassName),
+                                    Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(), REPOSITORY_PACKAGE_NAME),
+                                    Map.entry(PropertyName.REPOSITORY_NAME.name(), REPOSITORY_NAME),
+                                    Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME.name(), REPOSITORY_ID_CLASS),
+                                    Map.entry(PropertyName.DB_TYPE.name(), DB_NAME)
+                            ));
+            repositoryClassUnit = (CompilationUnit) generator.generate(new CompilationUnit(), context);
+        }
     }
 
     @Test

@@ -15,11 +15,16 @@ public final class ProcessingPlan {
     }
 
     public ProcessingPlan stage(final Stage stage) {
-        stages.add(stage);
+        this.stages.add(stage);
+        return this;
+    }
+
+    public ProcessingPlan stages(final List<Stage> stages) {
+        this.stages.addAll(stages);
         return this;
     }
 
     public List<Stage> getProcessingStages() {
-        return Collections.unmodifiableList(stages);
+        return Collections.unmodifiableList(this.stages);
     }
 }
