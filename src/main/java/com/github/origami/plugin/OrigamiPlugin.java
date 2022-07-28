@@ -9,7 +9,6 @@ import com.github.origami.plugin.processing.configuration.stages.ProcessingPlan;
 import com.github.origami.plugin.processing.configuration.strategy.processing.SequentialProcessingStrategy;
 import com.github.origami.plugin.processing.container.ProcessingContainer;
 import com.github.origami.plugin.processing.configuration.context.properties.PropertyName;
-import com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage;
 import com.github.origami.plugin.processing.configuration.strategy.naming.PipelineIdBasedNamingStrategy;
 import com.github.origami.plugin.processing.configuration.strategy.processing.PipelineIdBasedProcessingStrategy;
 
@@ -22,82 +21,111 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage.ADD_CONTROLLER_METHOD_IMPLEMENTATION;
+import static com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage.ADD_SERVICE_ABSTRACT_METHOD;
+import static com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage.ADD_SERVICE_METHOD_IMPLEMENTATION;
+import static com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage.CREATE_ABSTRACT_SERVICE;
+import static com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage.CREATE_REPOSITORY;
+import static com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage.CREATE_SERVICE_IMPLEMENTATION;
+import static com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage.EDIT_CONFIGURATION;
+import static com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage.INITIALIZE_PROCESSING_CONTEXT;
+import static com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage.INJECT_SERVICE_INTO_CONTROLLER;
+
 /**
- * Goal which generates microservice based on declared logic.
+ * <b>Origami</b> is a Maven plugin which allows of generation Java RESTful microservices using its
+ * description in OpenAPI (Swagger) Specification format from standalone JSON file or being produced by any remote service description provider.
+ *
+ * @author NickyKlaus
  */
 @Mojo(name = "generate-service", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
+    /**
+     * Declares a sequence of preconfigured internal processing stages and describes a predefined generating source code of microservice
+     *
+     * @see com.github.origami.plugin.processing.configuration.stages.InternalProcessingStage
+     */
     private ProcessingPlan internalProcessingPlan() {
         return ProcessingPlan
                 .processingPlan()
-                .stage(
-                        InternalProcessingStage.INITIALIZE_PROCESSING_CONTEXT
-                                .context(
-                                        Map.ofEntries(
-                                                Map.entry(PropertyName.BASE_PACKAGE.name(), getBasePackage()),
-                                                Map.entry(PropertyName.DB_TYPE.name(), getDbType()),
-                                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(), getBasePackage() + ".repository"),
-                                                Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME.name(), Long.class.getSimpleName()),
-                                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(), getBasePackage() + ".service"))))
-                .stage(InternalProcessingStage.CREATE_REPOSITORY)
-                .stage(InternalProcessingStage.CREATE_ABSTRACT_SERVICE)
-                .stage(
-                        InternalProcessingStage.INJECT_SERVICE_INTO_CONTROLLER
-                                .processingUnitBasePackage(getControllerPackage())
-                                .processingUnitName(ctx -> ctx.get(PropertyName.CONTROLLER_UNIT_NAME.name(), Name.class).getIdentifier()))
-                .stage(InternalProcessingStage.CREATE_SERVICE_IMPLEMENTATION)
-                .stage(InternalProcessingStage.ADD_SERVICE_ABSTRACT_METHOD)
-                .stage(InternalProcessingStage.ADD_SERVICE_METHOD_IMPLEMENTATION)
-                .stage(
-                        InternalProcessingStage.EDIT_CONFIGURATION
-                                .processingUnitBasePackage(getConfigurationPackage())
-                                .processingUnitName(ctx -> "Swagger2SpringBoot"))
-                .stage(
-                        InternalProcessingStage.ADD_CONTROLLER_METHOD_IMPLEMENTATION
-                                .processingUnitBasePackage(getControllerPackage())
-                                .processingUnitName(ctx -> ctx.get(PropertyName.CONTROLLER_UNIT_NAME.name(), Name.class).getIdentifier()));
+                .stage(INITIALIZE_PROCESSING_CONTEXT
+                        .context(Map.ofEntries(
+                                Map.entry(PropertyName.BASE_PACKAGE.name(), getBasePackage()),
+                                Map.entry(PropertyName.DB_TYPE.name(), getDbType()),
+                                Map.entry(PropertyName.REPOSITORY_PACKAGE_NAME.name(), getBasePackage() + ".repository"),
+                                Map.entry(PropertyName.REPOSITORY_ID_CLASS_NAME.name(), Long.class.getSimpleName()),
+                                Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(), getBasePackage() + ".service"))))
+                .stage(CREATE_REPOSITORY)
+                .stage(CREATE_ABSTRACT_SERVICE)
+                .stage(INJECT_SERVICE_INTO_CONTROLLER
+                        .processingUnitBasePackage(getControllerPackage())
+                        .processingUnitName(ctx -> ctx.get(PropertyName.CONTROLLER_UNIT_NAME.name(), Name.class).getIdentifier()))
+                .stage(CREATE_SERVICE_IMPLEMENTATION)
+                .stage(ADD_SERVICE_ABSTRACT_METHOD)
+                .stage(ADD_SERVICE_METHOD_IMPLEMENTATION)
+                .stage(EDIT_CONFIGURATION
+                        .processingUnitBasePackage(getConfigurationPackage())
+                        .processingUnitName("Swagger2SpringBoot"))
+                .stage(ADD_CONTROLLER_METHOD_IMPLEMENTATION
+                        .processingUnitBasePackage(getControllerPackage())
+                        .processingUnitName(ctx -> ctx.get(PropertyName.CONTROLLER_UNIT_NAME.name(), Name.class).getIdentifier()));
     }
 
+    /**
+     * Declares a sequence of external processing stages and describes user-defined source code changes
+     *
+     * @see com.github.origami.plugin.processing.configuration.stages.ProcessingStage
+     */
     private ProcessingPlan externalProcessingPlan() {
         var transformationToProcessingStageMapper = new ProcessingStageMapper();
         return ProcessingPlan
                 .processingPlan()
-                .stages(
-                        getTransformations()
-                                .stream()
-                                .map(transformationToProcessingStageMapper::fromTransformation)
-                                .collect(Collectors.toUnmodifiableList()));
+                .stages(getTransformations()
+                        .stream()
+                        .map(transformationToProcessingStageMapper::fromTransformation)
+                        .collect(Collectors.toUnmodifiableList()));
     }
 
+    /**
+     * Internal processing configuration customizes a common source code generation process
+     *
+     * @see PipelineIdBasedProcessingStrategy
+     * @see PipelineIdBasedNamingStrategy
+     */
     private ProcessingConfiguration internalProcessingConfiguration() {
         return DefaultProcessingConfiguration
                 .configuration()
-                .baseLocation(
-                        Path.of(
-                                getProjectOutputDirectory(),
-                                getSourcesDirectory(),
-                                getBasePackage()).toString())
+                .baseLocation(Path.of(
+                        getProjectOutputDirectory(),
+                        getSourcesDirectory(),
+                        getBasePackage()).toString())
                 .processingPlan(internalProcessingPlan())
                 .processingStrategy(new PipelineIdBasedProcessingStrategy())
                 .namingStrategy(new PipelineIdBasedNamingStrategy());
     }
 
+    /**
+     * External processing configuration customizes an user-defined source code generation process
+     *
+     * @see SequentialProcessingStrategy
+     * @see PipelineIdBasedNamingStrategy
+     */
     private ProcessingConfiguration externalProcessingConfiguration() {
         return DefaultProcessingConfiguration
                 .configuration()
-                .baseLocation(
-                        Path.of(
-                                getProjectOutputDirectory(),
-                                getSourcesDirectory()).toString())
+                .baseLocation(Path.of(
+                        getProjectOutputDirectory(),
+                        getSourcesDirectory()).toString())
                 .processingPlan(externalProcessingPlan())
                 .processingStrategy(new SequentialProcessingStrategy())
                 .namingStrategy(new PipelineIdBasedNamingStrategy());
     }
 
     /**
-     * Generate microservice stub by OpenAPI/Swagger Specification
+     * Generates Spring Boot microservice stub by OpenAPI/Swagger Specification
      *
-     * Produces SpringApplication class with configuration, Controller, Model classes
+     * Produces common templates of configuration, controller and model classes
+     *
+     * @see Generate
      */
     private void generateStub() {
         Generate generate = new Generate();

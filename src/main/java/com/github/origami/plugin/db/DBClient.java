@@ -9,12 +9,7 @@ import org.dizitart.no2.store.memory.InMemoryStoreModule;
 public class DBClient implements AutoCloseable {
     public static final DBClient INSTANCE = new DBClient();
     private static final Nitrite _db =
-            Nitrite.builder()
-                    .loadModule(
-                            InMemoryStoreModule
-                                    .withConfig()
-                                    .build())
-                    .openOrCreate();
+            Nitrite.builder().loadModule(InMemoryStoreModule.withConfig().build()).openOrCreate();
 
     private DBClient() {
     }

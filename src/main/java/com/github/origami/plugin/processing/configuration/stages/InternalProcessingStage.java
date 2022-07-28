@@ -193,6 +193,11 @@ public enum InternalProcessingStage implements Stage {
         return this;
     }
 
+    public InternalProcessingStage processingUnitName(String processingUnitName) {
+        this.processingUnitName = ctx -> processingUnitName;
+        return this;
+    }
+
     public InternalProcessingStage processingUnitBasePackage(String processingUnitBasePackage) {
         this.processingUnitBasePackage = processingUnitBasePackage;
         return this;

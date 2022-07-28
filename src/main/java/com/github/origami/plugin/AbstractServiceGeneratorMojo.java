@@ -9,10 +9,6 @@ import org.apache.maven.project.MavenProject;
 import java.util.List;
 
 public abstract class AbstractServiceGeneratorMojo extends AbstractMojo {
-    /**
-     * Mappings for locations of base classes and corresponding processing schemas (location and class name).
-     * Plugin uses processing schema mapped to base class to transform it and generate resulted version of this class.
-     */
     @Parameter(required = true)
     private String inputSpec;
 

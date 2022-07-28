@@ -35,7 +35,6 @@ public class PipelineStriping {
                     method.isAnnotationPresent(SPRING_REQUEST_MAPPING_ANNOTATION_NAME_SHORT);
 
     private PipelineStriping() {
-        // Don't need for utility class
     }
 
     public static List<MethodDeclaration> makeStriping(final CompilationUnit controller) {

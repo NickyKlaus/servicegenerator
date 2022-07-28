@@ -14,15 +14,15 @@ import com.github.origami.plugin.processing.configuration.stages.Stage;
 import com.github.origami.plugin.processing.configuration.strategy.PipelineStriping;
 import com.github.origami.plugin.processing.statemachine.ProcessingStateMachine;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Processing strategy based on 'pipeline striping' procedure
+ */
 public class PipelineIdBasedProcessingStrategy implements ProcessingStrategy {
-    private static final Logger LOG = LoggerFactory.getLogger(PipelineIdBasedProcessingStrategy.class);
     private static final Filter ALL_CONTROLLERS = MetaDataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.CONTROLLER));
     private static final Filter ALL_MODELS = MetaDataFilter.of(String.format("{ \"type\": \"%s\" }", ComponentType.MODEL));
 
