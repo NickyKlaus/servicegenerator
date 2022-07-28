@@ -15,10 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
 import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.StringUtils.getIfEmpty;
 
 public class ProcessingStageMapper {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingStageMapper.class);
@@ -39,12 +36,8 @@ public class ProcessingStageMapper {
                         .name(transformation.getProcessingSchemaClass())
                         .processingUnitName(st -> transformation.getTargetClassName())
                         .processingUnitType(ComponentType.UNKNOWN.toString())
-                        .processingUnitBasePackage(transformation.getTargetClassPackage())
-                        .processingUnitLocation(
-                                ctx -> Path.of(
-                                        transformation.getTargetDirectory(),
-                                        StringUtils.replaceChars(transformation.getTargetClassPackage(), ".", File.separator),
-                                        transformation.getSourceClassName()).toString())
+                        .processingUnitBasePackage(StringUtils.replaceChars(transformation.getTargetClassPackage(), ".", File.separator))
+                        .processingUnitLocation(ctx -> transformation.getTargetDirectory())
                         .processingSchema((ASTProcessingSchema) processingSchemaInstance)
                         .context(
                                 transformation
@@ -66,19 +59,18 @@ public class ProcessingStageMapper {
     }
 
     public Stage fromStage(Stage stage, ProcessingConfiguration configuration) {
-        var _stage = ProcessingStage.builder()
+        return ProcessingStage.builder()
                 .name(stage.getName())
+                .nonGeneration(stage.isNonGeneration())
                 .processingSchema(stage.getProcessingSchema())
                 .context(stage.getContext())
-                .processingUnitBasePackage(StringUtils.replaceChars(configuration.getBaseLocation(), ".", "/"))
-                .processingUnitLocation(stage.getProcessingUnitLocation())
-                //.processingUnitName(stage.getProcessingUnitName())
+                .processingUnitBasePackage(stage.getProcessingUnitBasePackage())
+                .processingUnitLocation(ctx -> StringUtils.replaceChars(configuration.getBaseLocation(), ".", File.separator))
+                .processingUnitName(stage.getProcessingUnitName())
                 .processingUnitType(stage.getProcessingUnitType())
                 .postProcessingAction(stage.getPostProcessingAction())
                 .namingStrategy(stage.getNamingStrategy())
                 .executingCondition(stage.getExecutingCondition())
                 .build();
-        LOG.info("!!!STAGE:"+_stage.getProcessingUnitBasePackage());
-        return _stage;
     }
 }

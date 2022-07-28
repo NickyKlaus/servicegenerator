@@ -7,7 +7,7 @@ import java.util.function.BiFunction;
 
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
-public class SchemaClassBasedNamingStrategy implements NamingStrategy {
+public class SchemaNameBasedNamingStrategy implements NamingStrategy {
     @Override
     public BiFunction<Stage, Context, String> getName() {
         return (stage, ctx) -> capitalize(stage.getProcessingSchema().getClass().getSimpleName());

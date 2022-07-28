@@ -9,10 +9,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface Stage {
-    default boolean preventGeneration() {
-        return false;
-    }
     Stage processingUnitBasePackage(String processingUnitBasePackage);
+    boolean isNonGeneration();
     ASTProcessingSchema getProcessingSchema();
     Context getContext();
     Function<Context, String> getProcessingUnitLocation();

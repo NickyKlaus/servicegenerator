@@ -10,10 +10,7 @@ import com.github.origami.plugin.processing.configuration.context.properties.Com
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -21,7 +18,7 @@ import java.util.function.Predicate;
 public enum InternalProcessingStage implements Stage {
     INITIALIZE_PROCESSING_CONTEXT {
         @Override
-        public boolean preventGeneration() {
+        public boolean isNonGeneration() {
             return true;
         }
 
@@ -143,9 +140,9 @@ public enum InternalProcessingStage implements Stage {
     private Consumer<Context> postProcessingAction = ctx -> {};
     private Predicate<Context> executionCondition = ctx -> true;
     private String processingUnitType = StringUtils.EMPTY;
-    private Function<Context, String> processingUnitName = ctx -> "Component";
+    private Function<Context, String> processingUnitName;
     private Function<Context, String> processingUnitLocation;
-    private String processingUnitBasePackage = StringUtils.EMPTY;
+    private String processingUnitBasePackage;
 
     public InternalProcessingStage processingSchema(ASTProcessingSchema schema) {
         this.schema = schema;
@@ -202,6 +199,11 @@ public enum InternalProcessingStage implements Stage {
     }
 
     @Override
+    public boolean isNonGeneration() {
+        return false;
+    }
+
+    @Override
     public ASTProcessingSchema getProcessingSchema() {
         return schema;
     }
@@ -213,9 +215,7 @@ public enum InternalProcessingStage implements Stage {
 
     @Override
     public Function<Context, String> getProcessingUnitLocation() {
-        return ctx -> Path.of(
-                StringUtils.replaceChars(getProcessingUnitBasePackage(), ".", File.separator),
-                getProcessingUnitName().apply(ctx)).toString();
+        return processingUnitLocation;
     }
 
     @Override
@@ -245,12 +245,13 @@ public enum InternalProcessingStage implements Stage {
 
     @Override
     public Function<Context, String> getProcessingUnitName() {
-        return getNamingStrategy() == null ? processingUnitName : ctx -> getNamingStrategy().getName().apply(this, ctx);
-        //return getNamingStrategy() != null ? getNamingStrategy().getName().apply(this, getContext()) : processingUnitName;
+        return processingUnitName == null ?
+                ctx -> getNamingStrategy().getName().apply(this, ctx) :
+                processingUnitName;
     }
 
     @Override
     public String getProcessingUnitBasePackage() {
-        return StringUtils.isEmpty(processingUnitBasePackage) ? getProcessingUnitType() : processingUnitBasePackage;
+        return processingUnitBasePackage;
     }
 }

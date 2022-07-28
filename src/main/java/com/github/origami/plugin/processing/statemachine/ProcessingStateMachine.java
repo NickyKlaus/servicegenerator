@@ -12,10 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.squirrelframework.foundation.fsm.impl.AbstractStateMachine;
 
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 public class ProcessingStateMachine extends AbstractStateMachine<ProcessingStateMachine, Stage, String, Context> {
     private static final Logger LOG = LoggerFactory.getLogger(ProcessingStateMachine.class);
+    private static final String JAVA_EXT = ".java";
     private final Consumer<ProcessingUnit> savingAction =
             (unit) -> {
                 try {
@@ -33,12 +35,19 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
 
     void generate(Stage fromState, Stage toState, String event, Context context) {
         try {
-            if (!fromState.preventGeneration()) {
-                LOG.info("!!!GENERATED:"+fromState.getProcessingUnitLocation().apply(fromState.getContext()));
+            fromState.getContext().getProperties().putAll(
+                    context.getProperties()
+            );
+            if (!fromState.isNonGeneration()) {
+                var unitAbsolutePath = Path.of(
+                        fromState.getProcessingUnitLocation().apply(fromState.getContext()),
+                        fromState.getProcessingUnitBasePackage(),
+                        fromState.getProcessingUnitName().apply(fromState.getContext())) + JAVA_EXT;
+
                 var generatedUnit = (CompilationUnit) DefaultGenerator.builder()
                         .processingSchema(fromState.getProcessingSchema())
                         .build()
-                        .generate(ProcessingUnitRegistry.getOrDefault(fromState.getProcessingUnitLocation().apply(fromState.getContext())).getCompilationUnit(), context);
+                        .generate(ProcessingUnitRegistry.getOrDefault(unitAbsolutePath).getCompilationUnit(), context);
 
                 ProcessingUnitRegistry.save(ProcessingUnit.convert(generatedUnit));
             }
@@ -47,8 +56,10 @@ public class ProcessingStateMachine extends AbstractStateMachine<ProcessingState
                 if (fromState == toState) {
                     return;
                 }
-                context.getProperties().putAll(toState.getContext().getProperties());
-                fire("GENERATE_" + toState.getName(), context);
+
+                toState.getContext().getProperties().putAll(fromState.getContext().getProperties());
+
+                fire("GENERATE_" + toState.getName(), toState.getContext());
             }
         } catch (MojoFailureException e) {
             LOG.error("Error: cannot generate unit", e);

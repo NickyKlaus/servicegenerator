@@ -44,10 +44,7 @@ public class Processor {
 
         processingConfiguration
                 .getProcessingStrategy()
-                .process(
-                        //processingConfiguration.getProcessingPlan().getProcessingStages().get(0),
-                        stateMachine,
-                        pluginConfiguration);
+                .process(stateMachine, pluginConfiguration);
 
         stateMachine.terminate();
     }

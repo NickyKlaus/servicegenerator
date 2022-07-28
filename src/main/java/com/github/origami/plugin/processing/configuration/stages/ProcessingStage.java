@@ -4,20 +4,21 @@ import com.github.origami.plugin.processing.configuration.context.ProcessingCont
 import com.github.origami.api.ASTProcessingSchema;
 import com.github.origami.api.context.Context;
 import com.github.origami.plugin.processing.configuration.strategy.naming.NamingStrategy;
-import com.github.origami.plugin.processing.configuration.strategy.naming.SchemaClassBasedNamingStrategy;
+import com.github.origami.plugin.processing.configuration.strategy.naming.SchemaNameBasedNamingStrategy;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ProcessingStage implements Stage {
+    // Stage is used for generating sources by default
+    private boolean nonGeneration;
     private ASTProcessingSchema schema;
     private Context context = new ProcessingContext();
-    private NamingStrategy namingStrategy = new SchemaClassBasedNamingStrategy();
+    private NamingStrategy namingStrategy = new SchemaNameBasedNamingStrategy();
     private String name = StringUtils.EMPTY;
     private Consumer<Context> postProcessingAction = ctx -> {};
     private Predicate<Context> executionCondition = ctx -> true;
@@ -26,18 +27,23 @@ public class ProcessingStage implements Stage {
     private Function<Context, String> processingUnitLocation;
     private String processingUnitBasePackage = StringUtils.EMPTY;
 
+    private ProcessingStage nonGeneration(boolean nonGeneration) {
+        this.nonGeneration = nonGeneration;
+        return this;
+    }
+
     private ProcessingStage processingSchema(ASTProcessingSchema schema) {
         this.schema = schema;
         return this;
     }
 
     private ProcessingStage context(Map<String, Object> processingData) {
-        this.context.getProperties().putAll(processingData);
+        this.context = ProcessingContext.of(processingData);
         return this;
     }
 
     private ProcessingStage context(Context context) {
-        this.context.getProperties().putAll(context.getProperties());
+        this.context = context;
         return this;
     }
 
@@ -80,6 +86,11 @@ public class ProcessingStage implements Stage {
     public ProcessingStage processingUnitBasePackage(String processingUnitBasePackage) {
         this.processingUnitBasePackage = processingUnitBasePackage;
         return this;
+    }
+
+    @Override
+    public boolean isNonGeneration() {
+        return nonGeneration;
     }
 
     @Override
@@ -137,9 +148,10 @@ public class ProcessingStage implements Stage {
     }
 
     public static class Builder {
+        private boolean nonGeneration;
         private ASTProcessingSchema schema;
         private Context context = new ProcessingContext();
-        private NamingStrategy namingStrategy = new SchemaClassBasedNamingStrategy();
+        private NamingStrategy namingStrategy = new SchemaNameBasedNamingStrategy();
         private String name = StringUtils.EMPTY;
         private Consumer<Context> postProcessingAction = ctx -> {};
         private Predicate<Context> executionCondition = ctx -> true;
@@ -148,18 +160,23 @@ public class ProcessingStage implements Stage {
         private Function<Context, String> processingUnitLocation;
         private String processingUnitBasePackage = StringUtils.EMPTY;
 
+        public Builder nonGeneration(boolean nonGeneration) {
+            this.nonGeneration = nonGeneration;
+            return this;
+        }
+
         public Builder processingSchema(ASTProcessingSchema schema) {
             this.schema = schema;
             return this;
         }
 
         public Builder context(Map<String, Object> processingData) {
-            this.context.getProperties().putAll(processingData);
+            this.context = ProcessingContext.of(processingData);
             return this;
         }
 
         public Builder context(Context context) {
-            this.context.getProperties().putAll(context.getProperties());
+            this.context = context;
             return this;
         }
 
@@ -205,6 +222,7 @@ public class ProcessingStage implements Stage {
         public Stage build() {
             return new ProcessingStage()
                     .name(name)
+                    .nonGeneration(nonGeneration)
                     .processingSchema(schema)
                     .context(context)
                     .postProcessingAction(postProcessingAction)

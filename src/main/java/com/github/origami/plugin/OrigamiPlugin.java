@@ -1,5 +1,6 @@
 package com.github.origami.plugin;
 
+import com.github.javaparser.ast.expr.Name;
 import com.github.origami.plugin.processing.configuration.DefaultProcessingConfiguration;
 import com.github.origami.plugin.processing.configuration.ProcessingConfiguration;
 import com.github.origami.plugin.processing.configuration.stages.ProcessingStageMapper;
@@ -40,12 +41,21 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
                                                 Map.entry(PropertyName.ABSTRACT_SERVICE_PACKAGE_NAME.name(), getBasePackage() + ".service"))))
                 .stage(InternalProcessingStage.CREATE_REPOSITORY)
                 .stage(InternalProcessingStage.CREATE_ABSTRACT_SERVICE)
-                .stage(InternalProcessingStage.INJECT_SERVICE_INTO_CONTROLLER.processingUnitBasePackage(getControllerPackage()))
+                .stage(
+                        InternalProcessingStage.INJECT_SERVICE_INTO_CONTROLLER
+                                .processingUnitBasePackage(getControllerPackage())
+                                .processingUnitName(ctx -> ctx.get(PropertyName.CONTROLLER_UNIT_NAME.name(), Name.class).getIdentifier()))
                 .stage(InternalProcessingStage.CREATE_SERVICE_IMPLEMENTATION)
                 .stage(InternalProcessingStage.ADD_SERVICE_ABSTRACT_METHOD)
                 .stage(InternalProcessingStage.ADD_SERVICE_METHOD_IMPLEMENTATION)
-                .stage(InternalProcessingStage.EDIT_CONFIGURATION.processingUnitBasePackage(getConfigurationPackage()))
-                .stage(InternalProcessingStage.ADD_CONTROLLER_METHOD_IMPLEMENTATION.processingUnitBasePackage(getControllerPackage()));
+                .stage(
+                        InternalProcessingStage.EDIT_CONFIGURATION
+                                .processingUnitBasePackage(getConfigurationPackage())
+                                .processingUnitName(ctx -> "Swagger2SpringBoot"))
+                .stage(
+                        InternalProcessingStage.ADD_CONTROLLER_METHOD_IMPLEMENTATION
+                                .processingUnitBasePackage(getControllerPackage())
+                                .processingUnitName(ctx -> ctx.get(PropertyName.CONTROLLER_UNIT_NAME.name(), Name.class).getIdentifier()));
     }
 
     private ProcessingPlan externalProcessingPlan() {
@@ -62,7 +72,11 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
     private ProcessingConfiguration internalProcessingConfiguration() {
         return DefaultProcessingConfiguration
                 .configuration()
-                .baseLocation(baseLocation())
+                .baseLocation(
+                        Path.of(
+                                getProjectOutputDirectory(),
+                                getSourcesDirectory(),
+                                getBasePackage()).toString())
                 .processingPlan(internalProcessingPlan())
                 .processingStrategy(new PipelineIdBasedProcessingStrategy())
                 .namingStrategy(new PipelineIdBasedNamingStrategy());
@@ -71,7 +85,10 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
     private ProcessingConfiguration externalProcessingConfiguration() {
         return DefaultProcessingConfiguration
                 .configuration()
-                .baseLocation(baseLocation())
+                .baseLocation(
+                        Path.of(
+                                getProjectOutputDirectory(),
+                                getSourcesDirectory()).toString())
                 .processingPlan(externalProcessingPlan())
                 .processingStrategy(new SequentialProcessingStrategy())
                 .namingStrategy(new PipelineIdBasedNamingStrategy());
@@ -102,13 +119,6 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
         props.add("jackson=true");
         generate.setAdditionalProperties(props);
         generate.run();
-    }
-
-    private String baseLocation() {
-        return Path.of(
-                getProjectOutputDirectory(),
-                getSourcesDirectory(),
-                getBasePackage()).toString();
     }
 
     @Override
