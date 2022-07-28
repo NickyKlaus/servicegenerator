@@ -1,7 +1,5 @@
 # origami
 
-[![Publish package](https://github.com/NickyKlaus/origami/actions/workflows/maven.yml/badge.svg?branch=plugin-dev&event=push)](https://github.com/NickyKlaus/origami/actions/workflows/maven.yml)
-
 ## About
 
 **Origami** is a Maven plugin which allows of generation Java RESTful microservices using its definition in OpenAPI (Swagger) Specification format from standalone JSON file or being produced by any remote service description provider.
