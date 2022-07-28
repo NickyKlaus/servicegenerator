@@ -1,5 +1,7 @@
 # origami
 
+[![Coverage Status](https://coveralls.io/repos/github/NickyKlaus/origami/badge.svg?branch=plugin-dev)](https://coveralls.io/github/NickyKlaus/origami?branch=plugin-dev)
+
 ## About
 
 **Origami** is a Maven plugin which allows of generation Java RESTful microservices using its definition in OpenAPI (Swagger) Specification format from standalone JSON file or being produced by any remote service description provider.
