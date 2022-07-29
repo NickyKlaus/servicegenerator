@@ -4,7 +4,6 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.origami.plugin.processing.configuration.DefaultProcessingConfiguration;
 import com.github.origami.plugin.processing.configuration.ProcessingConfiguration;
 import com.github.origami.plugin.processing.configuration.stages.ProcessingStageMapper;
-import com.github.origami.plugin.db.DBClient;
 import com.github.origami.plugin.processing.configuration.stages.ProcessingPlan;
 import com.github.origami.plugin.processing.configuration.strategy.processing.SequentialProcessingStrategy;
 import com.github.origami.plugin.processing.container.ProcessingContainer;
@@ -122,7 +121,6 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
 
     /**
      * Generates Spring Boot microservice stub by OpenAPI/Swagger Specification
-     *
      * Produces common templates of configuration, controller and model classes
      *
      * @see Generate
@@ -151,12 +149,11 @@ public class OrigamiPlugin extends AbstractServiceGeneratorMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        try (DBClient.INSTANCE) {
-            generateStub();
+        generateStub();
 
-            new ProcessingContainer(internalProcessingConfiguration(), externalProcessingConfiguration())
-                    .prepare(this)
-                    .start();
-        }
+        ProcessingContainer
+                .container(internalProcessingConfiguration(), externalProcessingConfiguration())
+                .prepare(this)
+                .start();
     }
 }

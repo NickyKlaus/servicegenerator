@@ -7,14 +7,6 @@
     <artifactId>origami-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <version>0.0.6</version>
-         
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/NickyKlaus/origami-api</url>
-        </repository>
-    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -51,49 +43,6 @@
         <javax.validation.version>2.0.1.Final</javax.validation.version>
         <javax.xml.bind.version>2.4.0-b180830.0359</javax.xml.bind.version>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>no2-v4</id>
-            <repositories>
-                <repository>
-                    <id>central</id>
-                    <url>https://repo1.maven.org/maven2</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
-                    <id>github</id>
-                    <name>GitHub Apache Maven Packages</name>
-                    <url>https://maven.pkg.github.com/NickyKlaus/origami-api</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
-                    <id>github2</id>
-                    <name>GitHub Apache Maven Packages</name>
-                    <url>https://maven.pkg.github.com/NickyKlaus/origami</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-            </repositories>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-    </profiles>
 
     <dependencyManagement>
         <dependencies>
